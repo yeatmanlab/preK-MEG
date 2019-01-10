@@ -1,0 +1,26 @@
+# {"exp_name": "ShowImages", "audio_controller": null, "response_device": null, "stim_rms": 0.01, "stim_fs": 24414, "stim_db": 65, "noise_db": 45, "output_dir": "data", "window_size": null, "screen_num": null, "full_screen": true, "force_quit": ["lctrl", "rctrl"], "participant": "ttt", "monitor": null, "trigger_controller": null, "session": "1", "check_rms": "windowed", "suppress_resamp": false, "version": "dev", "enable_video": false, "verbose": null, "date": "2019-01-09 12_03_05.202564", "file": "/home/sjjoo/git/SSWEF/expcode/r21_event_related.py", "version_used": "2.0.0.dev0+4c31ad2"}
+timestamp	event	value
+7.17555999756	flip	7.17554998398
+7.20856499672	flip	7.20855808258
+7.24578309059	flip	7.2457780838
+7.2793431282	flip	7.27933907509
+7.31272602081	flip	7.3127219677
+7.34481692314	flip	7.34481406212
+7.37778997421	flip	7.37778711319
+7.4231441021	flip	7.42313909531
+7.45650196075	flip	7.45649695396
+7.48984599113	flip	7.48984098434
+7.52316999435	flip	7.52316498756
+7.55649495125	flip	7.55649113655
+7.58983492851	flip	7.58983111382
+7.62316012383	flip	7.62315607071
+7.65649700165	flip	7.65649294853
+7.68982696533	flip	7.68982291222
+7.72363996506	flip	7.72363591194
+7.75653409958	flip	7.75653100014
+7.78982496262	flip	7.78982210159
+7.82314801216	flip	7.82314491272
+7.85648393631	flip	7.85648107529
+7.88981199265	flip	7.88980913162
+7.92315292358	flip	7.92315006256
+8.1069021225	stop	None
