@@ -17,7 +17,7 @@ bgcolor = [0.5, 0.5, 0.5, 1]
 
 # Paths to images
 #basedir = '/home/jyeatman/projects/MEG/images/'
-basedir = os.path.join('C:\\Users\\neuromag\\Desktop\\jason\\wordStim')
+basedir = os.path.join('C:\\Users\\neuromag\\Desktop\\jason\\floc')
 if not os.path.isdir(basedir):
     basedir = os.path.join('/home/sjjoo/git/SSWEF/stim/floc')
 
@@ -29,7 +29,7 @@ if len(nimages) == 1: # Does nothing....
     nimages = np.repeat(nimages, len(imagedirs))
 n_totalimages = sum(nimages)
 # ISIs to be used. Must divide evenly into nimages
-isis = np.arange(1., 1.51, 0.1) #np.arange(.62, .84, .02)
+isis = np.arange(0.5, 1.01, 0.1) #np.arange(.62, .84, .02)
 imduration = 1  # Image duration 1000 ms
 s = .5  # Image scale
 
@@ -56,13 +56,13 @@ for i in range(0,len(fix_seq)-3):
             fix_seq[i+4] = 1
             
 # Creat a vector of dot colors for each ISI
-c = ['g', 'b', 'y', 'c']
+c = ['r', 'b', 'y', 'c']
 k = 0
 m = 0
 fix_color = []
 for i in range(0,len(fix_seq)): 
     if fix_seq[i] == 1:
-        fix_color.append('r')
+        fix_color.append('g')
     else:
         fix_color.append(c[k])
         k += 1
@@ -89,10 +89,10 @@ for imname in imagedirs:
     # Temporary variable with image names in order
     tmp = sorted(glob.glob(os.path.join(basedir, imname, '*')))
     # Randomly grab nimages from the list
-    n = rng.randint(0, len(tmp), nimages[c])
-    n = np.arange(0,len(tmp))
-    rng.shuffle(n)
-    
+    # n = rng.randint(0, len(tmp), nimages[c])
+    temp_n = np.arange(0,len(tmp))
+    rng.shuffle(temp_n)
+    n = temp_n[0:nimages[c]]
     tmp2 = []
     for i in n:
         tmp2.append(tmp[i])
@@ -115,17 +115,19 @@ with ExperimentController('ShowImages', full_screen=True,version='dev') as ec:
     #write_hdf5(op.splitext(ec.data_fname)[0] + '_trials.hdf5',
     #           dict(imorder_shuf=imorder_shuf,
     #                imtype_shuf=imtype_shuf))
-    fr = 1/ec.estimate_screen_fs()  # Estimate frame rate
-    realRR = ec.estimate_screen_fs()
+    realRR = ec.estimate_screen_fs(n_rep=20)
     realRR = round(realRR)
+    fr = 1./realRR
     adj = fr/2  # Adjustment factor for accurate flip
     # Wait to fill the screen
     ec.set_visible(False)
     # Set the background color to gray
     ec.set_background_color(bgcolor)
 
-    n_frames = round(total_time * realRR)
-    img_frames = round(imduration*realRR) + int(ISI[i]*realRR)
+    n_frames = np.int(round(total_time * realRR))
+    img_frames = []
+    for i in np.arange(0,sum(nimages)):
+        img_frames.append(round(imduration*realRR) + int(ISI[i]*realRR))
     jitter = np.arange(0,realRR*0.2) # 0~200 ms jitter
     
     temp_flicker = np.arange(0,n_frames,int(realRR/2)) # Get temp_flicker frames: every .5 s
@@ -136,7 +138,7 @@ with ExperimentController('ShowImages', full_screen=True,version='dev') as ec:
     frame_flicker = temp_flicker + delay # 
     frame_img = [0]
     for i in np.arange(0,len(ISI)):
-        frame_img.append(frame_img[i] + img_frames) # + int(ISI[i]*realRR))
+        frame_img.append(frame_img[i] + img_frames[i]) # + int(ISI[i]*realRR))
     frame_img = frame_img[:-1]
     
     # load up the image stack. The images in img_buffer are in the sequential 
@@ -169,7 +171,7 @@ with ExperimentController('ShowImages', full_screen=True,version='dev') as ec:
     # Display instruction (7 seconds).
     # They will be different depending on the run number
     if int(ec.session) % 2:
-        t = visual.Text(ec,text='Button press when the dot turns red - Ignore images',pos=[0,.1],font_size=40,color='k')
+        t = visual.Text(ec,text='Button press when the dot turns green - Ignore images',pos=[0,.1],font_size=40,color='k')
     else:
         t = visual.Text(ec,text='Button press for fake word',pos=[0,.1],font_size=40,color='k') 
     t.draw()
@@ -196,14 +198,14 @@ with ExperimentController('ShowImages', full_screen=True,version='dev') as ec:
 #    frametimes = []
     trigger = 0
     t0 = time.time()
-    while frame < n_frames-1:
+    while frame < n_frames:
         if frame == frame_flicker[flicker]:
             fix.set_colors(colors=(fix_color[flicker],fix_color[flicker]))
             ec.write_data_line('dotcolorFix', fix_color[flicker])
-            if flicker < len(frame_flicker)-2:
+            if flicker < len(frame_flicker)-1:
                 flicker += 1
                 
-        if frame >= frame_img[trial] and frame < frame_img[trial] + img_frames:
+        if frame >= frame_img[trial] and frame < frame_img[trial] + img_frames[trial]:
             if frame == frame_img[trial]:
                 ec.write_data_line('imnumber', imnumber[trial])
                 ec.write_data_line('imtype', imtype[trial])
@@ -218,8 +220,8 @@ with ExperimentController('ShowImages', full_screen=True,version='dev') as ec:
 #            bright.draw()
             
 #            imageframe.append(frame)
-            if frame == frame_img[trial] + img_frames - 1:
-                if trial < len(imnumber)-2:
+            if frame == frame_img[trial] + img_frames[trial] - 1:
+                if trial < len(imnumber)-1:
                     trial += 1
         else:
             fix.set_colors(colors=(fix_color[flicker],fix_color[flicker]))
@@ -234,14 +236,14 @@ with ExperimentController('ShowImages', full_screen=True,version='dev') as ec:
         ec.get_presses()
 #        frametimes.append(last_flip)
         ec.check_force_quit()
-        while time.time()-t0 < (frame+1)*fr:
-            ec.check_force_quit()
+#        while time.time()-t0 < (frame+1)*fr:
+#            ec.check_force_quit()
     # Now the experiment is over and we show 5 seconds of blank
     print "\n\n Elasped time: %0.4f secs" % (time.time()-t0)
     print "\n\n Targeted time: %0.4f secs" % total_time
     blank.draw(), fix.draw()
     ec.flip()
-    ec.wait_secs(5.0)
+    ec.wait_secs(1.0)
     pressed = ec.get_presses()  # relative_to=0.0
     
     

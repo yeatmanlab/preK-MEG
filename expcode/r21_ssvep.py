@@ -228,8 +228,8 @@ with ExperimentController('ShowImages', full_screen=True, version='dev') as ec:
                 ec.write_data_line('End')
             
             img[trial].draw()
-            if imtype[trial] == 'Oddball':
-                bright2.draw()
+#            if imtype[trial] == 'Oddball':
+#                bright2.draw()
             
             if trial < len(imtype)-1:
                 trial += 1

@@ -125,7 +125,7 @@ for n, s in enumerate(out):
     params.subjects = [s]
     params.sss_type = 'python'
     params.sss_regularize = 'in' # 'in' by default
-    params.tsss_dur = 8. # 60 for adults with not much head movements. This was set to 6.
+    params.tsss_dur = 20. # 60 for adults with not much head movements. This was set to 6.
     params.st_correlation = 0.9
     
     params.auto_bad_meg_thresh = 10 # THIS SHOULD NOT BE SO HIGH!
@@ -141,7 +141,7 @@ for n, s in enumerate(out):
     print("\n\n")
     params.run_names = []
     b = sorted(glob.glob(os.path.join(datadir, '190109', 'raw_fif','*')))
-    for i in np.arange(1,len(b)):
+    for i in np.arange(2,len(b)): # THIS IS HARD CODED: needs to be changed!!!
         a, c = os.path.split(b[i])
         params.run_names.append(c[:-8])
     
@@ -241,8 +241,8 @@ for n, s in enumerate(out):
         # Before running SSP, examine SSS'ed files and make
         # SUBJ/bads/bad_ch_SUBJ_post-sss.txt; usually, this should only contain EEG
         # channels.
-        gen_ssp=True,       # Generate SSP vectors
-        apply_ssp=True,     # Apply SSP vectors and filtering
+        gen_ssp=False,       # Generate SSP vectors
+        apply_ssp=False,     # Apply SSP vectors and filtering
         plot_psd=False,      # Plot raw data power spectra
         write_epochs=False,  # Write epochs to disk
         gen_covs=False,      # Generate covariances
@@ -270,5 +270,3 @@ for n, s in enumerate(out):
 #        print_status=False,
 #        gen_report=True # true
     )
-
-print('%i sec' % (time.time() - t0,))
