@@ -184,12 +184,13 @@ with ExperimentController('ShowImages', full_screen=True, version='dev') as ec:
         fix.set_radius(4, 1, 'pix')
         fix.draw()
     
-        # Display instruction (7 seconds).
+        # Display instruction (5 seconds).
         # They will be different depending on the run number
-        t = visual.Text(ec,text='Button press when the dot turns green.',pos=[0,.1],font_size=40,color='k')
-        t.draw()
-        ec.flip()
-        ec.wait_secs(5.0)
+        if block == 1:
+            t = visual.Text(ec,text='Button press when the dot turns green.',pos=[0,.1],font_size=40,color='k')
+            t.draw()
+            ec.flip()
+            ec.wait_secs(5.0)
     
         # Show images
         count = 0 # This is for testing...
@@ -201,7 +202,6 @@ with ExperimentController('ShowImages', full_screen=True, version='dev') as ec:
         ec.write_data_line('dotcolorFix', 'k')
         last_flip = ec.flip()
 
-    
         # The iterable 'trial' randomizes the order of everything since it is
         # drawn from imorder_shuf
         trial = 0
