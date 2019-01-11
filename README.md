@@ -1,11 +1,11 @@
 # SSWEF - Code for running and analyzing Steady State Word Evoked Fields experiment
 
 ## Dependencies
-..* expyfun
+* expyfun
     git clone https://github.com/LABSN/expyfun
     python setup.py install
 
-..* pyglet
+* pyglet
     pip install pyglet
 
 ## Running experiment
