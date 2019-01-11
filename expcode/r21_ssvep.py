@@ -164,9 +164,9 @@ with ExperimentController('ShowImages', full_screen=True, version='dev') as ec:
         ec.check_force_quit()
 
     # make a blank image
-    blank = visual.RawImage(ec, np.tile(bgcolor[0], np.multiply([s, s, 1], img_buffer.shape)))
-    bright = visual.RawImage(ec, np.tile([1.], np.multiply([s, s, 1], img_buffer.shape)))
-    bright2 = visual.RawImage(ec, np.tile([1.], np.multiply([s, s, 1], [50, 50, 3])), pos = [0.8, -0.8])
+    blank = visual.RawImage(ec, np.tile(bgcolor[0], np.multiply([s, s, 1], img_buffer.shape).astype(int)))
+    bright = visual.RawImage(ec, np.tile([1.], np.multiply([s, s, 1], img_buffer.shape).astype(int)))
+    bright2 = visual.RawImage(ec, np.tile([1.], np.multiply([s, s, 1], [50, 50, 3]).astype(int)), pos = [0.8, -0.8])
     # Calculate stimulus size
     d_pix = -np.diff(ec._convert_units([[3., 0.], [3., 0.]], 'deg', 'pix'), axis=-1)
 
