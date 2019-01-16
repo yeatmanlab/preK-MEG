@@ -24,7 +24,8 @@ else:
 #basedir = '/home/jyeatman/projects/MEG/images/'
 basedir = os.path.join('C:\\Users\\neuromag\\Desktop\\jason\\wordStim')
 if not os.path.isdir(basedir):
-    basedir = os.path.join('/mnt/diskArray/projects/MEG/wordStim')
+    basedir = os.path.join(op.expanduser("~"),'git','SSWEF','stim')
+    print('Loading images from: '+basedir)
 
 """ Words, False fonts (Korean), Faces, Objects """
 imagedirs = ['falsefont', 'word_c254_p0']
