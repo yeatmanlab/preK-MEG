@@ -13,7 +13,93 @@ import numpy as np
 import time
 
 #%%
-""" Timing test """
+
+# Load the data, compute PSDs
+
+tDur = 20.
+video_delay = .066
+lowpass = 40.
+highpass = 0.5
+
+#data_path = '/mnt/scratch/r21/ek_short'
+#raw_fname1 = data_path + '/sss_fif/ek_short_1_raw_sss.fif'
+#raw_fname2 = data_path + '/sss_fif/ek_short_2_raw_sss.fif'
+#raw_fname3 = data_path + '/sss_fif/ek_short_3_raw_sss.fif'
+#raw_fname4 = data_path + '/sss_fif/ek_short_4_raw_sss.fif'
+#
+## long...
+#data_path = '/mnt/scratch/r21/ek_long'
+#raw_fname1 = data_path + '/sss_fif/ek_long_1_raw_sss.fif'
+#raw_fname2 = data_path + '/sss_fif/ek_long_2_raw_sss.fif'
+
+tRaws = []
+
+for i in [ '1', '2', '3', '4', '5', '6' ]:
+#    tPFNm = '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_1_2hz_0' + i + '_raw_sss.fif' # Path File Name
+#    tPFNm = '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_1_5hz_0' + i + '_raw_sss.fif' # Path File Name
+#    tPFNm = '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_2hz_0' + i + '_raw_sss.fif' # Path File Name
+    tPFNm = '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_2hz_no_flash_0' + i + '_raw_sss.fif' # Path File Name
+    tRaws = tRaws + [ mne.io.Raw( tPFNm, allow_maxshield=True, preload=True ) ]
+
+tRaws = mne.concatenate_raws( tRaws );
+#raws.filter(highpass, lowpass, fir_design='firwin')
+
+tEvs = mne.find_events(tRaws, stim_channel=['STI001','STI002','STI003','STI004'])
+
+tRejCrit = dict(grad=4000e-13, mag=4e-12, eog = np.inf, ecg = np.inf)
+
+# ECG and EOG projections
+tECG, tmp = mne.preprocessing.compute_proj_ecg( tRaws, n_grad=1, n_mag=1, n_eeg=0, average=False, reject=tRejCrit)
+tEOG, tmp = mne.preprocessing.compute_proj_eog(tRaws, n_grad=1, n_mag=1, n_eeg=0, average=False, reject=tRejCrit)
+tRaws.info['projs'] += tECG[-4:]  + tEOG[-4:]
+
+# create epochs
+tSsn = mne.Epochs(tRaws, tEvs, event_id=None, tmin=0., tmax=tDur, proj=False, baseline=None, reject=None)
+tY = tSsn.get_data()
+tY = tY[ :, :, :-1 ]
+#plt.plot(np.mean(tY[:,201,:],axis=0),'r-')
+
+tNTrl = tY.shape[0];
+tNS = tY.shape[-1]; # Number of Samples|Freqs
+tXFrq = np.round( np.fft.fftfreq( tNS, 1.0/tSsn.info['sfreq'] ), 2 ) # X Freq values for horizontal axis of plot
+
+tYFFT = np.fft.fft( tY ) / tNS # FFT of tY, Trials-by-Chan-by-Freq
+tMYFFT = np.fft.fft( np.mean( tY, axis=0 ) ) / tNS # FFT of mean over trials of tY, Chan-by-Freq
+
+tYFFTV = np.mean( np.stack( ( np.var( np.real(tYFFT), 0 ), np.var( np.imag(tYFFT), 0 ) ) ), 0 )
+#tYFFTV = np.var( abs(tYFFT), 0 )
+tYFFTT = abs(tMYFFT) / np.sqrt( tYFFTV / ( tNTrl - 1 ) )
+
+#%%
+
+# Topographic plot of selected Freq, plus two adjacent ones
+
+ch_names = np.array(tRaws.info['ch_names'])
+tChP = mne.pick_types(tSsn.info, meg='grad', eeg=False, eog=False) # Channel Picks
+tChPI = mne.pick_info(tSsn.info, sel=tChP) # Channel Pick Info
+
+tFrqP = list(tXFrq).index( 2.0 ) # Frequency Pick, in Hz
+tFH, tAHs = plt.subplots(1,3)
+#tVMax = 2.0e-13
+#mne.viz.plot_topomap( abs(tMYFFT[tChP,tFrqP-1]), tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[0], vmax=tVMax )
+#mne.viz.plot_topomap( abs(tMYFFT[tChP,tFrqP]), tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[1], vmax=tVMax )
+#mne.viz.plot_topomap( abs(tMYFFT[tChP,tFrqP+1]), tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[2], vmax=tVMax )
+tVMax = 10
+mne.viz.plot_topomap( tYFFTT[tChP,tFrqP-1], tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[0], vmax=tVMax )
+mne.viz.plot_topomap( tYFFTT[tChP,tFrqP], tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[1], vmax=tVMax )
+mne.viz.plot_topomap( tYFFTT[tChP,tFrqP+1], tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[2], vmax=tVMax )
+
+#%%
+
+# Amplitude histogram from seleted channel.
+
+tChP = mne.pick_types(tSsn.info, meg='grad', eeg=False, eog=False, selection=['MEG0242']) # Channel Pick
+plt.figure()
+#plt.plot( tXFrq[range(tNS/2)], np.transpose( abs( tMYFFT[tChP,range(tNS/2)] ) ) )
+plt.plot( tXFrq[range(tNS/2)], np.transpose( abs( tYFFTT[tChP,range(tNS/2)] ) ) )
+
+#%%
+#""" Timing test """
 #data_path = '/mnt/scratch/r21/180712/'
 #raw_fname = data_path + 'timing_test_01_raw.fif'
 #raw = mne.io.Raw(raw_fname,allow_maxshield=True,preload=True)
@@ -54,214 +140,3 @@ import time
 #
 #de = onset-trigger
 
-#%%
-tDur = 20.
-video_delay = .066
-lowpass = 40.
-highpass = 0.5
-
-data_path = '/mnt/scratch/r21/ek_short'
-raw_fname1 = data_path + '/sss_fif/ek_short_1_raw_sss.fif'
-raw_fname2 = data_path + '/sss_fif/ek_short_2_raw_sss.fif'
-raw_fname3 = data_path + '/sss_fif/ek_short_3_raw_sss.fif'
-raw_fname4 = data_path + '/sss_fif/ek_short_4_raw_sss.fif'
-
-# For Samu
-data_path = '/mnt/scratch/r21/ek_short'
-raw_fname1 = data_path + '/raw_fif/ek_short_1_raw.fif'
-raw_fname2 = data_path + '/raw_fif/ek_short_2_raw.fif'
-raw_fname3 = data_path + '/raw_fif/ek_short_3_raw.fif'
-raw_fname4 = data_path + '/raw_fif/ek_short_4_raw.fif'
-
-# Setup for reading the raw data (to save memory, crop before loading)
-raw1 = mne.io.Raw(raw_fname1,allow_maxshield=True,preload=True)
-raw2 = mne.io.Raw(raw_fname2,allow_maxshield=True,preload=True)
-raw3 = mne.io.Raw(raw_fname3,allow_maxshield=True,preload=True)
-raw4 = mne.io.Raw(raw_fname4,allow_maxshield=True,preload=True)
-
-raws = mne.concatenate_raws([raw1,raw2,raw3,raw4])
-#raw.resample(600, npad='auto', n_jobs=12)
-
-#raw.crop(tmin=12.0, tmax=13.0)
-#order = np.arange(raw.info['nchan'])
-#order[9] = 306 # We exchange the plotting order of two channels
-#order[10] = 307
-#order[306] = 9  # to show the trigger channel as the 10th channel.
-#raw.plot(n_channels=10, order=order, block=True)
-
-# Add SSP projection vectors to reduce EOG and ECG artifacts
-#projs = read_proj(proj_fname)
-#raw.add_proj(projs, remove_existing=True)
-
-#layout = mne.channels.read_layout('Vectorview-mag')
-#layout.plot()
-#raw.plot_psd_topo(tmax=30., fmin=5., fmax=60., n_fft=1024, layout=layout)
-
-events = mne.find_events(raws, stim_channel=['STI001','STI002','STI003','STI004'])
-#start = np.array([events[0]])
-#
-#tmin = (start[0][0]-raw1.first_samp)/raw1.info['sfreq'] + video_delay
-#tmax = tmin + tDur
-# this can be highly data dependent
-event_id = {'tag': 5}
-
-raws.filter(highpass, lowpass, fir_design='firwin')
-
-#raw1.crop(tmin,tmax)
-
-#%%
-#raw.plot_psd(area_mode='range', tmax=40, show=False, average=True)
-#
-#raw.filter(None, 40., fir_design='firwin')
-#
-#raw.plot_psd(area_mode='range', tmax=40, show=False, average=True)
-
-#%%
-
-# rejection criteria
-reject = dict(grad=4000e-13, mag=4e-12, eog = np.inf, ecg = np.inf)
-
-# ECG and EOG projections
-projs, tmp = mne.preprocessing.compute_proj_ecg(raws, n_grad=1, n_mag=1, n_eeg=0, average=False, reject=reject)
-print(projs)
-
-ecg_projs = projs[-4:]
-mne.viz.plot_projs_topomap(ecg_projs)
-
-projs, tmp = mne.preprocessing.compute_proj_eog(raws, n_grad=1, n_mag=1, n_eeg=0, average=False, reject=reject)
-print(projs)
-
-eog_projs = projs[-4:]
-mne.viz.plot_projs_topomap(eog_projs, info=raw1.info)
-
-raws.info['projs'] += ecg_projs  + eog_projs
-
-# create epochs
-sessions1 = mne.Epochs(raws, events, event_id=None, tmin=0., tmax=tDur,
-                    proj=False, baseline=None, reject=None)
-yyy = sessions1.get_data()
-
-# plot one of the channel traces
-plt.figure()
-plt.clf()
-plt.hold(True)
-plt.plot(np.mean(yyy[:,201,:],axis=0),'k-')
-
-# overlay detrended trace
-
-sessions2 = mne.Epochs(raws, events, event_id=None, tmin=0., tmax=tDur,
-                    proj=True, baseline=None, reject=None, detrend = 1)
-yyy = sessions2.get_data()
-
-plt.plot(np.mean(yyy[:,201,:],axis=0),'r-')
-
-# =============================================================================
-# #%%
-# temp_selection = mne.read_selection('Left-occipital')
-# selection = []
-# for i in np.arange(0,len(temp_selection)):
-#     selection.append(temp_selection[i][:3]+temp_selection[i][4:])
-#     
-# picks = mne.pick_types(raw1.info, meg='mag', eeg=False, eog=False,
-#                        selection=['MEG1941','MEG1942','MEG1943'])
-# 
-# #['MEG1641','MEG1642','MEG1643','MEG1941','MEG1942','MEG1943','MEG1731','MEG1732','MEG1733']
-# 
-# =============================================================================
-
-# =============================================================================
-# #%%
-# # Let's just look at the first few channels for demonstration purposes
-# #picks = picks[:4]
-# 
-# #fmin, fmax = 0, 60  # look at frequencies between 2 and 300Hz
-# #n_fft = 2048  # the FFT size (n_fft). Ideally a power of 2
-# #
-# #plt.figure()
-# #ax = plt.axes()
-# #raw.plot_psd(tmin=tmin, tmax=tmax, fmin=fmin, fmax=fmax, n_fft=n_fft,
-# #             n_jobs=1, proj=True, ax=ax, color=(0, 0, 1),  picks=picks,
-# #             show=True, average=True)
-# #
-# #raw.plot_psd_topo(tmin=0.0, tmax=tmax, fmin=0, fmax=fmax, proj=False, n_fft=n_fft, 
-# #                  n_overlap=0, layout=None, color='w', fig_facecolor='k', axis_facecolor='k', dB=True, show=True, block=False, n_jobs=1, axes=None, verbose=None)
-# 
-# =============================================================================
-
-#%%
-# let's compute some spectral values
-Fs = sessions2.info['sfreq'];  # sampling rate
-Ts = 1.0/Fs; # sampling interval
-
-temp_y1 = sessions2.get_data()
-n = temp_y1.shape[2]
-
-sig = np.empty((temp_y1.shape[1],4), dtype='complex' )
-for iTrl in np.arange(0,temp_y1.shape[0]):
-    for iCh in np.arange(0,temp_y1.shape[1]):
-        y = temp_y1[iTrl,iCh,:]
-        Y = np.fft.fft(y)/n # fft computing and normalization
-        sig[iCh,iTrl] = Y[24] # 48, 240
-
-#plt.figure
-#plt.plot(abs(np.mean(sig,axis=1)))
-
-ch_names = np.array(raw1.info['ch_names'])
-
-#plt.figure()
-#picks = mne.pick_types(sessions2.info, meg='mag', eeg=False, eog=False)
-#pick_info = mne.pick_info(sessions2.info, sel=picks)
-#data = abs( np.mean(sig,axis=1) )
-#tMagPlot = mne.viz.plot_topomap(data[picks], pick_info, names = ch_names[picks], show_names=True)
-
-plt.figure()
-picks = mne.pick_types(sessions2.info, meg='grad', eeg=False, eog=False)
-pick_info = mne.pick_info(sessions2.info, sel=picks)
-data = abs( np.mean(sig,axis=1) )
-#picks = mne.pick_types(sessions2.info, meg='mag', eeg=False, eog=False)
-#tGrdPlot = mne.viz.plot_topomap(data[picks], pick_info, names = ch_names[picks], show_names=True, vmax=4.0000000000000006e-13)
-tGrdPlot = mne.viz.plot_topomap(data[picks], pick_info, names = ch_names[picks], show_names=True)
-#
-#%%
-
-# picks = mne.pick_types(sessions2.info, meg='mag', eeg=False, eog=False, selection=['MEG2041','MEG1942','MEG1943'])
-picks = mne.pick_types(sessions2.info, meg='grad', eeg=False, eog=False, selection=['MEG0413'])
-
-Fs = sessions2.info['sfreq']  # sampling rate
-Ts = 1.0/Fs # sampling interval
-
-temp_y1 = sessions2.get_data()
-#temp_y2 = np.stack((session2.get_data(picks=picks)))
-#temp_y = np.stack((temp_y1,temp_y2))
-
-y = np.mean(temp_y1[:,picks[0],:], axis = 0)
-
-t = np.linspace(0.,tDur,tDur*Fs+1) # time vector
-
-sigma = 20
-#g = np.exp(-(t-20)**2 / (2*sigma**2))
-xxx = np.linspace(0., 1., Fs)
-temp_sin = np.sin(np.pi/2*xxx)
-
-#g = np.concatenate((temp_sin,np.ones(18001)))
-#g = np.concatenate((g,temp_sin[::-1]))
-#y = y*g
-
-n = len(y) # length of the signal
-k = np.arange(n)
-T = n/Fs
-frq = k/T # two sides frequency range
-frq = frq[range(n/2)] # one side frequency range
-
-Y = np.fft.fft(y)/n # fft computing and normalization
-Y = Y[range(n/2)]
-
-fig, ax = plt.subplots(2, 1)
-ax[0].plot(t,y)
-#ax[0].plot(t,g,'g')
-ax[0].set_xlabel('Time')
-ax[0].set_ylabel('Amplitude')
-
-ax[1].plot(frq,abs(Y),'r') # plotting the spectrum
-ax[1].set_xlabel('Freq (Hz)')
-ax[1].set_ylabel('|Y(freq)|')
