@@ -21,10 +21,13 @@ basedir = os.path.join('C:\\Users\\neuromag\\Desktop\\jason\\floc')
 if not os.path.isdir(basedir):
     basedir = os.path.join(op.expanduser("~"),'git','SSWEF','stim','floc')
 
-""" Words, False fonts (Korean), Faces, Objects """
-imagedirs = ['word', 'child', 'car']
+# Path to intro screen image
+introim = os.path.join(basedir,'AlienAdventures.jpg')
 
-nimages = [30, 30, 30]  # number of images in each category
+""" Words, False fonts (Korean), Faces, Objects """
+imagedirs = ['word', 'child', 'car', 'alien']
+
+nimages = [30, 30, 30, 10]  # number of images in each category
 if len(nimages) == 1: # Does nothing....
     nimages = np.repeat(nimages, len(imagedirs))
 n_totalimages = sum(nimages)
@@ -174,6 +177,9 @@ with ExperimentController('ShowImages', full_screen=True,version='dev') as ec:
         t = visual.Text(ec,text='Button press when the dot turns green - Ignore images',pos=[0,.1],font_size=40,color='k')
     else:
         t = visual.Text(ec,text='Button press for fake word',pos=[0,.1],font_size=40,color='k') 
+        
+    introimg_buffer = np.array(Image.open(introim), np.uint8) / 255.
+    t = visual.RawImage(ec, introimg_buffer, scale=0.5)
     t.draw()
     ec.flip()
     ec.wait_secs(5.0)

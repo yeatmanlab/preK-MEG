@@ -191,8 +191,8 @@ with ExperimentController('ShowImages', full_screen=True, version='dev') as ec:
         # Display instruction (5 seconds).
         # They will be different depending on the run number
         if block == 0:
-	    introimg_buffer = np.array(Image.open(introim), np.uint8) / 255.
-	    t = visual.RawImage(ec, introimg_buffer, scale=0.5)
+            introimg_buffer = np.array(Image.open(introim), np.uint8) / 255.
+            t = visual.RawImage(ec, introimg_buffer, scale=0.5)
             # t = visual.Text(ec,text='Button press when the dot turns green.',pos=[0,.1],font_size=40,color='k')
             t.draw()
             ec.flip()
