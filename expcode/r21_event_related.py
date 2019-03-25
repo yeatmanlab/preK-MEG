@@ -19,7 +19,7 @@ bgcolor = [0.5, 0.5, 0.5, 1]
 #basedir = '/home/jyeatman/projects/MEG/images/'
 basedir = os.path.join('C:\\Users\\neuromag\\Desktop\\jason\\floc')
 if not os.path.isdir(basedir):
-    basedir = os.path.join('/home/sjjoo/git/SSWEF/stim/floc')
+    basedir = os.path.join(op.expanduser("~"),'git','SSWEF','stim','floc')
 
 """ Words, False fonts (Korean), Faces, Objects """
 imagedirs = ['word', 'child', 'car']
@@ -152,8 +152,8 @@ with ExperimentController('ShowImages', full_screen=True,version='dev') as ec:
         ec.check_force_quit()
 
     # make a blank image
-    blank = visual.RawImage(ec, np.tile(bgcolor[0], np.multiply([s, s, 1], img_buffer.shape)))
-    bright = visual.RawImage(ec, np.tile([1.], np.multiply([s, s, 1], img_buffer.shape)))
+    blank = visual.RawImage(ec, np.tile(bgcolor[0], np.multiply([s, s, 1], img_buffer.shape).astype('int')))
+    bright = visual.RawImage(ec, np.tile([1.], np.multiply([s, s, 1], img_buffer.shape).astype('int')))
     # Calculate stimulus size
     d_pix = -np.diff(ec._convert_units([[3., 0.], [3., 0.]], 'deg', 'pix'), axis=-1)
 
