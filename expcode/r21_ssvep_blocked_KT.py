@@ -27,6 +27,9 @@ if not os.path.isdir(basedir):
     basedir = os.path.join(op.expanduser("~"),'git','SSWEF','stim')
     print('Loading images from: '+basedir)
 
+# Path to intro screen image
+introim = os.path.join(basedir,'GreenMeansGo.jpg')
+
 """ Words, False fonts (Korean), Faces, Objects """
 imagedirs = ['falsefont', 'word_c254_p0']
 stim_time = 20 # 40 s seq
@@ -188,7 +191,9 @@ with ExperimentController('ShowImages', full_screen=True, version='dev') as ec:
         # Display instruction (5 seconds).
         # They will be different depending on the run number
         if block == 0:
-            t = visual.Text(ec,text='Button press when the dot turns green.',pos=[0,.1],font_size=40,color='k')
+	    introimg_buffer = np.array(Image.open(introim), np.uint8) / 255.
+	    t = visual.RawImage(ec, introimg_buffer, scale=0.5)
+            # t = visual.Text(ec,text='Button press when the dot turns green.',pos=[0,.1],font_size=40,color='k')
             t.draw()
             ec.flip()
             ec.wait_secs(5.0)
