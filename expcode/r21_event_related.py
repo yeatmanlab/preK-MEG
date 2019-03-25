@@ -22,7 +22,7 @@ if not os.path.isdir(basedir):
     basedir = os.path.join(op.expanduser("~"),'git','SSWEF','stim','floc')
 
 # Path to intro screen image
-introim = os.path.join(basedir,'AlienAdventures.jpg')
+introim = os.path.join(basedir,'AlienAdventures-01.jpg')
 
 """ Words, False fonts (Korean), Faces, Objects """
 imagedirs = ['word', 'child', 'car', 'alien']
@@ -173,10 +173,10 @@ with ExperimentController('ShowImages', full_screen=True,version='dev') as ec:
 
     # Display instruction (7 seconds).
     # They will be different depending on the run number
-    if int(ec.session) % 2:
-        t = visual.Text(ec,text='Button press when the dot turns green - Ignore images',pos=[0,.1],font_size=40,color='k')
-    else:
-        t = visual.Text(ec,text='Button press for fake word',pos=[0,.1],font_size=40,color='k') 
+    # if int(ec.session) % 2:
+    #     t = visual.Text(ec,text='Button press when the dot turns green - Ignore images',pos=[0,.1],font_size=40,color='k')
+    # else:
+    #     t = visual.Text(ec,text='Button press for fake word',pos=[0,.1],font_size=40,color='k') 
         
     introimg_buffer = np.array(Image.open(introim), np.uint8) / 255.
     t = visual.RawImage(ec, introimg_buffer, scale=0.5)
