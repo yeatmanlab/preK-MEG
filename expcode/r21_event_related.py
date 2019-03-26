@@ -170,6 +170,10 @@ with ExperimentController('ShowImages', full_screen=True,version='dev') as ec:
     fix = visual.FixationDot(ec, colors=('k', 'k'))
     fix.set_radius(4, 0, 'pix')
     fix.draw()
+    
+    # Show blank briefly before intro screen
+    ec.flip()
+    ec.wait_secs(0.2)
 
     # Display instruction (7 seconds).
     # They will be different depending on the run number
@@ -181,6 +185,7 @@ with ExperimentController('ShowImages', full_screen=True,version='dev') as ec:
     introimg_buffer = np.array(Image.open(introim), np.uint8) / 255.
     t = visual.RawImage(ec, introimg_buffer, scale=0.5)
     t.draw()
+    fix.draw() # fixation mark on intro screen
     ec.flip()
     ec.wait_secs(5.0)
 
