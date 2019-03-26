@@ -15,6 +15,10 @@ import glob
 # background color
 bgcolor = [0.5, 0.5, 0.5, 1]
 
+# Flag denoting whether or not to change the dot color in order to have a 
+# fixation dot task. If False then the dot will be red throughout.
+changedotcolor = False
+
 # Paths to images
 #basedir = '/home/jyeatman/projects/MEG/images/'
 basedir = os.path.join('C:\\Users\\neuromag\\Desktop\\jason\\floc')
@@ -58,22 +62,25 @@ for i in range(0,len(fix_seq)-3):
         elif fix_seq[i+4] == 0:
             fix_seq[i+4] = 1
             
-# Creat a vector of dot colors for each ISI
-c = ['r', 'b', 'y', 'c']
-k = 0
-m = 0
-fix_color = []
-for i in range(0,len(fix_seq)): 
-    if fix_seq[i] == 1:
-        fix_color.append('g')
-    else:
-        fix_color.append(c[k])
-        k += 1
-        k = np.mod(k,4)
-    if k == 0:
-        rng.shuffle(c)
-        while fix_color[i] == c[0]:
+# Create a vector of dot colors for each ISI
+if changedotcolor:
+    c = ['r', 'b', 'y', 'c']
+    k = 0
+    m = 0
+    fix_color = []
+    for i in range(0,len(fix_seq)): 
+        if fix_seq[i] == 1:
+            fix_color.append('g')
+        else:
+            fix_color.append(c[k])
+            k += 1
+            k = np.mod(k,4)
+        if k == 0:
             rng.shuffle(c)
+            while fix_color[i] == c[0]:
+                rng.shuffle(c)
+else:
+    fix_color = ['r'] * len(fix_seq)
 
 # Create a vector marking the category of each image
 imtype = []
@@ -167,13 +174,13 @@ with ExperimentController('ShowImages', full_screen=True,version='dev') as ec:
     last_flip = -1
 
     # Create a fixation dot
-    fix = visual.FixationDot(ec, colors=('k', 'k'))
+    fix = visual.FixationDot(ec, colors=('r', 'r'))
     fix.set_radius(4, 0, 'pix')
     fix.draw()
     
     # Show blank briefly before intro screen
     ec.flip()
-    ec.wait_secs(0.2)
+    ec.wait_secs(0.1)
 
     # Display instruction (7 seconds).
     # They will be different depending on the run number
