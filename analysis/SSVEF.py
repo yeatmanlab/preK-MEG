@@ -19,7 +19,8 @@ import glob
 # (see below)
 
 def GetSsnData( aPFNmPattern ):
-    tDur = 20
+    # start with desired duration for each segment of the 20-sec trial
+    tDur = 5
     fSplitEvent = lambda aEv: aEv + np.arange(0,20,tDur) * int(tSR)
     fRaw = lambda aFile: mne.io.Raw( aFile, allow_maxshield=True, preload=True )
     fFindEvents = lambda aRaw: mne.find_events( aRaw, stim_channel=['STI001'])
