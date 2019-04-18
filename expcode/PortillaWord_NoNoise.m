@@ -1,4 +1,6 @@
-% Example 1: Synthesis of a "text" texture image, using
+% Sythesize single words for MEG experiment baseline condition
+%
+% Based on: Example 1: Synthesis of a "text" texture image, using
 % Portilla-Simoncelli texture analysis/synthesis code, based on
 % alternate projections onto statistical constraints in a complex
 % overcomplete wavelet representation.
@@ -7,14 +9,16 @@
 % textureSynthesis.m for more details.
 %
 % Javier Portilla (javier@decsai.ugr.es).  March, 2001
+%
+% modified by Jason Yeatman, April, 2019
 
-imdir = '~/git/SSWEF/stim/word_upper_c254_p0/';
-outdir = '~/git/SSWEF/stim/word_upper_c254_p0_portilla/';
+imdir = '~/git/SSWEF/stim/word_lower_c254_p0_tight/';
+outdir = '~/git/SSWEF/stim/word_lower_c254_p0_tight_portilla/';
 if ~exist(outdir,'dir'),mkdir(outdir);,end
 
 imList = dir(fullfile(imdir, '*.png'));
 
-for ii = 1:length(imList)
+parfor ii = 1:length(imList)
     fprintf('synthesizing %s\n',imList(ii).name)
     imRaw = imread(fullfile(imdir,imList(ii).name));
     im0 = double(imresize(imRaw,[128 256]));	% im0 is a double float matrix!
@@ -26,7 +30,7 @@ for ii = 1:length(imList)
     
     params = textureAnalysis(im0, Nsc, Nor, Na);
     
-    Niter = 500;	% Number of iterations of synthesis loop
+    Niter = 1000;	% Number of iterations of synthesis loop
     Nsx = 256;	% Size of synthetic image is Nsy x Nsx
     Nsy = 128;	% WARNING: Both dimensions must be multiple of 2^(Nsc+2)
     

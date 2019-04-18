@@ -15,6 +15,8 @@ Three runs of SSWEF experiment. 2 Runs use Korean Text as the carrier and one ru
 Then 2 runs of the even related experiment
 
     r21_ssvep_blocked_KT.py
-    r21_ssvep_blocked_UCKT.py
     r21_ssvep_blocked_UCPS.py
-    r21_event_related.py x2
+    r21_ssvep_blocked_KT.py
+    r21_ssvep_blocked_UCPS.py (time permitting)
+    r21_event_related.py
+    r21_event_related.py (time permitting)

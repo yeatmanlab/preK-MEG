@@ -31,7 +31,7 @@ if not os.path.isdir(basedir):
 introim = os.path.join(basedir,'GreenMeansGo.jpg')
 
 """ Words, False fonts (Korean), Faces, Objects """
-imagedirs = ['word_c254_p0_portilla', 'word_c254_p0']
+imagedirs = ['word_lower_c254_p0_tight_portilla', 'word_lower_c254_p0_tight']
 stim_time = 20 # 40 s seq
 base_rate = 6 # 6 reps per second
 odd_rate = 3 # every odd_rate images. For example, every 3 images oddball appears: 2Hz (6/3) 1.2Hz (6/5)
