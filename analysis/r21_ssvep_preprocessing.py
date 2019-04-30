@@ -22,11 +22,13 @@ t0 = time.time()
 #mne.set_config('MNE_USE_CUDA', 'true')
 
 # At Possum projects folder mounted in the local disk
-raw_dir = '/home/sjjoo/git/SSWEF/pilot/prek'
+#raw_dir = '/home/sjjoo/git/SSWEF/pilot/prek'
+raw_dir = '/mnt/scratch/preK_raw'
 
 # At local hard drive
-out_dir = '/mnt/scratch/r21'
-out_dir = '/home/sjjoo/Documents/r21'
+#out_dir = '/mnt/scratch/r21'
+#out_dir = '/home/sjjoo/Documents/r21'
+out_dir = '/mnt/scratch/preK_out'
 
 if not os.path.isdir(out_dir):
     os.mkdir(out_dir)
@@ -35,7 +37,7 @@ out = prek_organize(raw_dir, out_dir)
     
 #%%
 os.chdir(out_dir)
-out = os.listdir()
+out = os.listdir(out_dir)
 
 for nn, ss in enumerate(out):  
     params = mnefun.Params(tmin=-0.1, tmax=40, n_jobs=18, t_adjust=-4e-3,
