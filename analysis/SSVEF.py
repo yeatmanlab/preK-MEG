@@ -13,14 +13,14 @@ import numpy as np
 import time
 import glob
 
-#%%
 
 # The following is called by list comprehension beginning after this function def
 # (see below)
 
 def GetSsnData( aPFNmPattern ):
+#%%
     # start with desired duration for each segment of the 20-sec trial
-    tDur = 5
+    tDur = 20
     fSplitEvent = lambda aEv: aEv + np.arange(0,20,tDur) * int(tSR)
     fRaw = lambda aFile: mne.io.Raw( aFile, allow_maxshield=True, preload=True )
     fFindEvents = lambda aRaw: mne.find_events( aRaw, stim_channel=['STI001'])
@@ -28,7 +28,7 @@ def GetSsnData( aPFNmPattern ):
     tRaws = mne.concatenate_raws( [ fRaw( tF ) for tF in tRawPFNms ] )
     tSR = tRaws.info['sfreq']
     tEvs = fFindEvents( tRaws )
-    tEvs = np.array([ [ i, 0, 5 ] for i in np.hstack([ fSplitEvent(E) for E in tEvs[:,0] ]) ])
+#    tEvs = np.array([ [ i, 0, 5 ] for i in np.hstack([ fSplitEvent(E) for E in tEvs[:,0] ]) ])
     
     #lowpass = 40.
     #highpass = 0.5
@@ -36,8 +36,10 @@ def GetSsnData( aPFNmPattern ):
     
     
     #%%
-    tRejCrit = dict(grad=4000e-13, mag=4e-12, eog = np.inf, ecg = np.inf)
-    
+    # default: dict(mag=1e-12)
+    tRejCrit = dict(mag=1e-11, eog = np.inf, ecg = np.inf)
+#    tRejCrit = dict(grad=np.inf, mag=np.inf, eog = np.inf, ecg = np.inf)
+#    
     # ECG and EOG projections
     tECG = mne.preprocessing.compute_proj_ecg( tRaws, n_grad=1, n_mag=1, n_eeg=0, average=False, reject=tRejCrit)[0]
     tEOG = mne.preprocessing.compute_proj_eog(tRaws, n_grad=1, n_mag=1, n_eeg=0, average=False, reject=tRejCrit)[0]
@@ -47,6 +49,9 @@ def GetSsnData( aPFNmPattern ):
     
     # create epochs
     tSsn = mne.Epochs(tRaws, tEvs, event_id=None, tmin=0., tmax=tDur, proj=True, baseline=None, reject=tRejCrit)
+    tSsn.plot( scalings=dict(grad=4000e-13, mag=4e-12), );
+    
+#%%
     tY = tSsn.get_data()
     tY = tY[ :, :, :-1 ]
     #plt.plot(np.mean(tY[:,201,:],axis=0),'r-')
@@ -90,17 +95,19 @@ def GetSsnData( aPFNmPattern ):
     plt.figure()
     #plt.plot( tXFrq[range(tNS/2)], np.transpose( abs( tMYFFT[tChP,range(tNS/2)] ) ) )
     plt.plot( tXFrq[range(tNS/2)], np.transpose( tYFFTT[tChP,range(tNS/2)] ) )
+#%%
     return tYFFTT
 
 
-#%%
 
 # Now we can execute the function for this list of args...:
 tPFNmPatterns = [
-        '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_1_2hz_0?_raw_sss.fif',
-        '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_1_5hz_0?_raw_sss.fif',
-        '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_2hz_0?_raw_sss.fif',
-        '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_2hz_no_flash_0?_raw_sss.fif'
+#        '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_1_2hz_0?_raw_sss.fif',
+#        '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_1_5hz_0?_raw_sss.fif',
+#        '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_2hz_0?_raw_sss.fif',
+#        '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_2hz_no_flash_0?_raw_sss.fif'
+        '/mnt/scratch/preK_out/prek_1451_190419/sss_fif/prek_1451_190419_0[1,2,3]_raw_sss.fif'
+#        '/mnt/scratch/preK_out/prek_1259_190419/sss_fif/prek_1259_190419_0[2,3,4]_raw_sss.fif'
 ]
 # using the following list comprehension:
 tResults = [ GetSsnData( fp ) for fp in tPFNmPatterns ]

@@ -11,7 +11,7 @@ import os
 #import glob
 os.chdir('/home/sjjoo/git/BrainTools/projects/NLR_MEG')
 from score import score
-from prek_organize import prek_organize
+from nlr_organizeMEG_mnefun import nlr_organizeMEG_mnefun
 import mne
 import time
 #import pycuda.driver 
@@ -19,36 +19,38 @@ import time
 
 t0 = time.time()
 
-#mne.set_config('MNE_USE_CUDA', 'true')
+mne.set_config('MNE_USE_CUDA', 'true')
 
-# At Possum projects folder mounted in the local disk
-#raw_dir = '/home/sjjoo/git/SSWEF/pilot/prek'
-raw_dir = '/mnt/scratch/preK_raw'
-
-# At local hard drive
+## At Possum projects folder mounted in the local disk
+#raw_dir = '/mnt/diskArray/projects/MEG/r21/raw'
+#raw_dir = '/mnt/scratch/preK_raw'
+#
+## At local hard drive
 #out_dir = '/mnt/scratch/r21'
-#out_dir = '/home/sjjoo/Documents/r21'
-out_dir = '/mnt/scratch/preK_out'
+#
+#if not os.path.isdir(out_dir):
+#    os.mkdir(out_dir)
 
-if not os.path.isdir(out_dir):
-    os.mkdir(out_dir)
-
-out = prek_organize(raw_dir, out_dir)
-    
+# os.chdir(out_dir) # cruft?
+#
 #%%
-os.chdir(out_dir)
-out = os.listdir(out_dir)
+out = ['190419']
+datadir = '/mnt/scratch/preK_raw/prek_1259/'
+os.chdir(datadir)
 
-for nn, ss in enumerate(out):  
-    params = mnefun.Params(tmin=-0.1, tmax=40, n_jobs=18, t_adjust=-4e-3,
+for n, s in enumerate(out):
+    print(s)    
+    
+for n, s in enumerate(out):
+    params = mnefun.Params(tmin=-0.1, tmax=40, n_jobs=18, # t_adjust was -39e-3
                        decim=2, n_jobs_mkl=1, proj_sfreq=250,
                        n_jobs_fir='cuda', n_jobs_resample='cuda',
                        filter_length='5s', epochs_type='fif', lp_cut=40.,
 #                       hp_cut=0.15,hp_trans=0.1,
                        bmin=-0.1, auto_bad=20., plot_raw=False) 
 #                       bem_type = '5120-5120-5120')
-    params.subjects = [ss]
-    params.sss_type = 'python' # Python runs this in mne rather than through maxfilter
+    params.subjects = [s]
+    params.sss_type = 'python'
     params.sss_regularize = 'in' # 'in' by default
     params.tsss_dur = 16. # 60 for adults with not much head movements. This was set to 6.
     params.st_correlation = 0.98
@@ -56,6 +58,8 @@ for nn, ss in enumerate(out):
     params.auto_bad_meg_thresh = 10 # THIS SHOULD NOT BE SO HIGH!
 
     params.trans_to = 'median'
+
+    params.t_adjust = -44e-3 # time delay from the trigger. It's due to set trigger function. I don't know why...
     
     #print("Running " + str(len(params.subjects)) + ' Subjects') 
 #    print("\n\n".join(params.subjects))
@@ -67,11 +71,8 @@ for nn, ss in enumerate(out):
     
     params.structurals =[None] * len(params.subjects)
     
-    if params.subjects[0] == 'prek_1451_190419':
-        params.run_names = ['%s_01', '%s_02', '%s_03', '%s_04']
-    else:
-#        params.run_names = ['%s_01', '%s_02', '%s_03', '%s_04', '%s_05']
-        params.run_names = [ '%s_02', '%s_03', '%s_04', '%s_05']
+
+    params.run_names = ['%s_01', '%s_02', '%s_03', '%s_04']
     
     
     params.dates = [(2014, 0, 00)] * len(params.subjects)
@@ -153,7 +154,7 @@ for nn, ss in enumerate(out):
         # channels.
         gen_ssp=False,       # Generate SSP vectors
         apply_ssp=False,     # Apply SSP vectors and filtering
-#        plot_psd=False,      # Plot raw data power spectra
+        plot_psd=False,      # Plot raw data power spectra
         write_epochs=False,  # Write epochs to disk
         gen_covs=False,      # Generate covariances
     
