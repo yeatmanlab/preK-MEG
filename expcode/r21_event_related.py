@@ -87,6 +87,10 @@ imtype = []
 for i in range(1, len(imagedirs)+1):
     imtype.extend(np.tile(i, nimages[i-1]))
     rng.shuffle(imtype)
+    
+# The fourth category should not be image 1 since it is the one people respond to
+while imtype[0] == 4:
+    rng.shuffle(imtype)
 
 # Build the path structure to each image in each image directory. Each image
 # category is an entry into the list. The categories are in sequential order 
@@ -163,6 +167,7 @@ with ExperimentController('ShowImages', full_screen=True,version='dev') as ec:
     # Show blank briefly before intro screen
     ec.flip()
     ec.wait_secs(0.1)
+    ec.toggle_cursor(False)
 
     # Display instruction (7 seconds).
     # They will be different depending on the run number
@@ -172,7 +177,7 @@ with ExperimentController('ShowImages', full_screen=True,version='dev') as ec:
     #     t = visual.Text(ec,text='Button press for fake word',pos=[0,.1],font_size=40,color='k') 
         
     introimg_buffer = np.array(Image.open(introim), np.uint8) / 255.
-    t = visual.RawImage(ec, introimg_buffer, scale=0.5)
+    t = visual.RawImage(ec, introimg_buffer, scale=0.4)
     t.draw()
     fix.draw() # fixation mark on intro screen
     ec.flip()
