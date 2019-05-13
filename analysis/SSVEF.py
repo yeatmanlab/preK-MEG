@@ -37,8 +37,9 @@ def GetSsnData( aPFNmPattern ):
     
     #%%
     # default: dict(mag=1e-12)
-    tRejCrit = dict(mag=1e-11, eog = np.inf, ecg = np.inf)
-#    tRejCrit = dict(grad=np.inf, mag=np.inf, eog = np.inf, ecg = np.inf)
+#    tRejCrit = dict(grad=4000e-13, mag=4e-12, eog=np.inf, ecg=np.inf)
+#    tRejCrit = dict(grad=8000e-13, mag=8e-12, eog=np.inf, ecg=np.inf)
+    tRejCrit = dict(grad=np.inf, mag=np.inf, eog = np.inf, ecg = np.inf)
 #    
     # ECG and EOG projections
     tECG = mne.preprocessing.compute_proj_ecg( tRaws, n_grad=1, n_mag=1, n_eeg=0, average=False, reject=tRejCrit)[0]
@@ -49,7 +50,7 @@ def GetSsnData( aPFNmPattern ):
     
     # create epochs
     tSsn = mne.Epochs(tRaws, tEvs, event_id=None, tmin=0., tmax=tDur, proj=True, baseline=None, reject=tRejCrit)
-#    tSsn.plot( scalings=dict(grad=4000e-13, mag=4e-12), );
+    tSsn.plot( scalings=dict(grad=4000e-13, mag=4e-12) );
     
 #%%
     tY = tSsn.get_data()
@@ -98,17 +99,17 @@ def GetSsnData( aPFNmPattern ):
     
     
     
-    #%%
-    
-    # Amplitude histogram from mean of seleted channels.
-    
-    #tChP = mne.pick_types(tSsn.info, meg='grad', eeg=False, eog=False, selection=['MEG0732']) # Channel Pick
-    tChP = mne.pick_types(tSsn.info, meg='grad', eeg=False, eog=False, selection=['MEG1223']) # Channel Pick
-    plt.figure()
-    #plt.plot( tXFrq[range(tNS/2)], np.transpose( abs( tMYFFT[tChP,range(tNS/2)] ) ) )
-    plt.plot( tXFrq[range(int(tNS/2))], np.transpose( tYFFTT[tChP,range(int(tNS/2))] ) )
-    
-    
+#    #%%
+#    
+#    # Amplitude histogram from mean of seleted channels.
+#    
+#    #tChP = mne.pick_types(tSsn.info, meg='grad', eeg=False, eog=False, selection=['MEG0732']) # Channel Pick
+#    tChP = mne.pick_types(tSsn.info, meg='grad', eeg=False, eog=False, selection=['MEG1223']) # Channel Pick
+#    plt.figure()
+#    #plt.plot( tXFrq[range(tNS/2)], np.transpose( abs( tMYFFT[tChP,range(tNS/2)] ) ) )
+#    plt.plot( tXFrq[range(int(tNS/2))], np.transpose( tYFFTT[tChP,range(int(tNS/2))] ) )
+#    
+#    
     
     
 #%%
