@@ -31,7 +31,7 @@ introim = os.path.join(basedir,'AlienAdventures-01.jpg')
 """ Words, False fonts (Korean), Faces, Objects """
 imagedirs = ['word', 'child', 'car', 'alien']
 
-nimages = [30, 30, 30, 10]  # number of images in each category
+nimages = [30, 30, 30, 10]  # number of images in each category. THERE MUST BE AT LEAST THIS MANY IMAGES IN THE DIR
 if len(nimages) == 1: # Does nothing....
     nimages = np.repeat(nimages, len(imagedirs))
 n_totalimages = sum(nimages)
@@ -87,38 +87,24 @@ imtype = []
 for i in range(1, len(imagedirs)+1):
     imtype.extend(np.tile(i, nimages[i-1]))
     rng.shuffle(imtype)
+    
+# The fourth category should not be image 1 since it is the one people respond to
+while imtype[0] == 4:
+    rng.shuffle(imtype)
 
 # Build the path structure to each image in each image directory. Each image
 # category is an entry into the list. The categories are in sequential order 
 # matching imorder, but the images within each category are random
-templist = []
-tempnumber = []
-c = -1
-for imname in imagedirs:
-    c = c+1
-    # Temporary variable with image names in order
-    tmp = sorted(glob.glob(os.path.join(basedir, imname, '*')))
-    # Randomly grab nimages from the list
-    # n = rng.randint(0, len(tmp), nimages[c])
-    temp_n = np.arange(0,len(tmp))
-    rng.shuffle(temp_n)
-    n = temp_n[0:nimages[c]]
-    tmp2 = []
-    for i in n:
-        tmp2.append(tmp[i])
-    # Add the random image list to an entry in imagelist
-    templist.extend(tmp2)
-    # record the image number
-    tempnumber.extend(n)
-    assert len(templist[-1]) > 0
-temp_list = np.arange(0,len(templist))
-rng.shuffle(temp_list)
 
 imagelist = []
-imnumber = []
-for i in temp_list:
-    imagelist.append(templist[i])
-    imnumber.append(tempnumber[i])
+for imname in imtype: #imagedirs:
+    # Temporary variable with image names in order
+    tmp = sorted(glob.glob(os.path.join(basedir, imagedirs[imname-1], '*')))
+    # Shuffle the list of images
+    # temp_n = np.arange(0,len(tmp))
+    # rng.shuffle(temp_n)
+    rng.shuffle(tmp)
+    imagelist.append(tmp[0])
     
 # Start instance of the experiment controller
 with ExperimentController('ShowImages', full_screen=True,version='dev') as ec:
@@ -181,6 +167,7 @@ with ExperimentController('ShowImages', full_screen=True,version='dev') as ec:
     # Show blank briefly before intro screen
     ec.flip()
     ec.wait_secs(0.1)
+    ec.toggle_cursor(False)
 
     # Display instruction (7 seconds).
     # They will be different depending on the run number
@@ -190,7 +177,7 @@ with ExperimentController('ShowImages', full_screen=True,version='dev') as ec:
     #     t = visual.Text(ec,text='Button press for fake word',pos=[0,.1],font_size=40,color='k') 
         
     introimg_buffer = np.array(Image.open(introim), np.uint8) / 255.
-    t = visual.RawImage(ec, introimg_buffer, scale=0.5)
+    t = visual.RawImage(ec, introimg_buffer, scale=0.4)
     t.draw()
     fix.draw() # fixation mark on intro screen
     ec.flip()
@@ -225,7 +212,7 @@ with ExperimentController('ShowImages', full_screen=True,version='dev') as ec:
                 
         if frame >= frame_img[trial] and frame < frame_img[trial] + img_frames[trial]:
             if frame == frame_img[trial]:
-                ec.write_data_line('imnumber', imnumber[trial])
+                ec.write_data_line('imnumber', imagelist[trial])
                 ec.write_data_line('imtype', imtype[trial])
                 trig = imtype[trial]
                 trigger = 1
@@ -239,7 +226,7 @@ with ExperimentController('ShowImages', full_screen=True,version='dev') as ec:
             
 #            imageframe.append(frame)
             if frame == frame_img[trial] + img_frames[trial] - 1:
-                if trial < len(imnumber)-1:
+                if trial < len(imagelist)-1:
                     trial += 1
         else:
             fix.set_colors(colors=(fix_color[flicker],fix_color[flicker]))
