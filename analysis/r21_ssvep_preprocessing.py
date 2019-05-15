@@ -9,7 +9,7 @@ import numpy as np
 import mnefun
 import os
 #import glob
-os.chdir('/home/sjjoo/git/BrainTools/projects/NLR_MEG')
+#os.chdir('/home/sjjoo/git/BrainTools/projects/NLR_MEG')
 from score import score
 from prek_organize import prek_organize
 import mne
@@ -33,11 +33,14 @@ out_dir = '/mnt/scratch/preK_out'
 if not os.path.isdir(out_dir):
     os.mkdir(out_dir)
 
-out = prek_organize(raw_dir, out_dir)
-    
-#%%
 os.chdir(out_dir)
-out = os.listdir(out_dir)
+
+out = prek_organize(raw_dir, out_dir, ['jason_yeatman'])
+out = out[0]
+#out = prek_organize(raw_dir, out_dir)
+#out = os.listdir(out_dir)
+
+#%%
 
 for nn, ss in enumerate(out):  
     params = mnefun.Params(tmin=-0.1, tmax=40, n_jobs=18, t_adjust=-4e-3,
@@ -67,11 +70,13 @@ for nn, ss in enumerate(out):
     
     params.structurals =[None] * len(params.subjects)
     
+    params.run_names = ['%s_01', '%s_02', '%s_03', '%s_04', '%s_05']
+    if params.subjects[0] == 'jason_yeatman_190514':
+        params.run_names = ['%s_01', '%s_02', '%s_03', '%s_04'] # 1st file combines two runs
     if params.subjects[0] == 'prek_1451_190419':
-        params.run_names = ['%s_01', '%s_02', '%s_03', '%s_04']
-    else:
-#        params.run_names = ['%s_01', '%s_02', '%s_03', '%s_04', '%s_05']
-        params.run_names = [ '%s_02', '%s_03', '%s_04', '%s_05']
+        params.run_names = ['%s_01', '%s_02', '%s_03', '%s_04'] # 1st file combines two runs
+    elif params.subjects[0] == 'prek_1259_190419':
+        params.run_names = [ '%s_02', '%s_03', '%s_04', '%s_05'] # '%s_01' has BAD_AQ_SKIP
     
     
     params.dates = [(2014, 0, 00)] * len(params.subjects)

@@ -37,9 +37,10 @@ def GetSsnData( aPFNmPattern ):
     
     #%%
     # default: dict(mag=1e-12)
+#    tRejCrit = dict(grad=3000e-13, mag=3e-12, eog=np.inf, ecg=np.inf)
 #    tRejCrit = dict(grad=4000e-13, mag=4e-12, eog=np.inf, ecg=np.inf)
-#    tRejCrit = dict(grad=8000e-13, mag=8e-12, eog=np.inf, ecg=np.inf)
-    tRejCrit = dict(grad=np.inf, mag=np.inf, eog = np.inf, ecg = np.inf)
+    tRejCrit = dict(grad=8000e-13, mag=8e-12, eog=np.inf, ecg=np.inf)
+#    tRejCrit = dict(grad=np.inf, mag=np.inf, eog = np.inf, ecg = np.inf)
 #    
     # ECG and EOG projections
     tECG = mne.preprocessing.compute_proj_ecg( tRaws, n_grad=1, n_mag=1, n_eeg=0, average=False, reject=tRejCrit)[0]
@@ -50,7 +51,8 @@ def GetSsnData( aPFNmPattern ):
     
     # create epochs
     tSsn = mne.Epochs(tRaws, tEvs, event_id=None, tmin=0., tmax=tDur, proj=True, baseline=None, reject=tRejCrit)
-    tSsn.plot( scalings=dict(grad=4000e-13, mag=4e-12) );
+#    tSsn.plot( scalings=dict(grad=4000e-13, mag=4e-12) );
+#    tSsn.plot();
     
 #%%
     tY = tSsn.get_data()
@@ -91,14 +93,21 @@ def GetSsnData( aPFNmPattern ):
     
     # Amplitude histogram from seleted channel.
     
-    #tChP = mne.pick_types(tSsn.info, meg='grad', eeg=False, eog=False, selection=['MEG0732']) # Channel Pick
-    tChP = mne.pick_types(tSsn.info, meg='grad', eeg=False, eog=False, selection=['MEG1223']) # Channel Pick
-    plt.figure()
-    #plt.plot( tXFrq[range(tNS/2)], np.transpose( abs( tMYFFT[tChP,range(tNS/2)] ) ) )
-    plt.plot( tXFrq[range(int(tNS/2))], np.transpose( tYFFTT[tChP,range(int(tNS/2))] ) )
+#    tChNm = 'MEG0432'; # for jason_yeatman
+##    tChNm = 'MEG1223'; # for prek_1259
+##    tChNm = 'MEG1212'; # for prek_1451
+#    #tChP = mne.pick_types(tSsn.info, meg='grad', eeg=False, eog=False, selection=['MEG0732']) # Channel Pick
+#    tChP = mne.pick_types(tSsn.info, meg='grad', eeg=False, eog=False, selection=[tChNm]) # Channel Pick
+#    plt.figure()
+#    #plt.plot( tXFrq[range(tNS/2)], np.transpose( abs( tMYFFT[tChP,range(tNS/2)] ) ) )
+#    plt.plot( tXFrq[range(int(tNS/2))], np.transpose( tYFFTT[tChP,range(int(tNS/2))] ) )
     
+    # plot five freqs centered on tFrqP, as function of channel number
+    # red trace corresponds to tFrqP
     
-    
+    plt.figure();
+    plt.plot( tChP, tYFFTT[tChP,(tFrqP-2):(tFrqP+3)] );
+   
 #    #%%
 #    
 #    # Amplitude histogram from mean of seleted channels.
@@ -124,7 +133,8 @@ tPFNmPatterns = [
 #        '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_2hz_0?_raw_sss.fif',
 #        '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_2hz_no_flash_0?_raw_sss.fif'
 #        '/mnt/scratch/preK_out/prek_1451_190419/sss_fif/prek_1451_190419_0[1,2,3]_raw_sss.fif'
-        '/mnt/scratch/preK_out/prek_1259_190419/sss_fif/prek_1259_190419_0[2,3,4]_raw_sss.fif'
+        '/mnt/scratch/preK_out/prek_1259_190419/sss_fif/prek_1259_190419_0[1,2,3,4]_raw_sss.fif'
+#        '/mnt/scratch/preK_out/jason_yeatman_190514/sss_fif/jason_yeatman_190514_0[1,2]_raw_sss.fif'
 ]
 # using the following list comprehension:
 tResults = [ GetSsnData( fp ) for fp in tPFNmPatterns ]
