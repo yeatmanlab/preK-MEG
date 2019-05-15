@@ -48,7 +48,7 @@ pad_time = init_time + end_time
 # ISIs to be used. Must divide evenly into nimages
 #isis = np.arange(1., 1.51, 0.1) #np.arange(.62, .84, .02)
 #imduration = 0.8  # Image duration 800 ms
-s = .5  # Image scale
+s = .8  # Image scale
 
 # Create a vector of ISIs in a random order. One ISI for each image
 rng = np.random.RandomState(int(time.time()))
