@@ -79,11 +79,13 @@ def GetSsnData( aPFNmPattern ):
     tChPI = mne.pick_info(tSsn.info, sel=tChP) # Channel Pick Info
     
     tFrqP = list(tXFrq).index( 6.0 ) # Frequency Pick, in Hz
+#    tFrqP = list(tXFrq).index( 2.0 ) # Frequency Pick, in Hz
+#    tFH, tAHs = plt.subplots(1,3)
+#    tVMax = 2.0e-13
+#    mne.viz.plot_topomap( abs(tMYFFT[tChP,tFrqP-1]), tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[0], vmax=tVMax )
+#    mne.viz.plot_topomap( abs(tMYFFT[tChP,tFrqP]), tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[1], vmax=tVMax )
+#    mne.viz.plot_topomap( abs(tMYFFT[tChP,tFrqP+1]), tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[2], vmax=tVMax )
     tFH, tAHs = plt.subplots(1,3)
-    #tVMax = 2.0e-13
-    #mne.viz.plot_topomap( abs(tMYFFT[tChP,tFrqP-1]), tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[0], vmax=tVMax )
-    #mne.viz.plot_topomap( abs(tMYFFT[tChP,tFrqP]), tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[1], vmax=tVMax )
-    #mne.viz.plot_topomap( abs(tMYFFT[tChP,tFrqP+1]), tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[2], vmax=tVMax )
     tVMax = 10
     mne.viz.plot_topomap( tYFFTT[tChP,tFrqP-1], tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[0], vmax=tVMax )
     mne.viz.plot_topomap( tYFFTT[tChP,tFrqP], tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[1], vmax=tVMax )
@@ -98,8 +100,10 @@ def GetSsnData( aPFNmPattern ):
 ##    tChNm = 'MEG1212'; # for prek_1451
 #    #tChP = mne.pick_types(tSsn.info, meg='grad', eeg=False, eog=False, selection=['MEG0732']) # Channel Pick
 #    tChP = mne.pick_types(tSsn.info, meg='grad', eeg=False, eog=False, selection=[tChNm]) # Channel Pick
+    
 #    plt.figure()
-#    #plt.plot( tXFrq[range(tNS/2)], np.transpose( abs( tMYFFT[tChP,range(tNS/2)] ) ) )
+#    plt.plot( tXFrq[range(tNS/2)], np.transpose( abs( tMYFFT[tChP,range(tNS/2)] ) ) )
+    
 #    plt.plot( tXFrq[range(int(tNS/2))], np.transpose( tYFFTT[tChP,range(int(tNS/2))] ) )
     
     # plot five freqs centered on tFrqP, as function of channel number
@@ -107,6 +111,9 @@ def GetSsnData( aPFNmPattern ):
     
     plt.figure();
     plt.plot( tChP, tYFFTT[tChP,(tFrqP-2):(tFrqP+3)] );
+    
+#    plt.figure();
+#    plt.plot( tChP, abs(tMYFFT[tChP,(tFrqP-2):(tFrqP+3)]) );
    
 #    #%%
 #    
@@ -134,7 +141,7 @@ tPFNmPatterns = [
 #        '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_2hz_no_flash_0?_raw_sss.fif'
 #        '/mnt/scratch/preK_out/prek_1451_190419/sss_fif/prek_1451_190419_0[1,2,3]_raw_sss.fif'
         '/mnt/scratch/preK_out/prek_1259_190419/sss_fif/prek_1259_190419_0[1,2,3,4]_raw_sss.fif'
-#        '/mnt/scratch/preK_out/jason_yeatman_190514/sss_fif/jason_yeatman_190514_0[1,2]_raw_sss.fif'
+#        '/mnt/scratch/preK_out/jason_yeatman_190514/sss_fif/jason_yeatman_190514_0[1,2,4]_raw_sss.fif'
 ]
 # using the following list comprehension:
 tResults = [ GetSsnData( fp ) for fp in tPFNmPatterns ]
