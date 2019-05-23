@@ -85,11 +85,11 @@ def GetSsnData( aPFNmPattern ):
 #    mne.viz.plot_topomap( abs(tMYFFT[tChP,tFrqP-1]), tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[0], vmax=tVMax )
 #    mne.viz.plot_topomap( abs(tMYFFT[tChP,tFrqP]), tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[1], vmax=tVMax )
 #    mne.viz.plot_topomap( abs(tMYFFT[tChP,tFrqP+1]), tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[2], vmax=tVMax )
-    tFH, tAHs = plt.subplots(1,3)
+    tFH, tAHs = plt.subplots(1,3);
     tVMax = 10
-    mne.viz.plot_topomap( tYFFTT[tChP,tFrqP-1], tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[0], vmax=tVMax )
-    mne.viz.plot_topomap( tYFFTT[tChP,tFrqP], tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[1], vmax=tVMax )
-    mne.viz.plot_topomap( tYFFTT[tChP,tFrqP+1], tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[2], vmax=tVMax )
+    mne.viz.plot_topomap( tYFFTT[tChP,tFrqP-1], tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[0], vmax=tVMax );
+    mne.viz.plot_topomap( tYFFTT[tChP,tFrqP], tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[1], vmax=tVMax );
+    mne.viz.plot_topomap( tYFFTT[tChP,tFrqP+1], tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[2], vmax=tVMax );
     
     #%%
     
@@ -109,8 +109,25 @@ def GetSsnData( aPFNmPattern ):
     # plot five freqs centered on tFrqP, as function of channel number
     # red trace corresponds to tFrqP
     
-    plt.figure();
-    plt.plot( tChP, tYFFTT[tChP,(tFrqP-2):(tFrqP+3)] );
+    tFH = plt.figure();
+    tGS = tFH.add_gridspec(3,5);
+    fSubPlot = lambda aGS: tFH.add_subplot(aGS);
+    tAHs = [ fSubPlot(x) for x in [ tGS[0,0], tGS[0,1], tGS[0,2], tGS[0,3], tGS[0,4], tGS[1:,:] ] ];
+    
+    fTopoPlot = lambda i: mne.viz.plot_topomap( tYFFTT[tChP,tFrqP+i], tChPI, names = ch_names[tChP], show_names=False, axes=tAHs[i+2], vmax=tVMax );
+    tImHs = [ fTopoPlot(i) for i in [ -2, -1, 0, 1, 2 ] ];
+    fAxTitle = lambda i: tAHs[i+2].set_title( str( tXFrq[tFrqP+i] ) + " Hz" );
+    tImHs = [ fAxTitle(i) for i in [ -2, -1, 0, 1, 2 ] ];
+   
+    
+    tAHs[-1].plot( tChP, tYFFTT[tChP,(tFrqP-2):(tFrqP+3)] );
+    tAHs[-1].legend( [ str(x)+" Hz" for x in tXFrq[(tFrqP-2):(tFrqP+3)] ] );
+    tAHs[-1].set_xlabel('Channel ID Number')
+    tAHs[-1].set_ylabel('Tcirc score')
+    
+   
+#    plt.figure();
+#    plt.plot( tChP, tYFFTT[tChP,(tFrqP-2):(tFrqP+3)] );
     
 #    plt.figure();
 #    plt.plot( tChP, abs(tMYFFT[tChP,(tFrqP-2):(tFrqP+3)]) );
