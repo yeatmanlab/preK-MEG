@@ -9,7 +9,7 @@ import numpy as np
 import mnefun
 import os
 #import glob
-#os.chdir('/home/sjjoo/git/BrainTools/projects/NLR_MEG')
+os.chdir('/home/sjjoo/git/BrainTools/projects/NLR_MEG')
 from score import score
 from prek_organize import prek_organize
 import mne
@@ -24,6 +24,7 @@ t0 = time.time()
 # At Possum projects folder mounted in the local disk
 #raw_dir = '/home/sjjoo/git/SSWEF/pilot/prek'
 raw_dir = '/mnt/scratch/preK_raw'
+#raw_dir = '/mnt/jaba/meg/prek'
 
 # At local hard drive
 #out_dir = '/mnt/scratch/r21'
@@ -35,10 +36,19 @@ if not os.path.isdir(out_dir):
 
 os.chdir(out_dir)
 
-out = prek_organize(raw_dir, out_dir, ['jason_yeatman'])
-out = out[0]
+#out = prek_organize(raw_dir, out_dir, ['jason_yeatman'])
+#out = out[0]
+
 #out = prek_organize(raw_dir, out_dir)
 #out = os.listdir(out_dir)
+
+# pending
+
+out = ['prek_1112'];
+
+# the following have completed preprocessing
+#out = ['prek_1691','prek_1762','prek_1964','prek_1676','prek_1916','prek_1901',
+#       'prek_1951','prek_1112',]; 
 
 #%%
 
@@ -70,13 +80,17 @@ for nn, ss in enumerate(out):
     
     params.structurals =[None] * len(params.subjects)
     
-    params.run_names = ['%s_01', '%s_02', '%s_03', '%s_04', '%s_05']
-    if params.subjects[0] == 'jason_yeatman_190514':
-        params.run_names = ['%s_01', '%s_02', '%s_03', '%s_04'] # 1st file combines two runs
-    if params.subjects[0] == 'prek_1451_190419':
-        params.run_names = ['%s_01', '%s_02', '%s_03', '%s_04'] # 1st file combines two runs
-    elif params.subjects[0] == 'prek_1259_190419':
-        params.run_names = [ '%s_02', '%s_03', '%s_04', '%s_05'] # '%s_01' has BAD_AQ_SKIP
+#    # this really needs to be fixed...
+#    params.run_names = ['%s_01', '%s_02', '%s_03', '%s_04', '%s_05']
+#    if params.subjects[0] == 'jason_yeatman_190514':
+#        params.run_names = ['%s_01', '%s_02', '%s_03', '%s_04'] # 1st file combines two runs
+#    if params.subjects[0] == 'prek_1451_190419':
+#        params.run_names = ['%s_01', '%s_02', '%s_03', '%s_04'] # 1st file combines two runs
+#    elif params.subjects[0] == 'prek_1259_190419':
+#        params.run_names = [ '%s_02', '%s_03', '%s_04', '%s_05'] # '%s_01' has BAD_AQ_SKIP
+        
+#    params.run_names = ['%s_01', '%s_02' ]
+    params.run_names = ['%s_pskt_01_pre', '%s_pskt_02_pre' ]
     
     
     params.dates = [(2014, 0, 00)] * len(params.subjects)
@@ -86,6 +100,8 @@ for nn, ss in enumerate(out):
     params.on_missing = 'warning'
     #params.acq_ssh = 'kambiz@minea.ilabs.uw.edu'  # minea - 172.28.161.8
     #params.acq_dir = '/sinuhe/data03/jason_words'
+    params.acq_ssh = 'mpettet@nara.ilabs.uw.edu'  # minea - 172.28.161.8
+    params.acq_dir = '/mnt/jaba/meg/prek'
 
 #    params.acq_ssh = 'jason@minea.ilabs.uw.edu'  # minea - 172.28.161.8
 #    params.acq_dir = '/sinuhe/data03/jason_words'
@@ -141,6 +157,8 @@ for nn, ss in enumerate(out):
         [],
         ]
     # Set what will run
+    
+#    try: 
     mnefun.do_processing(
         params,
         fetch_raw=False,     # Fetch raw recording files from acquisition machine
@@ -148,9 +166,9 @@ for nn, ss in enumerate(out):
     
         # Before running SSS, make SUBJ/raw_fif/SUBJ_prebad.txt file with
         # space-separated list of bad MEG channel numbers
-        push_raw=True,      # Push raw files and SSS script to SSS workstation
+        push_raw=False,      # Push raw files and SSS script to SSS workstation
         do_sss=True,        # Run SSS remotely (on sws) or locally with mne-python
-        fetch_sss=True,     # Fetch SSSed files from SSS workstation
+        fetch_sss=False,     # Fetch SSSed files from SSS workstation
         do_ch_fix=False,     # Fix channel ordering
     
         # Before running SSP, examine SSS'ed files and make
@@ -168,5 +186,40 @@ for nn, ss in enumerate(out):
         gen_report=False,    # Write mne report html of results to disk
         print_status=False,  # Print completeness status update
     )
+#    except:
+#        continue
 
 print('%i sec' % (time.time() - t0,))
+
+
+
+
+
+
+
+##%%
+### the following sequence, when executed from raw_fif subdir, can be used to build
+### the prebad.txt file; first, create the helper function:
+#fRaw = lambda aFile: mne.io.Raw( aFile, allow_maxshield=True, preload=True )
+#
+## then, enter:
+#tR = fRaw('prek_1762_pskt_01_pre_raw.fif'); # any raw_fif file should work
+#tR.plot(scalings=dict(mag=1e-10, grad=1e-8),n_channels=50);
+## then select bad channels in the raw plot figure; when finished, you don't need
+## to save anything, it's tracked on the fly; then, enter the following,
+## repeating as needed...
+#tPrebadPFNm = '_'.join([ tR.info['subject_info'][x] for x in ['last_name','first_name'] ]+['prebad.txt']).lower()
+#
+#
+#tF=open(tPrebadPFNm,'w'); tF.writelines( [ x+'\n' for x in tR.info['bads'] ] ); tF.close();
+
+
+
+
+
+
+
+
+
+
+

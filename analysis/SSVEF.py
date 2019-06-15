@@ -132,7 +132,7 @@ def GetSsnData( aPFNmPattern ):
     return tYFFTT
 
 
-
+#%%
 # Now we can execute the function for this list of args...:
 tPFNmPatterns = [
 #        '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_1_2hz_0?_raw_sss.fif',
@@ -140,8 +140,9 @@ tPFNmPatterns = [
 #        '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_2hz_0?_raw_sss.fif',
 #        '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_2hz_no_flash_0?_raw_sss.fif'
 #        '/mnt/scratch/preK_out/prek_1451_190419/sss_fif/prek_1451_190419_0[1,2,3]_raw_sss.fif'
-        '/mnt/scratch/preK_out/prek_1259_190419/sss_fif/prek_1259_190419_0[1,2,3,4]_raw_sss.fif'
+#        '/mnt/scratch/preK_out/prek_1259_190419/sss_fif/prek_1259_190419_0[1,2,3,4]_raw_sss.fif'
 #        '/mnt/scratch/preK_out/jason_yeatman_190514/sss_fif/jason_yeatman_190514_0[1,2,4]_raw_sss.fif'
+        '/mnt/scratch/preK_out/prek_1964/sss_fif/prek_1964_pskt_0[1,2]_pre_raw_sss.fif'
 ]
 # using the following list comprehension:
 tResults = [ GetSsnData( fp ) for fp in tPFNmPatterns ]
@@ -168,3 +169,5 @@ tResults = [ GetSsnData( fp ) for fp in tPFNmPatterns ]
 #    tPFNm = '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_2hz_no_flash_0' + i + '_raw_sss.fif' # Path File Name
 #    tRaws = tRaws + [ mne.io.Raw( tPFNm, allow_maxshield=True, preload=True ) ]
 #
+
+

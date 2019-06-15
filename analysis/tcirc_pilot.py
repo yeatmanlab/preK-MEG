@@ -8,10 +8,11 @@ Created on Mon Jun  3 13:07:42 2019
 
 # following on from xdawn_assr:
 
-tED = epochs;
+#tED = epochs; # from xdawn_assr
+tED = tSsn; # from SSVEF
 tSR = tED.info['sfreq'];
 tY = tED.get_data();
-tY = tY[ :, :, int(0.5*tSR):int(1.0*tSR) ];
+#tY = tY[ :, :, int(0.5*tSR):int(1.0*tSR) ]; # from xdawn_assr
 tNTrl = tY.shape[0];
 tNS = tY.shape[-1]; # Number of Samples|Freqs
 tXFrq = np.round( np.fft.fftfreq( tNS, 1.0/tSR ), 2 ) # X Freq values for horizontal axis of plot
@@ -27,7 +28,8 @@ ch_names = np.array(tED.info['ch_names'])
 tChP = mne.pick_types(tED.info, meg='mag', eeg=False, eog=False) # Channel Picks
 tChPI = mne.pick_info(tED.info, sel=tChP) # Channel Pick Info
 
-tFrqP = list(tXFrq).index( 40.0 ) # Frequency Pick, in Hz
+#tFrqP = list(tXFrq).index( 40.0 ) # Frequency Pick, in Hz
+tFrqP = list(tXFrq).index( 6.0 ) # Frequency Pick, in Hz
 
 tVMax = 10
 tFH = plt.figure();
