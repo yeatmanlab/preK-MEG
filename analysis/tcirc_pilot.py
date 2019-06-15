@@ -24,7 +24,7 @@ tYFFTV = np.mean( np.stack( ( np.var( np.real(tYFFT), 0 ), np.var( np.imag(tYFFT
 tYFFTT = abs(tMYFFT) / np.sqrt( tYFFTV / ( tNTrl - 1 ) ) # these are the Tcirc scores
 
 ch_names = np.array(tED.info['ch_names'])
-tChP = mne.pick_types(tED.info, meg='grad', eeg=False, eog=False) # Channel Picks
+tChP = mne.pick_types(tED.info, meg='mag', eeg=False, eog=False) # Channel Picks
 tChPI = mne.pick_info(tED.info, sel=tChP) # Channel Pick Info
 
 tFrqP = list(tXFrq).index( 40.0 ) # Frequency Pick, in Hz
