@@ -46,10 +46,19 @@ print('Fitting Xdawn')
 xd = mne.preprocessing.Xdawn(n_components=1, signal_cov=signal_cov,
                              correct_overlap=False, reg='ledoit_wolf')
 xd.fit(epochs)
-xd.apply(epochs)['Auditory'].average().plot_topo()
+
+#xd.apply(epochs)['Auditory'].average().plot_topo()
 
 tEI = epochs.info;
 tEI['sfreq']=1; # we want each second to represent a different row of filter matrix
-mne.EvokedArray( xd.filters_['Auditory'], tEI ).plot_topomap(times=[0,1,2,3,4]);
-figure(); plot( epochs.times, np.dot( xd.filters_['Auditory'][[1,2,3,4,0],:], epochs.average().data ).T );
-# figure editor can be used to assign contrasting color and linewidth to last trace
+
+#mne.EvokedArray( xd.filters_['Auditory'], tEI ).plot_topomap(times=[0,1,2,3,4]);
+#figure(); plot( epochs.times, np.dot( xd.filters_['Auditory'][[1,2,3,4,0],:], epochs.average().data ).T );
+## figure editor can be used to assign contrasting color and linewidth to last trace
+
+tNoi = np.dot( xd.filters_['Auditory'][1:,:].mean(0), epochs.average().data ).T;
+tSig = np.dot( xd.filters_['Auditory'][0,:], epochs.average().data ).T;
+tSNTopo = np.array( [ xd.filters_['Auditory'][:,0].T, xd.filters_['Auditory'][:,1:].mean(1).T ] ).T;
+mne.EvokedArray( tSNTopo, tEI ).plot_topomap(times=[0,1]);
+figure(); plot( epochs.times, np.array([ tSig, tNoi ]).T ); legend( [ 'signal', 'noise' ] );
+
