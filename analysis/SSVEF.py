@@ -14,6 +14,10 @@ import time
 import glob
 
 
+def IfMkDir( aPNm ):
+    if not os.path.exists( aPNm ):
+        os.mkdir( aPNm )
+
 # The following is called by list comprehension beginning after this function def
 # (see below)
 
@@ -77,9 +81,15 @@ def GetSsnData( aPFNmPattern ):
     
     #tYFFTT.plot_joint(times=[5.95,6.00,6.05],ts_args=dict(xlim=(5.75,6.25),scalings=dict(grad=1, mag=1),units=dict(grad='Tcirc', mag='Tcirc')))
     
+    fGrandParentPNm = lambda x: os.path.dirname(os.path.dirname( x ) )
+    tSbjDir = fGrandParentPNm( aPFNmPattern )
+    tSbjID = os.path.basename( tSbjDir )
+    IfMkDir( os.path.join( tSbjDir, 'tcirc_fif' ) )
+    tTcircPFNm = os.path.join( tSbjDir, 'tcirc_fif', tSbjID + '_tcirc.fif' )
     
-    return tYFFTT
+    tYFFTT.save( tTcircPFNm )
 
+    return tYFFTT
 
 #%%
 # Now we can execute the function for this list of args...:
