@@ -8,10 +8,11 @@ Created on Fri Apr  5 13:00:00 2019
 
 import mne
 import os
-import matplotlib.pyplot as plt
 import numpy as np
-import time
 import glob
+
+import matplotlib.pyplot as plt
+import time
 
 
 def IfMkDir( aPNm ):
@@ -97,41 +98,37 @@ def GetSsnData( aPFNmPattern ):
 tPFNmPatterns = [ x + '/*/*raw_sss.fif' for x in sorted( glob.glob( 'prek_????' ) ) ]
 
 
-#tPFNmPatterns = [
-##        '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_1_2hz_0?_raw_sss.fif',
-##        '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_1_5hz_0?_raw_sss.fif',
-##        '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_2hz_0?_raw_sss.fif',
-##        '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_2hz_no_flash_0?_raw_sss.fif'
-##        '/mnt/scratch/preK_out/prek_1451_190419/sss_fif/prek_1451_190419_0[1,2,3]_raw_sss.fif'
-##        '/mnt/scratch/preK_out/prek_1259_190419/sss_fif/prek_1259_190419_0[1,2,3,4]_raw_sss.fif'
-##        '/mnt/scratch/preK_out/jason_yeatman_190514/sss_fif/jason_yeatman_190514_0[1,2,4]_raw_sss.fif'
-#        '/mnt/scratch/preK_out/prek_1964/sss_fif/prek_1964_pskt_0[1,2]_pre_raw_sss.fif'
-#]
-
 # using the following list comprehension:
 tR = [ GetSsnData( fp ) for fp in tPFNmPatterns ]
+# to create and save...
 
-# some additional comments from sjjoo's ssvep.py with file locations
+#%%
+#... the following files
+tPFNmPatterns = sorted( glob.glob( 'prek_????/*/*tcirc.fif' ) );
 
-#data_path = '/mnt/scratch/r21/ek_short'
-#raw_fname1 = data_path + '/sss_fif/ek_short_1_raw_sss.fif'
-#raw_fname2 = data_path + '/sss_fif/ek_short_2_raw_sss.fif'
-#raw_fname3 = data_path + '/sss_fif/ek_short_3_raw_sss.fif'
-#raw_fname4 = data_path + '/sss_fif/ek_short_4_raw_sss.fif'
-#
-## long...
-#data_path = '/mnt/scratch/r21/ek_long'
-#raw_fname1 = data_path + '/sss_fif/ek_long_1_raw_sss.fif'
-#raw_fname2 = data_path + '/sss_fif/ek_long_2_raw_sss.fif'
+fLoadEvoked = lambda aFNm: mne.Evoked( aFNm, allow_maxshield=True )
+# which we can later reload:
+tR = [ fLoadEvoked( fp ) for fp in tPFNmPatterns ]
+tR = [ r for r in tR if not np.isnan(r.data).all().all() ]
+# and compute visualization of grand average
+oEAvg = mne.grand_average( tR )
+oEAvg.plot_joint(times=[5.95,6.00,6.05],ts_args=dict(xlim=(5.75,6.25),ylim=(0.0,20.0),scalings=dict(grad=1, mag=1),units=dict(grad='Tcirc', mag='Tcirc')))
+oEAvg.plot_joint(times=[1.95,2.00,2.05],ts_args=dict(xlim=(1.75,2.25),ylim=(0.0,20.0),scalings=dict(grad=1, mag=1),units=dict(grad='Tcirc', mag='Tcirc')))
 
-#tRaws = []
-#
-#for i in [ '1', '2', '3', '4', '5', '6' ]:
-##    tPFNm = '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_1_2hz_0' + i + '_raw_sss.fif' # Path File Name
-##    tPFNm = '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_1_5hz_0' + i + '_raw_sss.fif' # Path File Name
-##    tPFNm = '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_2hz_0' + i + '_raw_sss.fif' # Path File Name
-#    tPFNm = '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_2hz_no_flash_0' + i + '_raw_sss.fif' # Path File Name
-#    tRaws = tRaws + [ mne.io.Raw( tPFNm, allow_maxshield=True, preload=True ) ]
-#
+#fPNan = lambda x: np.isnan(x.data).sum() / x.data.size
+#[ fPNan(r) for r in tR ]
+#Out[5]: 
+#[0.023627507598784195,
+# 0.020588145896656536,
+# 0.023625379939209726,
+# 0.02373996960486322,
+# 0.014621428571428572,
+
+
+
+
+
+
+
 
 
