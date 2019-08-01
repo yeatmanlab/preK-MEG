@@ -8,11 +8,16 @@ Created on Fri Apr  5 13:00:00 2019
 
 import mne
 import os
-import matplotlib.pyplot as plt
 import numpy as np
-import time
 import glob
 
+import matplotlib.pyplot as plt
+import time
+
+
+def IfMkDir( aPNm ):
+    if not os.path.exists( aPNm ):
+        os.mkdir( aPNm )
 
 # The following is called by list comprehension beginning after this function def
 # (see below)
@@ -69,105 +74,61 @@ def GetSsnData( aPFNmPattern ):
     tYFFTV = np.mean( np.stack( ( np.var( np.real(tYFFT), 0 ), np.var( np.imag(tYFFT), 0 ) ) ), 0 )
     #tYFFTV = np.var( abs(tYFFT), 0 )
     tYFFTT = abs(tMYFFT) / np.sqrt( tYFFTV / ( tNTrl - 1 ) )
-    
-    #%%
-    
-    # Topographic plot of selected Freq, plus two adjacent ones
-    
-    ch_names = np.array(tRaws.info['ch_names'])
-    tChP = mne.pick_types(tSsn.info, meg='grad', eeg=False, eog=False) # Channel Picks
-    tChPI = mne.pick_info(tSsn.info, sel=tChP) # Channel Pick Info
-    
-    tFrqP = list(tXFrq).index( 6.0 ) # Frequency Pick, in Hz
-#    tFrqP = list(tXFrq).index( 2.0 ) # Frequency Pick, in Hz
-#    tFH, tAHs = plt.subplots(1,3)
-#    tVMax = 2.0e-13
-#    mne.viz.plot_topomap( abs(tMYFFT[tChP,tFrqP-1]), tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[0], vmax=tVMax )
-#    mne.viz.plot_topomap( abs(tMYFFT[tChP,tFrqP]), tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[1], vmax=tVMax )
-#    mne.viz.plot_topomap( abs(tMYFFT[tChP,tFrqP+1]), tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[2], vmax=tVMax )
-    tFH, tAHs = plt.subplots(1,3)
-    tVMax = 10
-    mne.viz.plot_topomap( tYFFTT[tChP,tFrqP-1], tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[0], vmax=tVMax )
-    mne.viz.plot_topomap( tYFFTT[tChP,tFrqP], tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[1], vmax=tVMax )
-    mne.viz.plot_topomap( tYFFTT[tChP,tFrqP+1], tChPI, names = ch_names[tChP], show_names=True, axes=tAHs[2], vmax=tVMax )
-    
-    #%%
-    
-    # Amplitude histogram from seleted channel.
-    
-#    tChNm = 'MEG0432'; # for jason_yeatman
-##    tChNm = 'MEG1223'; # for prek_1259
-##    tChNm = 'MEG1212'; # for prek_1451
-#    #tChP = mne.pick_types(tSsn.info, meg='grad', eeg=False, eog=False, selection=['MEG0732']) # Channel Pick
-#    tChP = mne.pick_types(tSsn.info, meg='grad', eeg=False, eog=False, selection=[tChNm]) # Channel Pick
-    
-#    plt.figure()
-#    plt.plot( tXFrq[range(tNS/2)], np.transpose( abs( tMYFFT[tChP,range(tNS/2)] ) ) )
-    
-#    plt.plot( tXFrq[range(int(tNS/2))], np.transpose( tYFFTT[tChP,range(int(tNS/2))] ) )
-    
-    # plot five freqs centered on tFrqP, as function of channel number
-    # red trace corresponds to tFrqP
-    
-    plt.figure();
-    plt.plot( tChP, tYFFTT[tChP,(tFrqP-2):(tFrqP+3)] );
-    
-#    plt.figure();
-#    plt.plot( tChP, abs(tMYFFT[tChP,(tFrqP-2):(tFrqP+3)]) );
-   
-#    #%%
-#    
-#    # Amplitude histogram from mean of seleted channels.
-#    
-#    #tChP = mne.pick_types(tSsn.info, meg='grad', eeg=False, eog=False, selection=['MEG0732']) # Channel Pick
-#    tChP = mne.pick_types(tSsn.info, meg='grad', eeg=False, eog=False, selection=['MEG1223']) # Channel Pick
-#    plt.figure()
-#    #plt.plot( tXFrq[range(tNS/2)], np.transpose( abs( tMYFFT[tChP,range(tNS/2)] ) ) )
-#    plt.plot( tXFrq[range(int(tNS/2))], np.transpose( tYFFTT[tChP,range(int(tNS/2))] ) )
-#    
-#    
-    
-    
-#%%
-    return tYFFTT
 
+    
+    tInf = tSsn.info;
+    tInf['sfreq']=20;
+    tYFFTT = mne.EvokedArray( tYFFTT, tInf )
+    
+    #tYFFTT.plot_joint(times=[5.95,6.00,6.05],ts_args=dict(xlim=(5.75,6.25),scalings=dict(grad=1, mag=1),units=dict(grad='Tcirc', mag='Tcirc')))
+    
+    fGrandParentPNm = lambda x: os.path.dirname(os.path.dirname( x ) )
+    tSbjDir = fGrandParentPNm( aPFNmPattern )
+    tSbjID = os.path.basename( tSbjDir )
+    IfMkDir( os.path.join( tSbjDir, 'tcirc_fif' ) )
+    tTcircPFNm = os.path.join( tSbjDir, 'tcirc_fif', tSbjID + '_tcirc.fif' )
+    
+    tYFFTT.save( tTcircPFNm )
+
+    return tYFFTT
 
 #%%
 # Now we can execute the function for this list of args...:
-tPFNmPatterns = [
-#        '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_1_2hz_0?_raw_sss.fif',
-#        '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_1_5hz_0?_raw_sss.fif',
-#        '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_2hz_0?_raw_sss.fif',
-#        '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_2hz_no_flash_0?_raw_sss.fif'
-#        '/mnt/scratch/preK_out/prek_1451_190419/sss_fif/prek_1451_190419_0[1,2,3]_raw_sss.fif'
-#        '/mnt/scratch/preK_out/prek_1259_190419/sss_fif/prek_1259_190419_0[1,2,3,4]_raw_sss.fif'
-#        '/mnt/scratch/preK_out/jason_yeatman_190514/sss_fif/jason_yeatman_190514_0[1,2,4]_raw_sss.fif'
-        '/mnt/scratch/preK_out/prek_1964/sss_fif/prek_1964_pskt_0[1,2]_pre_raw_sss.fif'
-]
+
+tPFNmPatterns = [ x + '/*/*raw_sss.fif' for x in sorted( glob.glob( 'prek_????' ) ) ]
+
+
 # using the following list comprehension:
-tResults = [ GetSsnData( fp ) for fp in tPFNmPatterns ]
+tR = [ GetSsnData( fp ) for fp in tPFNmPatterns ]
+# to create and save...
 
-# some additional comments from sjjoo's ssvep.py with file locations
+#%%
+#... the following files
+tPFNmPatterns = sorted( glob.glob( 'prek_????/*/*tcirc.fif' ) );
 
-#data_path = '/mnt/scratch/r21/ek_short'
-#raw_fname1 = data_path + '/sss_fif/ek_short_1_raw_sss.fif'
-#raw_fname2 = data_path + '/sss_fif/ek_short_2_raw_sss.fif'
-#raw_fname3 = data_path + '/sss_fif/ek_short_3_raw_sss.fif'
-#raw_fname4 = data_path + '/sss_fif/ek_short_4_raw_sss.fif'
-#
-## long...
-#data_path = '/mnt/scratch/r21/ek_long'
-#raw_fname1 = data_path + '/sss_fif/ek_long_1_raw_sss.fif'
-#raw_fname2 = data_path + '/sss_fif/ek_long_2_raw_sss.fif'
+fLoadEvoked = lambda aFNm: mne.Evoked( aFNm, allow_maxshield=True )
+# which we can later reload:
+tR = [ fLoadEvoked( fp ) for fp in tPFNmPatterns ]
+tR = [ r for r in tR if not np.isnan(r.data).all().all() ]
+# and compute visualization of grand average
+oEAvg = mne.grand_average( tR )
+oEAvg.plot_joint(times=[5.95,6.00,6.05],ts_args=dict(xlim=(5.75,6.25),ylim=(0.0,20.0),scalings=dict(grad=1, mag=1),units=dict(grad='Tcirc', mag='Tcirc')))
+oEAvg.plot_joint(times=[1.95,2.00,2.05],ts_args=dict(xlim=(1.75,2.25),ylim=(0.0,20.0),scalings=dict(grad=1, mag=1),units=dict(grad='Tcirc', mag='Tcirc')))
 
-#tRaws = []
-#
-#for i in [ '1', '2', '3', '4', '5', '6' ]:
-##    tPFNm = '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_1_2hz_0' + i + '_raw_sss.fif' # Path File Name
-##    tPFNm = '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_1_5hz_0' + i + '_raw_sss.fif' # Path File Name
-##    tPFNm = '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_2hz_0' + i + '_raw_sss.fif' # Path File Name
-#    tPFNm = '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_2hz_no_flash_0' + i + '_raw_sss.fif' # Path File Name
-#    tRaws = tRaws + [ mne.io.Raw( tPFNm, allow_maxshield=True, preload=True ) ]
-#
+#fPNan = lambda x: np.isnan(x.data).sum() / x.data.size
+#[ fPNan(r) for r in tR ]
+#Out[5]: 
+#[0.023627507598784195,
+# 0.020588145896656536,
+# 0.023625379939209726,
+# 0.02373996960486322,
+# 0.014621428571428572,
+
+
+
+
+
+
+
 
 

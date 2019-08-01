@@ -36,7 +36,6 @@ def GetSsnData( aPFNmPattern ):
     #tRaws.filter(highpass, lowpass, fir_design='firwin')
     
     
-    #%%
     # default: dict(mag=1e-12)
 #    tRejCrit = dict(grad=3000e-13, mag=3e-12, eog=np.inf, ecg=np.inf)
 #    tRejCrit = dict(grad=4000e-13, mag=4e-12, eog=np.inf, ecg=np.inf)
@@ -56,8 +55,10 @@ def GetSsnData( aPFNmPattern ):
 #    tSsn.plot();
     
 #%%
-    tY = tSsn.get_data()
-    tY = tY[ :, :, :-1 ]
+    tED = mne.read_epochs('All_100-sss_bad_919-epo.fif');
+    tSR = tED.info['sfreq'];
+    tY = tED.get_data();
+    tY = tY[ :, :, int(0.5*tSR):int(1.0*tSR) ];
     #plt.plot(np.mean(tY[:,201,:],axis=0),'r-')
     
     tNTrl = tY.shape[0];
@@ -75,11 +76,12 @@ def GetSsnData( aPFNmPattern ):
     
     # Topographic plot of selected Freq, plus two adjacent ones
     
-    ch_names = np.array(tRaws.info['ch_names'])
-    tChP = mne.pick_types(tSsn.info, meg='grad', eeg=False, eog=False) # Channel Picks
-    tChPI = mne.pick_info(tSsn.info, sel=tChP) # Channel Pick Info
+    ch_names = np.array(tED.info['ch_names'])
+    tChP = mne.pick_types(tED.info, meg='grad', eeg=False, eog=False) # Channel Picks
+    tChPI = mne.pick_info(tED.info, sel=tChP) # Channel Pick Info
     
-    tFrqP = list(tXFrq).index( 6.0 ) # Frequency Pick, in Hz
+    tFrqP = list(tXFrq).index( 40.0 ) # Frequency Pick, in Hz
+#    tFrqP = list(tXFrq).index( 6.0 ) # Frequency Pick, in Hz
 #    tFrqP = list(tXFrq).index( 2.0 ) # Frequency Pick, in Hz
 #    tFH, tAHs = plt.subplots(1,3)
 #    tVMax = 2.0e-13
@@ -110,6 +112,7 @@ def GetSsnData( aPFNmPattern ):
     # plot five freqs centered on tFrqP, as function of channel number
     # red trace corresponds to tFrqP
     
+    tVMax = 10
     tFH = plt.figure();
     tGS = tFH.add_gridspec(3,5);
     fSubPlot = lambda aGS: tFH.add_subplot(aGS);
@@ -165,6 +168,12 @@ tPFNmPatterns = [
 # using the following list comprehension:
 tResults = [ GetSsnData( fp ) for fp in tPFNmPatterns ]
 
+# this will be the new
+aPFNmPattern = '/media/ktavabi/ALAYA/data/ilabs/badbaby/tone/bad_*/epochs/*-epo.fif'
+tPFNms = sorted( glob.glob( aPFNmPattern ) );
+tResults = [ GetSsnData( fp ) for fp in tPFNms ]
+
+
 # some additional comments from sjjoo's ssvep.py with file locations
 
 #data_path = '/mnt/scratch/r21/ek_short'
@@ -187,3 +196,6 @@ tResults = [ GetSsnData( fp ) for fp in tPFNmPatterns ]
 #    tPFNm = '/mnt/scratch/r21/pettet_mark/190109/sss_fif/pm_2hz_no_flash_0' + i + '_raw_sss.fif' # Path File Name
 #    tRaws = tRaws + [ mne.io.Raw( tPFNm, allow_maxshield=True, preload=True ) ]
 #
+
+
+
