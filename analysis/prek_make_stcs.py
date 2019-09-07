@@ -17,7 +17,7 @@ from mne.minimum_norm import (apply_inverse, read_inverse_operator)
 
 subj = ['prek_1951', 'prek_1921']
 
-data_path = '/storage/Maggie/prek'
+data_path = '/mnt/scratch/prek/pre_camp/twa_hp/'
 anat_path = mne.utils.get_subjects_dir(None, raise_error=True)
 conditions = ['words', 'faces', 'cars', 'aliens']
 method = "dSPM" # adjust to dSPM, sLORETA or eLORETA
@@ -34,7 +34,8 @@ fsave_vertices = [s['vertno'] for s in src]
 
 for si, s in enumerate(subj):
     source = mne.read_source_spaces(op.join(anat_path, '%s' % s, 'bem',
-                                                '%s-oct-6-src.fif' % s))
+                                                'PREK' + '_%s' % s[-4:] +
+                                                '-oct-6-src.fif'))
     verts_from = [source[0]['vertno'], source[1]['vertno']]    
     fwd = mne.read_forward_solution(op.join(data_path, '%s' % s, 'forward',
                                             '%s-sss-fwd.fif' % s))

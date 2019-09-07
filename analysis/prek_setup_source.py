@@ -14,10 +14,7 @@ import os.path as op
 from shutil import copyfile
 
 #### add subjects here
-subjects = ['prek_1112', 'prek_1208', 'prek_1271', 'prek_1382', 
-            'prek_1673', 'prek_1676', 'prek_1691', 'prek_1715',
-            'prek_1762', 'prek_1887', 'prek_1901', 'prek_1916',
-            'prek_1921', 'prek_1936', 'prek_1951', 'prek_1964']
+subjects = ['PREK_1210', 'PREK_1382', 'PREK_1673', 'PREK_1751', 'PREK_1818']
 ####
 
 subjs_dir = mne.utils.get_subjects_dir(None, raise_error=True)
