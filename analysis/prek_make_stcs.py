@@ -41,7 +41,7 @@ for si, s in enumerate(subj):
     cov = mne.read_cov(op.join(data_path, '%s' % s, 'covariance',
                                '%s-80-sss-cov.fif' % s))
     inv = read_inverse_operator(op.join(data_path, '%s' % s, 'inverse',
-                                        '%s-80-sss-meg-free-inv.fif' % s))
+                                        '%s-80-sss-meg-inv.fif' % s))
     evokeds = [mne.read_evokeds(op.join(data_path, '%s' %s,
                                 'inverse', 
                                 'Conditions_80-sss_eq_%s-ave.fif' % s), 
