@@ -3,7 +3,7 @@
 """
 Created on Tue May 28 15:01:29 2019
 
-@author: mdclarke
+@author: Maggie Clarke
 
 Setup source surfaces, bem and source space for PreK project
 """
