@@ -13,18 +13,23 @@ Notes:
 3) will still need twa and fixed hp
 
 """
+
+
+# pre_camp exceptions to run_names:
 # prek 1714: use pskt_02, pskt_03
 # prek_1936: use pskt_01, pskt_03
 # prek_1964: use pskt_01, pskt_03
 
 import mnefun
 import numpy as np
-import os
 
-# skip = ['prek_1259', 'prek_1451', 'prek_1714', 'prek_1936', 'prek_1964']
-# subjects = [x for x in os.listdir('/storage/prek/') if 'prek' in x and not np.in1d(x, skip)]
-# subjects = ['prek_1936', 'prek_1964']
-subjects = ['prek_1714']
+
+dir = '/home/nordme/data/prek/post_camp/fixed_hp/'
+skip = ['prek_1259', 'prek_1451', 'prek_1714', 'prek_1936', 'prek_1964']
+#subjects = [x for x in os.listdir(dir) if op.isdir(op.join(dir, x)) and 'prek' in x and not np.in1d(x, skip)]
+subjects = ['prek_1936', 'prek_1964']
+# subjects = ['prek_1714']
+
 subjects.sort()
 print(subjects)
 
@@ -32,22 +37,17 @@ params = mnefun.Params(tmin=-0.1, tmax=1, n_jobs=18,
                        proj_sfreq=200, n_jobs_fir=18,
                        filter_length='5s', lp_cut=80., 
                        n_jobs_resample=18,
-                       bmin=-0.1, bem_type='5120')
+                       bmin=-0.1, bem_type='5120', )
 #1451 rename
-# params.subjects = ['prek_1762', 'prek_1112', 'prek_1691', 'prek_1259',
-#                   'prek_1208', 'prek_1271', 'prek_1382', 'prek_1451',
-#                   'prek_1673', 'prek_1676', 'prek_1691', 'prek_1715',
-#                   'prek_1762', 'prek_1887', 'prek_1901', 'prek_1916',
-#                   'prek_1921', 'prek_1936', 'prek_1951', 'prek_1964']
 
 params.subjects = subjects
-params.work_dir = '/storage/prek'
+params.work_dir = dir
 params.structurals = params.subjects
 params.dates = [(2013, 0, 00)] * len(params.subjects)
 # define which subjects to run
 params.subject_indices = np.arange(len(params.subjects))
-# params.subject_indices = np.setdiff1d(np.arange(len(params.subjects)), np.arange(17))
-# params.subject_indices = []
+# params.subject_indices = np.setdiff1d(np.arange(len(params.subjects)), np.arange(11))
+# params.subject_indices = [7]
 # Acquisition params
 params.acq_ssh = 'nordme@kasga.ilabs.uw.edu'
 params.acq_dir = '/brainstudio/prek/'
@@ -59,7 +59,7 @@ params.sss_regularize = 'in'
 params.tsss_dur = 4. # tSSS duration
 params.int_order = 8
 params.st_correlation = .98
-params.trans_to='twa' # time weighted average head position (change this to fixed pos for group analysis)
+params.trans_to = (0., 0., 0.04) # time weighted average or fixed head position (change this to fixed pos for sensor analysis)
 params.coil_t_window = 'auto'
 params.movecomp='inter'
 # remove segments with < 3 good coils for at least 100 ms
@@ -72,8 +72,8 @@ params.flat = dict(grad=1e-13, mag=1e-15)
 params.auto_bad_flat = None
 params.auto_bad_meg_thresh = 10
 # naming
-params.run_names = ['%s_pskt_02_pre', '%s_pskt_03_pre']
-# params.run_names = ['%s_pskt_01_pre', '%s_pskt_03_pre']
+# params.run_names = ['%s_pskt_02_pre', '%s_pskt_03_pre']
+params.run_names = ['%s_pskt_01_pre', '%s_pskt_03_pre']
 # params.run_names = ['%s_pskt_01_pre', '%s_pskt_02_pre']
 params.get_projs_from = np.arange(2)
 params.inv_names = ['%s']

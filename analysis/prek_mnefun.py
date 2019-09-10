@@ -21,9 +21,9 @@ Notes:
 """
 import mnefun
 import numpy as np
-from score import score
+from prek_score import prek_score
 
-params = mnefun.Params(tmin=-0.1, tmax=1, n_jobs=18,
+params = mnefun.Params(tmin=-0.1, tmax=1, t_adjust=-0.067, n_jobs=18,
                        proj_sfreq=200, n_jobs_fir='cuda',
                        filter_length='5s', lp_cut=80., 
                        n_jobs_resample='cuda',
@@ -89,8 +89,8 @@ params.analyses = ['All',
                    'Conditions']
 params.out_names = [['All'],
                     ['words', 'faces', 'cars', 'aliens']]
-params.out_numbers = [[1, 1, 1, 1],  # Combine all trials
-                      [1, 2, 3, 4],  # Seperate trials
+params.out_numbers = [[10, 10, 10, 10],  # Combine all trials
+                      [10, 20, 30, 40],  # Seperate trials
     ]
 params.must_match = [
     [], # trials to match
