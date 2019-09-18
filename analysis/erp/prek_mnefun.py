@@ -19,34 +19,28 @@ Notes:
 4 = aliens (N=10) + 10 button responses (64)
 
 """
-import mnefun
+import os
+import yaml
 import numpy as np
+import mnefun
 from prek_score import prek_score
 
 params = mnefun.Params(tmin=-0.1, tmax=1, t_adjust=-0.067, n_jobs=18,
                        proj_sfreq=200, n_jobs_fir='cuda',
-                       filter_length='5s', lp_cut=80., 
+                       filter_length='5s', lp_cut=80.,
                        n_jobs_resample='cuda',
                        bmin=-0.1, bem_type='5120')
-#1451 rename
-#1505 no erp file
-params.subjects = ['prek_1112', 'prek_1208', 'prek_1271', 'prek_1382', 
-                   'prek_1673', 'prek_1676', 'prek_1691', 'prek_1715',
-                   'prek_1762', 'prek_1887', 'prek_1901', 'prek_1916',
-                   'prek_1921', 'prek_1936', 'prek_1951', 'prek_1964', 
-                   'prek_1184', 'prek_1103', 'prek_1505', 'prek_1113',
-                   'prek_1868', 'prek_1302', 'prek_1210', 'prek_1714',
-                   'prek_1401', 'prek_1706', 'prek_1878', 'prek_1818',
-                   'prek_1490', 'prek_1768', 'prek_1939', 'prek_1293',
-                   'prek_1751', 'prek_1869', 'prek_1443', 'prek_1372']
+# load subjects
+with open(os.path.join('..', '..', 'subjects.yaml'), 'r') as f:
+    params.subjects = yaml.load(f, Loader=yaml.FullLoader)
 
-params.score = score
+params.score = prek_score
 params.structurals = params.subjects
 params.dates = [(2013, 0, 00)] * len(params.subjects)
 # define which subjects to run
-params.subject_indices = [0]
-#params.subject_indices = np.setdiff1d(np.arange(len(params.subjects)), [0])
-# Aquistion params 
+# params.subject_indices = [0]
+params.subject_indices = list(range(len(params.subjects)))
+# Aquistion params
 params.acq_ssh = 'maggie@kasga.ilabs.uw.edu'
 params.acq_dir = '/brainstudio/prek/'
 params.sws_ssh = 'maggie@kasga.ilabs.uw.edu'
@@ -57,9 +51,9 @@ params.sss_regularize = 'in'
 params.tsss_dur = 4. # tSSS duration
 params.int_order = 8
 params.st_correlation = .98
-params.trans_to='twa' # time weighted average head position (change this to fixed pos for group analysis)
+params.trans_to = 'twa'  # time-weighted avg (use fixed head pos for sensor-level analyses)
 params.coil_t_window = 'auto'
-params.movecomp='inter'
+params.movecomp = 'inter'
 # remove segments with < 3 good coils for at least 100 ms
 params.coil_bad_count_duration_limit = 0.1
 # Trial rejection criteria
@@ -91,14 +85,13 @@ params.out_names = [['All'],
                     ['words', 'faces', 'cars', 'aliens']]
 params.out_numbers = [[10, 10, 10, 10],  # Combine all trials
                       [10, 20, 30, 40],  # Seperate trials
-    ]
-params.must_match = [
-    [], # trials to match
-    [],
-    ]
+                      ]
+params.must_match = [[],  # trials to match
+                     [],
+                     ]
 
 params.report_params.update(  # add plots
-    bem=True, 
+    bem=True,
     sensor=[
         dict(analysis='Conditions', name='words', times='peaks'),
         dict(analysis='Conditions', name='faces', times='peaks'),
@@ -107,10 +100,10 @@ params.report_params.update(  # add plots
     ],
     source=[
         dict(analysis='Conditions', name='words',
-             inv='%s-80-sss-meg-free-inv.fif', 
-             views=['lat', 'caudal'], size=(800, 800)), 
+             inv='%s-80-sss-meg-free-inv.fif',
+             views=['lat', 'caudal'], size=(800, 800)),
         dict(analysis='Conditions', name='faces',
-             inv='%s-80-sss-meg-free-inv.fif', 
+             inv='%s-80-sss-meg-free-inv.fif',
              views=['lat', 'caudal'], size=(800, 800)),
         dict(analysis='Conditions', name='cars',
              inv='%s-80-sss-meg-free-inv.fif',
@@ -135,14 +128,14 @@ params.report_params.update(  # add plots
 mnefun.do_processing(
     params,
     fetch_raw=False,
-    do_sss=False, # do tSSS
-    do_score=True,  # do scoring
-    gen_ssp=False, # generate ssps
-    apply_ssp=False, # apply ssps
-    write_epochs=False, # epoching & filtering
-    gen_covs=False, # make covariance 
-    gen_fwd=False, # generate fwd model
-    gen_inv=False, # general inverse
-    gen_report=False, # print report
-    print_status=True # show status
+    do_sss=False,        # do tSSS
+    do_score=True,       # do scoring
+    gen_ssp=True,        # generate ssps
+    apply_ssp=True,      # apply ssps
+    write_epochs=True,   # epoching & filtering
+    gen_covs=True,       # make covariance
+    gen_fwd=True,        # generate fwd model
+    gen_inv=True,        # general inverse
+    gen_report=False,    # print report
+    print_status=True    # show status
 )
