@@ -31,7 +31,7 @@ params = mnefun.Params(tmin=-0.1, tmax=1, t_adjust=-0.067, n_jobs=18,
                        n_jobs_resample='cuda',
                        bmin=-0.1, bem_type='5120')
 # load subjects
-with open(os.path.join('..', '..', 'subjects.yaml'), 'r') as f:
+with open(os.path.join('..', '..', 'params', 'subjects.yaml'), 'r') as f:
     params.subjects = yaml.load(f, Loader=yaml.FullLoader)
 
 params.score = prek_score

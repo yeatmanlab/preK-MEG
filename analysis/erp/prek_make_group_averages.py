@@ -8,6 +8,7 @@ Make average Source Time Course across all subjects, for each condition
 
 import os
 import yaml
+from functools import partial
 import mne
 
 # config paths
@@ -20,12 +21,15 @@ for _dir in (avg_out_path, mov_out_path):
 # config other
 conditions = ('words', 'faces', 'cars', 'aliens')
 methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
-brain_plot_kwargs = dict(views=['lat', 'med', 'ven'], hemi='split',
-                         size=(1000, 800), subjects_dir=subjects_dir,
-                         colormap='cool')
-# load subjects
-with open(os.path.join('..', '..', 'subjects.yaml'), 'r') as f:
-    subjects = yaml.load(f, Loader=yaml.FullLoader)
+# load params
+paramdir = os.path.join('..', '..', 'params')
+yamload = partial(yaml.load, Loader=yaml.FullLoader)
+with open(os.path.join(paramdir, 'brain_plot_params.yaml'), 'r') as f:
+    brain_plot_kwargs = yamload(f)
+with open(os.path.join(paramdir, 'movie_params.yaml'), 'r') as f:
+    movie_kwargs = yamload(f)
+with open(os.path.join(paramdir, 'subjects.yaml'), 'r') as f:
+    subjects = yamload(f)
 
 # make grand average & movie
 avg = 0
@@ -44,6 +48,4 @@ for cond in conditions:
         # make movie
         brain = avg.plot(subject ='fsaverage', **brain_plot_kwargs)
         mov_fname = f'{avg_fname[:-4]}.mov'
-        brain.save_movie(os.path.join(mov_out_path, mov_fname),
-                         framerate=30, time_dilation=25,
-                         interpolation='linear')
+        brain.save_movie(os.path.join(mov_out_path, mov_fname), **movie_kwargs)
