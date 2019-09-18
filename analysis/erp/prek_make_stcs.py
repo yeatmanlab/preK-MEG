@@ -23,7 +23,7 @@ conditions = ['words', 'faces', 'cars', 'aliens']
 methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
 snr = 3.
 lambda2 = 1. / snr ** 2
-smoothing_steps = 5
+smoothing_steps = 10
 
 # load subjects
 with open(os.path.join('..', '..', 'subjects.yaml'), 'r') as f:
