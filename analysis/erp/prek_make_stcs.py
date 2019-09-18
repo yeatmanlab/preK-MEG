@@ -1,79 +1,75 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri May 17 16:23:40 2019
+@author: Maggie Clarke, Daniel McCloy
 
-@author: Maggie Clarke
-
-Make orig and morphed source time course files for PreK project, create group
-average and movie.
-
+Make original and morphed Source Time Course files
 """
 
 import os
+import yaml
 import mne
-from os import path as op
-from mne.minimum_norm import (apply_inverse, read_inverse_operator)
+from mne.minimum_norm import apply_inverse, read_inverse_operator
 
-subj = ['prek_1951', 'prek_1921']
+mne.set_log_level('WARNING')
 
-data_path = '/mnt/scratch/prek/pre_camp/twa_hp/'
-anat_path = mne.utils.get_subjects_dir(None, raise_error=True)
+# config paths
+subj_root = '/mnt/scratch/prek/pre_camp/twa_hp'
+subjects_dir = '/mnt/scratch/prek/anat'
+fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
+                                  'fsaverage-ico-5-src.fif')
+# config other
 conditions = ['words', 'faces', 'cars', 'aliens']
-method = "dSPM" # adjust to dSPM, sLORETA or eLORETA
+methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
 snr = 3.
 lambda2 = 1. / snr ** 2
-smoothing_steps = 5 
-kwargs = dict(views=['lat', 'med'], hemi='split', size=(800, 800),
-              colormap='cool')
+smoothing_steps = 5
+
+# load subjects
+with open(os.path.join('..', '..', 'subjects.yaml'), 'r') as f:
+    subjects = yaml.load(f, Loader=yaml.FullLoader)
 
 # for morph to fsaverage
-src_fname = anat_path + '/fsaverage/bem/fsaverage-ico-5-src.fif'
-src = mne.read_source_spaces(src_fname)
-fsave_vertices = [s['vertno'] for s in src]
+fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
+fsaverage_vertices = [s['vertno'] for s in fsaverage_src]
 
-for si, s in enumerate(subj):
-    source = mne.read_source_spaces(op.join(anat_path, '%s' % s, 'bem',
-                                                'PREK' + '_%s' % s[-4:] +
-                                                '-oct-6-src.fif'))
-    verts_from = [source[0]['vertno'], source[1]['vertno']]    
-    fwd = mne.read_forward_solution(op.join(data_path, '%s' % s, 'forward',
-                                            '%s-sss-fwd.fif' % s))
-    cov = mne.read_cov(op.join(data_path, '%s' % s, 'covariance',
-                               '%s-80-sss-cov.fif' % s))
-    inv = read_inverse_operator(op.join(data_path, '%s' % s, 'inverse',
-                                        '%s-80-sss-meg-inv.fif' % s))
-    evokeds = [mne.read_evokeds(op.join(data_path, '%s' %s,
-                                'inverse', 
-                                'Conditions_80-sss_eq_%s-ave.fif' % s), 
-    condition=c) for c in conditions]
-    stcs = [apply_inverse(e, inv, lambda2, method=method, 
-                          pick_ori=None) for e in evokeds]
-    if not op.isdir(op.join(data_path, '%s' %s, 'stc')):
-        os.mkdir(op.join(data_path, '%s' %s, 'stc'))
-    for j, stc in enumerate(stcs):
-        stc.save(op.join(data_path, '%s' %s, 'stc',
-                         '%s_' % s + evokeds[j].comment))
-        morph = mne.compute_source_morph(stc, s, 'fsaverage', 
-                                         spacing=fsave_vertices, smooth=5)
-        morphed_stcs = [morph.apply(ss) for ss in stcs]
-        for j, stc in enumerate(morphed_stcs):
-            stc.save(op.join(data_path, '%s' %s, 'stc',
-                             '%s_%s_fsaverage_'
-                             % (s, method) + evokeds[j].comment))
-# make group average + movie
-avg = 0
-
-for c in conditions:
-    for s in subj:
-        avg += mne.read_source_estimate(op.join(data_path, '%s' %s, 'stc',
-                                        '%s_%s_fsaverage_%s-lh.stc' 
-                                         % (s, method, c)))                                       
-    avg /= len(subj) 
-    avg.save(op.join(data_path, 'fsaverage_%s_%s_GrandAvg_N%d.stc'
-                     % (method, c, len(subj))))
-    brain = avg.plot(subject ='fsaverage', **kwargs)
-    outname = op.join(data_path,'fsaverage_%s_%s_GrandAvg_N%d.mov' 
-                      % (method, c, len(subj)))
-    brain.save_movie(outname, framerate=30, time_dilation=25,
-                     interpolation='linear')  
+for s in subjects:
+    print(f'processing {s}')
+    # paths for this subject
+    this_subj = os.path.join(subj_root, s)
+    src_path = os.path.join(subjects_dir, s.upper(), 'bem', f'{s.upper()}-oct-6-src.fif')
+    fwd_path = os.path.join(this_subj, 'forward', f'{s}-sss-fwd.fif')
+    cov_path = os.path.join(this_subj, 'covariance', f'{s}-80-sss-cov.fif')
+    inv_path = os.path.join(this_subj, 'inverse', f'{s}-80-sss-meg-inv.fif')
+    evk_path = os.path.join(this_subj, 'inverse', f'Conditions_80-sss_eq_{s}-ave.fif')
+    stc_path = os.path.join(this_subj, 'stc')
+    # do the heavy lifting
+    source = mne.read_source_spaces(src_path)
+    verts_from = [source[0]['vertno'], source[1]['vertno']]
+    fwd = mne.read_forward_solution(fwd_path)
+    cov = mne.read_cov(cov_path)
+    inv = read_inverse_operator(inv_path)
+    evokeds = [mne.read_evokeds(evk_path, condition=c) for c in conditions]
+    # prepare output dir
+    if not os.path.isdir(stc_path):
+        os.mkdir(stc_path)
+    # make STCs with each method
+    for method in methods:
+        stcs = [apply_inverse(evk, inv, lambda2, method=method, pick_ori=None)
+                for evk in evokeds]
+        # save STCs
+        for idx, stc in enumerate(stcs):
+            out_fname = f'{s}_{method}_{evokeds[idx].comment}'
+            stc.save(os.path.join(stc_path, out_fname))
+        # morph to fsaverage. uses the most recent STC from the above loop
+        # (morph should end up the same for all stcs for one subject)
+        morph = mne.compute_source_morph(stc, subject_from=s.upper(),
+                                         subject_to='fsaverage',
+                                         subjects_dir=subjects_dir,
+                                         spacing=fsaverage_vertices,
+                                         smooth=smoothing_steps)
+        morphed_stcs = [morph.apply(stc) for stc in stcs]
+        # save morphed STCs
+        for idx, stc in enumerate(morphed_stcs):
+            out_fname = f'{s}_{method}_fsaverage_{evokeds[idx].comment}'
+            stc.save(os.path.join(stc_path, out_fname))
