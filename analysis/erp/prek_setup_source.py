@@ -11,13 +11,16 @@ from __future__ import print_function
 import mne
 import os
 import os.path as op
+import yaml
 from shutil import copyfile
 
-#### add subjects here
-subjects = ['PREK_1210', 'PREK_1382', 'PREK_1673', 'PREK_1751', 'PREK_1818']
-####
+# load subjects
+with open(os.path.join('..', '..', 'subjects.yaml'), 'r') as f:
+    subjects = yaml.load(f, Loader=yaml.FullLoader)
 
-subjs_dir = mne.utils.get_subjects_dir(None, raise_error=True)
+subjects = [subj.upper() for subj in subjects]
+
+subjs_dir = '/mnt/scratch/prek/anat/'
 surf_names  =['inner_skull', 'outer_skull', 'outer_skin']
 
 for subj in subjects:
