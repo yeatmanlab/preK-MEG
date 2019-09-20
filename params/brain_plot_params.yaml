@@ -1,0 +1,5 @@
+views: ['lat', 'med', 'ven']
+hemi: 'split'
+size: [1000, 800]
+colormap: 'cool'
+subjects_dir: '/mnt/scratch/prek/anat'

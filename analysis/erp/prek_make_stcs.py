@@ -26,7 +26,7 @@ lambda2 = 1. / snr ** 2
 smoothing_steps = 10
 
 # load subjects
-with open(os.path.join('..', '..', 'subjects.yaml'), 'r') as f:
+with open(os.path.join('..', '..', 'params', 'subjects.yaml'), 'r') as f:
     subjects = yaml.load(f, Loader=yaml.FullLoader)
 
 # for morph to fsaverage
