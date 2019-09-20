@@ -22,10 +22,10 @@ def prek_score(p, subjects):
             raw = mne.io.read_raw_fif(fname, allow_maxshield=True)
 
             # events are split for behavioral scoring
-            words = mne.find_events(raw, shortest_event=2, mask=1)
-            faces = mne.find_events(raw, shortest_event=2, mask=2)
-            cars = mne.find_events(raw, shortest_event=2, mask=3)
-            alien = mne.find_events(raw, shortest_event=2, mask=4)
+            words = mne.find_events(raw, shortest_event=1, mask=1)
+            faces = mne.find_events(raw, shortest_event=1, mask=2)
+            cars = mne.find_events(raw, shortest_event=1, mask=3)
+            alien = mne.find_events(raw, shortest_event=1, mask=4)
 
             cars = [x for x in cars if x[2] == 3]
             words = [x for x in words if not np.in1d(x[0], cars)]
@@ -45,7 +45,7 @@ def prek_score(p, subjects):
             assert not np.in1d(alien[:, 0], words[:, 0]).any()
 
             # find button presses and turn them all into events with a value of 5
-            presses = mne.find_events(raw, shortest_event=2, mask=240)
+            presses = mne.find_events(raw, shortest_event=1, mask=240)
             presses[:, 2] = 5
 
             # return all events
@@ -59,7 +59,7 @@ def prek_score(p, subjects):
             misses = []
             correct_rejections = 0
             images = np.concatenate((words, cars, faces))
-            all_events = mne.find_events(raw, shortest_event=2)
+            all_events = mne.find_events(raw, shortest_event=1)
 
             for event in all_events:
                 if event[0] in presses:
