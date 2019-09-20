@@ -20,7 +20,7 @@ with open(os.path.join('..', '..', 'subjects.yaml'), 'r') as f:
 
 subjects = [subj.upper() for subj in subjects]
 
-subjs_dir = mne.utils.get_subjects_dir(None, raise_error=True)
+subjs_dir = '/mnt/scratch/prek/anat/'
 surf_names  =['inner_skull', 'outer_skull', 'outer_skin']
 
 for subj in subjects:
