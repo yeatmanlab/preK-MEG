@@ -27,16 +27,6 @@ if rerun:
 # see how well blink algorithm works before annotation
 old_blink_events = find_eog_events(raw, reject_by_annotation=True)
 
-# create blink projector, so we can toggle it on and off during annotation
-blink_epochs = mne.Epochs(raw, old_blink_events, event_id=998, tmin=-0.5,
-                          tmax=0.5, proj=False, reject=None, flat=None,
-                          baseline=None, preload=True,
-                          reject_by_annotation=True)
-ssp_blink_proj = mne.compute_proj_epochs(blink_epochs, n_grad=2, n_mag=2,
-                                         n_eeg=0, n_jobs='cuda',
-                                         desc_prefix=None, verbose=None)
-raw = raw.add_proj(ssp_blink_proj)
-
 # interactive annotation: mark bad channels & transient noise
 raw.plot(duration=30, events=old_blink_events, block=True,
          scalings=dict(mag=1e15, grad=1e13))
