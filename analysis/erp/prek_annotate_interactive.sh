@@ -7,6 +7,7 @@ for raw in $(ls /mnt/scratch/prek/pre_camp/twa_hp/*/raw_fif/*_pre_raw.fif); do
     # get the subject ID
     bname=$(basename $raw .fif)
     subj=${bname%_pre_raw}
+    echo "processing subject $subj..."
     # what to do if already exists?
     # note: last 2 args of python script are booleans: rerun & save
     if [ -f $ann ]; then
@@ -17,9 +18,9 @@ for raw in $(ls /mnt/scratch/prek/pre_camp/twa_hp/*/raw_fif/*_pre_raw.fif); do
         "Annotate original RAW & overwrite existing annotated file" \
         "Skip this subject"; do
             case $REPLY in
-            1) python prek_annotate_interactive.py $raw $ann 1 1 ;;
-            2) python prek_annotate_interactive.py $raw $ann 1 0 ;;
-            3) python prek_annotate_interactive.py $raw $ann 0 1 ;;
+            1) python prek_annotate_interactive.py $raw $ann 1 1; break ;;
+            2) python prek_annotate_interactive.py $raw $ann 1 0; break ;;
+            3) python prek_annotate_interactive.py $raw $ann 0 1; break ;;
             4) echo "skipping $subj"; break ;;
             *) echo "Invalid choice. Enter 1-4 (or Ctrl+C to abort)." ;;
             esac
