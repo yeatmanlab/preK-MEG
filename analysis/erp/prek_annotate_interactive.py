@@ -6,6 +6,9 @@
 Opens and plots MNE raw files for (re)annotation, and runs blink detection
 before and after annotation, to check if the level of annotation is adequate
 to allow the blink detection algorithm to perform reasonably well.
+
+This script should be run from the command line, or (preferably) via the
+shell-script wrapper `prek_annotate_interactive.sh`
 """
 
 import sys
