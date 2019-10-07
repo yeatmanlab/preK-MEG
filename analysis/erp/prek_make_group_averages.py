@@ -12,16 +12,18 @@ from functools import partial
 import mne
 
 # config paths
-subj_root = '/mnt/scratch/prek/pre_camp/twa_hp/'
-subjects_dir = '/mnt/scratch/prek/anat'
-avg_out_path = os.path.join(subj_root, 'grand_averages')
-mov_out_path = os.path.join(subj_root, 'movies')
+project_root = '/mnt/scratch/prek'
+subjects_dir = os.path.join(project_root, 'anat')
+avg_out_path = os.path.join(project_root, 'results', 'group_averages')
+mov_out_path = os.path.join(project_root, 'results', 'movies')
 for _dir in (avg_out_path, mov_out_path):
     if not os.path.isdir(_dir):
-        os.mkdir(_dir)
+        os.makedirs(_dir, exist_ok=True)
+
 # config other
 conditions = ('words', 'faces', 'cars', 'aliens')
 methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
+
 # load params
 paramdir = os.path.join('..', '..', 'params')
 yamload = partial(yaml.load, Loader=yaml.FullLoader)
@@ -32,20 +34,38 @@ with open(os.path.join(paramdir, 'movie_params.yaml'), 'r') as f:
 with open(os.path.join(paramdir, 'subjects.yaml'), 'r') as f:
     subjects = yamload(f)
 
-# make grand average & movie
-for cond in conditions:
-    for method in methods:
-        avg = 0
-        # make cross-subject average
-        for s in subjects:
-            stc_path = os.path.join(subj_root, s, 'stc',
-                                    f'{s}_{method}_fsaverage_{cond}-lh.stc')
-            avg += mne.read_source_estimate(stc_path)
-        avg /= len(subjects)
-        # save
-        avg_fname = f'fsaverage_{method}_{cond}_GrandAvgN{len(subjects)}.stc'
-        avg.save(os.path.join(avg_out_path, avg_fname))
-        # make movie
-        brain = avg.plot(subject='fsaverage', **brain_plot_kwargs)
-        mov_fname = f'{avg_fname[:-4]}.mov'
-        brain.save_movie(os.path.join(mov_out_path, mov_fname), **movie_kwargs)
+# loop over subjects
+for s in subjects:
+    print(f'processing {s}')
+    # loop over pre/post measurement time
+    for prepost in ('pre', 'post'):
+        # paths for this subject / timepoint
+        subj_root = '/mnt/scratch/prek/{prepost}_camp/twa_hp'
+        this_subj = os.path.join(subj_root, s)
+
+
+# make group averages & movies
+group = 'allSubjs'
+# loop over pre/post measurement time
+for prepost in ('pre', 'post'):
+    # loop over experimental conditions
+    for cond in conditions:
+        # loop over algorithms
+        for method in methods:
+            avg = 0
+            # make cross-subject average
+            for s in subjects:
+                this_subj = os.path.join(project_root, f'{prepost}_camp',
+                                         'twa_hp', s)
+                stc_path = os.path.join(
+                    this_subj, 'stc', f'{s}_{method}_fsaverage_{cond}-lh.stc')
+                avg += mne.read_source_estimate(stc_path)
+            avg /= len(subjects)
+            # save
+            avg_fname = f'fsaverage_{prepost}Camp_{method}_{cond}_GrandAvgN{len(subjects)}.stc'  # noqa
+            avg.save(os.path.join(avg_out_path, avg_fname))
+            # make movie
+            brain = avg.plot(subject='fsaverage', **brain_plot_kwargs)
+            mov_fname = f'{avg_fname[:-4]}.mov'
+            brain.save_movie(os.path.join(mov_out_path, mov_fname),
+                             **movie_kwargs)

@@ -12,9 +12,15 @@
     - `prek_setup_source.py` (makes hi-res brain model for each subject,
       creates a source space, plots the source space for quality check)
 
-3. Preliminary analysis: `prek_make_stcs.py` (makes STC for each subj, morphs
-   it to fsaverage, makes subj avg for each experimental condition). Results
-   are saved in `/mnt/scratch/prek/<PRE_OR_POST_CAMP>/twa_hp/<SUBJ>/stc`.
+3. Preliminary analysis:
+    - `prek_make_stcs.py` (makes STC for each subj, morphs it to fsaverage,
+      makes subj avg for each experimental condition). Results
+      are saved in `/mnt/scratch/prek/<PRE_OR_POST_CAMP>/twa_hp/<SUBJ>/stc`.
+    - `prek_make_group_averages.py` (makes average STC for each experimental
+      condition, across all subjects, separately for pre- and post-intervention
+      recordings). Writes group-average STCs and movies to
+      `/mnt/scratch/prek/results/group_averages` and `.../movies`
+      (respectively).
 
 4. Planned analyses:
     - `prek_make_group_averages.py`
