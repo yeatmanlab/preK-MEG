@@ -14,7 +14,8 @@ from mne.minimum_norm import apply_inverse, read_inverse_operator
 mne.set_log_level('WARNING')
 
 # config paths
-subjects_dir = '/mnt/scratch/prek/anat'
+project_root = '/mnt/scratch/prek'
+subjects_dir = os.path.join(project_root, 'anat')
 fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
                                   'fsaverage-ico-5-src.fif')
 # config other
@@ -39,8 +40,7 @@ for s in subjects:
     # loop over pre/post measurement time
     for prepost in ('pre', 'post'):
         # paths for this subject / timepoint
-        subj_root = '/mnt/scratch/prek/{prepost}_camp/twa_hp'
-        this_subj = os.path.join(subj_root, s)
+        this_subj = os.path.join(project_root, f'{prepost}_camp', 'twa_hp', s)
         inv_path = os.path.join(this_subj, 'inverse',
                                 f'{s}-80-sss-meg-inv.fif')
         evk_path = os.path.join(this_subj, 'inverse',
