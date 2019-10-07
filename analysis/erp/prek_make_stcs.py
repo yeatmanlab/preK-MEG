@@ -32,16 +32,19 @@ with open(os.path.join('..', '..', 'params', 'subjects.yaml'), 'r') as f:
 fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
 fsaverage_vertices = [s['vertno'] for s in fsaverage_src]
 
-# loop over pre/post measurement time
-for prepost in ('pre', 'post'):
-    subj_root = '/mnt/scratch/prek/{prepost}_camp/twa_hp'
-    # loop over subjects
-    for s in subjects:
-        print(f'processing {s}')
-        # paths for this subject
+# loop over subjects
+for s in subjects:
+    print(f'processing {s}')
+    already_morphed = False
+    # loop over pre/post measurement time
+    for prepost in ('pre', 'post'):
+        # paths for this subject / timepoint
+        subj_root = '/mnt/scratch/prek/{prepost}_camp/twa_hp'
         this_subj = os.path.join(subj_root, s)
-        inv_path = os.path.join(this_subj, 'inverse', f'{s}-80-sss-meg-inv.fif')
-        evk_path = os.path.join(this_subj, 'inverse', f'Conditions_80-sss_eq_{s}-ave.fif')  # noqa
+        inv_path = os.path.join(this_subj, 'inverse',
+                                f'{s}-80-sss-meg-inv.fif')
+        evk_path = os.path.join(this_subj, 'inverse',
+                                f'Conditions_80-sss_eq_{s}-ave.fif')
         stc_path = os.path.join(this_subj, 'stc')
         # prepare output dir
         if not os.path.isdir(stc_path):
@@ -57,13 +60,16 @@ for prepost in ('pre', 'post'):
             for idx, stc in enumerate(stcs):
                 out_fname = f'{s}_{method}_{evokeds[idx].comment}'
                 stc.save(os.path.join(stc_path, out_fname))
-            # morph to fsaverage. uses the most recent STC from the above loop
-            # (morph should end up the same for all stcs for one subject)
-            morph = mne.compute_source_morph(stc, subject_from=s.upper(),
-                                             subject_to='fsaverage',
-                                             subjects_dir=subjects_dir,
-                                             spacing=fsaverage_vertices,
-                                             smooth=smoothing_steps)
+            # morph to fsaverage. Doesn't recalculate for `post_camp` since
+            # anatomy hasn't changed; uses the most recent STC from the above
+            # saving loop (morph only needs the anatomy, not the MEG data)
+            if not already_morphed:
+                morph = mne.compute_source_morph(stc, subject_from=s.upper(),
+                                                 subject_to='fsaverage',
+                                                 subjects_dir=subjects_dir,
+                                                 spacing=fsaverage_vertices,
+                                                 smooth=smoothing_steps)
+                already_morphed = True
             morphed_stcs = [morph.apply(stc) for stc in stcs]
             # save morphed STCs
             for idx, stc in enumerate(morphed_stcs):
