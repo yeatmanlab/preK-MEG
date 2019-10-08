@@ -33,6 +33,9 @@ with open(os.path.join(paramdir, 'movie_params.yaml'), 'r') as f:
     movie_kwargs = yamload(f)
 with open(os.path.join(paramdir, 'subjects.yaml'), 'r') as f:
     subjects = yamload(f)
+with open(os.path.join(paramdir, 'skip_subjects.yaml'), 'r') as f:
+    skips = yamload(f)
+subjects = sorted(set(subjects) - set(skips))
 
 # make group averages & movies
 group = f'GrandAvgN{len(subjects)}FSAverage'

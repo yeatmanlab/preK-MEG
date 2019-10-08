@@ -8,6 +8,7 @@ Make original and morphed Source Time Course files
 
 import os
 import yaml
+from functools import partial
 import mne
 from mne.minimum_norm import apply_inverse, read_inverse_operator
 
@@ -26,8 +27,13 @@ lambda2 = 1. / snr ** 2
 smoothing_steps = 10
 
 # load subjects
-with open(os.path.join('..', '..', 'params', 'subjects.yaml'), 'r') as f:
-    subjects = yaml.load(f, Loader=yaml.FullLoader)
+paramdir = os.path.join('..', '..', 'params')
+yamload = partial(yaml.load, Loader=yaml.FullLoader)
+with open(os.path.join(paramdir, 'subjects.yaml'), 'r') as f:
+    subjects = yamload(f)
+with open(os.path.join(paramdir, 'skip_subjects.yaml'), 'r') as f:
+    skips = yamload(f)
+subjects = sorted(set(subjects) - set(skips))
 
 # for morph to fsaverage
 fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
@@ -35,10 +41,10 @@ fsaverage_vertices = [s['vertno'] for s in fsaverage_src]
 
 # loop over subjects
 for s in subjects:
-    print(f'processing {s}')
     already_morphed = False
     # loop over pre/post measurement time
     for prepost in ('pre', 'post'):
+        print(f'processing {s} {prepost}_camp')
         # paths for this subject / timepoint
         this_subj = os.path.join(project_root, f'{prepost}_camp', 'twa_hp', s)
         inv_path = os.path.join(this_subj, 'inverse',
