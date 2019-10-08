@@ -34,18 +34,8 @@ with open(os.path.join(paramdir, 'movie_params.yaml'), 'r') as f:
 with open(os.path.join(paramdir, 'subjects.yaml'), 'r') as f:
     subjects = yamload(f)
 
-# loop over subjects
-for s in subjects:
-    print(f'processing {s}')
-    # loop over pre/post measurement time
-    for prepost in ('pre', 'post'):
-        # paths for this subject / timepoint
-        subj_root = '/mnt/scratch/prek/{prepost}_camp/twa_hp'
-        this_subj = os.path.join(subj_root, s)
-
-
 # make group averages & movies
-group = 'allSubjs'
+group = f'GrandAvgN{len(subjects)}FSAverage'
 # loop over pre/post measurement time
 for prepost in ('pre', 'post'):
     # loop over experimental conditions
@@ -58,11 +48,12 @@ for prepost in ('pre', 'post'):
                 this_subj = os.path.join(project_root, f'{prepost}_camp',
                                          'twa_hp', s)
                 stc_path = os.path.join(
-                    this_subj, 'stc', f'{s}_{method}_fsaverage_{cond}-lh.stc')
+                    this_subj, 'stc',
+                    f'{s}FSAverage_{prepost}Camp_{method}_{cond}-lh.stc')
                 avg += mne.read_source_estimate(stc_path)
             avg /= len(subjects)
             # save
-            avg_fname = f'fsaverage_{prepost}Camp_{method}_{cond}_GrandAvgN{len(subjects)}.stc'  # noqa
+            avg_fname = f'{group}_{prepost}Camp_{method}_{cond}.stc'
             avg.save(os.path.join(avg_out_path, avg_fname))
             # make movie
             brain = avg.plot(subject='fsaverage', **brain_plot_kwargs)
