@@ -13,7 +13,8 @@
       creates a source space, plots the source space for quality check)
 
 3. Preliminary analysis: `prek_make_stcs.py` (makes STC for each subj, morphs
-   it to fsaverage, makes subj avg for each experimental condition)
+   it to fsaverage, makes subj avg for each experimental condition). Results
+   are saved in `/mnt/scratch/prek/<PRE_OR_POST_CAMP>/twa_hp/<SUBJ>/stc`.
 
 4. Planned analyses:
     - `prek_make_group_averages.py`
