@@ -8,6 +8,7 @@ Make original and morphed Source Time Course files
 
 import os
 import yaml
+from functools import partial
 import mne
 from mne.minimum_norm import apply_inverse, read_inverse_operator
 
@@ -26,8 +27,13 @@ lambda2 = 1. / snr ** 2
 smoothing_steps = 10
 
 # load subjects
-with open(os.path.join('..', '..', 'params', 'subjects.yaml'), 'r') as f:
-    subjects = yaml.load(f, Loader=yaml.FullLoader)
+paramdir = os.path.join('..', '..', 'params')
+yamload = partial(yaml.load, Loader=yaml.FullLoader)
+with open(os.path.join(paramdir, 'subjects.yaml'), 'r') as f:
+    subjects = yamload(f)
+with open(os.path.join(paramdir, 'skip_subjects.yaml'), 'r') as f:
+    skips = yamload(f)
+subjects = sorted(set(subjects) - set(skips))
 
 # for morph to fsaverage
 fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
@@ -35,10 +41,10 @@ fsaverage_vertices = [s['vertno'] for s in fsaverage_src]
 
 # loop over subjects
 for s in subjects:
-    print(f'processing {s}')
     already_morphed = False
     # loop over pre/post measurement time
     for prepost in ('pre', 'post'):
+        print(f'processing {s} {prepost}_camp')
         # paths for this subject / timepoint
         this_subj = os.path.join(project_root, f'{prepost}_camp', 'twa_hp', s)
         inv_path = os.path.join(this_subj, 'inverse',
@@ -58,7 +64,7 @@ for s in subjects:
                                   pick_ori=None) for evk in evokeds]
             # save STCs
             for idx, stc in enumerate(stcs):
-                out_fname = f'{s}_{method}_{evokeds[idx].comment}'
+                out_fname = f'{s}_{prepost}Camp_{method}_{evokeds[idx].comment}'  # noqa
                 stc.save(os.path.join(stc_path, out_fname))
             # morph to fsaverage. Doesn't recalculate for `post_camp` since
             # anatomy hasn't changed; uses the most recent STC from the above
@@ -73,5 +79,5 @@ for s in subjects:
             morphed_stcs = [morph.apply(stc) for stc in stcs]
             # save morphed STCs
             for idx, stc in enumerate(morphed_stcs):
-                out_fname = f'{s}_{method}_fsaverage_{evokeds[idx].comment}'
+                out_fname = f'{s}FSAverage_{prepost}Camp_{method}_{evokeds[idx].comment}'  # noqa
                 stc.save(os.path.join(stc_path, out_fname))
