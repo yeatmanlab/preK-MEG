@@ -23,5 +23,9 @@
       (respectively).
 
 4. Planned analyses:
-    - `prek_make_group_averages.py`
-    - `prek_contrast_conds.py`
+    - `prek_contrast_conds.py` makes across-subject-average STCs (separately
+      for pre- and post-camp recordings) for each pairwise condition contrast.
+
+    - `prek_contrast_prepost.py` makes post-camp-minus-pre-camp,
+      across-subject-average STCs for each condition and for each pairwise
+      condition contrast.
