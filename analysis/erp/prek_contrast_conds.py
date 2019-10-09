@@ -8,10 +8,9 @@ condition contrast
 """
 
 import os
-import yaml
-from functools import partial
 from itertools import combinations
 import mne
+from aux_functions import load_params
 
 # config paths
 subj_root = '/mnt/scratch/prek/pre_camp/twa_hp/'
@@ -21,15 +20,7 @@ mov_path = os.path.join(subj_root, 'movies')
 conditions = ('words', 'faces', 'cars')  # we purposely omit 'aliens' here
 methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
 # load params
-paramdir = os.path.join('..', '..', 'params')
-yamload = partial(yaml.load, Loader=yaml.FullLoader)
-with open(os.path.join(paramdir, 'brain_plot_params.yaml'), 'r') as f:
-    brain_plot_kwargs = yamload(f)
-with open(os.path.join(paramdir, 'movie_params.yaml'), 'r') as f:
-    movie_kwargs = yamload(f)
-with open(os.path.join(paramdir, 'subjects.yaml'), 'r') as f:
-    subjects = yamload(f)
-n_subj = len(subjects)
+brain_plot_kwargs, movie_kwargs, subjects = load_params()
 
 # generate contrast pairs
 contrasts = combinations(conditions, 2)
