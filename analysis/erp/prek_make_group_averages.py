@@ -7,13 +7,11 @@ Make average Source Time Course across all subjects, for each condition
 """
 
 import os
-import yaml
-from functools import partial
 import mne
+from aux_functions import load_params
 
 # config paths
 project_root = '/mnt/scratch/prek'
-subjects_dir = os.path.join(project_root, 'anat')
 avg_out_path = os.path.join(project_root, 'results', 'group_averages')
 mov_out_path = os.path.join(project_root, 'results', 'movies')
 for _dir in (avg_out_path, mov_out_path):
@@ -25,17 +23,7 @@ conditions = ('words', 'faces', 'cars', 'aliens')
 methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
 
 # load params
-paramdir = os.path.join('..', '..', 'params')
-yamload = partial(yaml.load, Loader=yaml.FullLoader)
-with open(os.path.join(paramdir, 'brain_plot_params.yaml'), 'r') as f:
-    brain_plot_kwargs = yamload(f)
-with open(os.path.join(paramdir, 'movie_params.yaml'), 'r') as f:
-    movie_kwargs = yamload(f)
-with open(os.path.join(paramdir, 'subjects.yaml'), 'r') as f:
-    subjects = yamload(f)
-with open(os.path.join(paramdir, 'skip_subjects.yaml'), 'r') as f:
-    skips = yamload(f)
-subjects = sorted(set(subjects) - set(skips))
+brain_plot_kwargs, movie_kwargs, subjects = load_params()
 
 # make group averages & movies
 group = f'GrandAvgN{len(subjects)}FSAverage'
