@@ -15,7 +15,6 @@ from aux_functions import load_params
 
 # config paths
 project_root = '/mnt/scratch/prek'
-subjects_dir = os.path.join(project_root, 'anat')
 avg_path = os.path.join(project_root, 'results', 'group_averages')
 mov_path = os.path.join(project_root, 'results', 'movies')
 prepost_out_path = os.path.join(project_root, 'results', 'prepost_contrasts')

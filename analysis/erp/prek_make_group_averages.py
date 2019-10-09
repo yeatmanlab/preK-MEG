@@ -12,7 +12,6 @@ from aux_functions import load_params
 
 # config paths
 project_root = '/mnt/scratch/prek'
-subjects_dir = os.path.join(project_root, 'anat')
 avg_out_path = os.path.join(project_root, 'results', 'group_averages')
 mov_out_path = os.path.join(project_root, 'results', 'movies')
 for _dir in (avg_out_path, mov_out_path):
