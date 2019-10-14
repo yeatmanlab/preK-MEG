@@ -11,19 +11,19 @@ contrast.
 import os
 from itertools import combinations
 import mne
-from aux_functions import load_params
+from aux_functions import load_paths, load_params
 
 # config paths
-project_root = '/mnt/scratch/prek'
-avg_path = os.path.join(project_root, 'results', 'group_averages')
-mov_path = os.path.join(project_root, 'results', 'movies')
-prepost_out_path = os.path.join(project_root, 'results', 'prepost_contrasts')
+_, _, results_dir = load_paths()
+avg_path = os.path.join(results_dir, 'group_averages')
+mov_path = os.path.join(results_dir, 'movies')
+prepost_out_path = os.path.join(results_dir, 'prepost_contrasts')
 if not os.path.isdir(prepost_out_path):
     os.makedirs(prepost_out_path, exist_ok=True)
 
 # config other
 conditions = ('words', 'faces', 'cars')  # we purposely omit 'aliens' here
-methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
+methods = ('dSPM',)  # dSPM, sLORETA, eLORETA
 
 # load params
 brain_plot_kwargs, movie_kwargs, subjects = load_params()

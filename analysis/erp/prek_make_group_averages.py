@@ -8,12 +8,12 @@ Make average Source Time Course across all subjects, for each condition
 
 import os
 import mne
-from aux_functions import load_params
+from aux_functions import load_paths, load_params
 
 # config paths
-project_root = '/mnt/scratch/prek'
-avg_out_path = os.path.join(project_root, 'results', 'group_averages')
-mov_out_path = os.path.join(project_root, 'results', 'movies')
+data_root, _, results_dir = load_paths()
+avg_out_path = os.path.join(results_dir, 'group_averages')
+mov_out_path = os.path.join(results_dir, 'movies')
 for _dir in (avg_out_path, mov_out_path):
     if not os.path.isdir(_dir):
         os.makedirs(_dir, exist_ok=True)
@@ -36,7 +36,7 @@ for prepost in ('pre', 'post'):
             avg = 0
             # make cross-subject average
             for s in subjects:
-                this_subj = os.path.join(project_root, f'{prepost}_camp',
+                this_subj = os.path.join(data_root, f'{prepost}_camp',
                                          'twa_hp', s)
                 stc_path = os.path.join(
                     this_subj, 'stc',
