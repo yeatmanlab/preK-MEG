@@ -1,6 +1,15 @@
-[prek_1490,  # problem w/ movement compensation (pre_camp, twa_hp)
-prek_1751,   # problem w/ movement compensation (pre_camp, twa_hp)
-prek_1966,   # problem w/ movement compensation (pre_camp, twa_hp)
-prek_1401,   # problem w/ movement compensation (post_camp, twa_hp)
-prek_1443,   # problem w/ movement compensation (post_camp, twa_hp)
-prek_1940]   # problem w/ movement compensation (post_camp, twa_hp)
+[prek_1103,
+prek_1184,
+prek_1293,
+prek_1372,
+prek_1382,
+prek_1401,
+prek_1460,
+prek_1673,
+prek_1691,
+prek_1706,
+prek_1916,
+prek_1921,
+prek_1936,
+prek_1939,
+prek_1966]
