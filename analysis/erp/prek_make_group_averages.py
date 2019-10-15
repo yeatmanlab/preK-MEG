@@ -37,7 +37,7 @@ for prepost in ('pre', 'post'):
             # make cross-subject average
             for s in subjects:
                 this_subj = os.path.join(data_root, f'{prepost}_camp',
-                                         'twa_hp', s)
+                                         'twa_hp', 'erp', s)
                 stc_path = os.path.join(
                     this_subj, 'stc',
                     f'{s}FSAverage_{prepost}Camp_{method}_{cond}-lh.stc')

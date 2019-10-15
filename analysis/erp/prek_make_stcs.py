@@ -37,7 +37,8 @@ for s in subjects:
     for prepost in ('pre', 'post'):
         print(f'processing {s} {prepost}_camp')
         # paths for this subject / timepoint
-        this_subj = os.path.join(data_root, f'{prepost}_camp', 'twa_hp', s)
+        this_subj = os.path.join(data_root,
+                                 f'{prepost}_camp', 'twa_hp', 'erp', s)
         inv_path = os.path.join(this_subj, 'inverse',
                                 f'{s}-80-sss-meg-inv.fif')
         evk_path = os.path.join(this_subj, 'inverse',
