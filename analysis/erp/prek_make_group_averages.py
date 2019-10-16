@@ -7,8 +7,11 @@ Make average Source Time Course across all subjects, for each condition
 """
 
 import os
+from mayavi import mlab
 import mne
 from aux_functions import load_paths, load_params
+
+mlab.options.offscreen = True
 
 # config paths
 data_root, _, results_dir = load_paths()
