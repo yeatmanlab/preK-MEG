@@ -26,6 +26,12 @@
     - `prek_contrast_conds.py` makes across-subject-average STCs (separately
       for pre- and post-camp recordings) for each pairwise condition contrast.
 
+    - `script-not-yet-written.py` makes group comparison STCs between the top
+      and bottom half of the participant cohort, as determined by letter-name
+      and letter-sound awareness of both uppercase and lowercase glyphs (this
+      data stored in `../behavioral/LetterKnowledge.csv`). This group
+      comparison is done only for the pre-camp MEG recordings.
+
     - `prek_contrast_prepost.py` makes post-camp-minus-pre-camp,
       across-subject-average STCs for each condition and for each pairwise
       condition contrast.
