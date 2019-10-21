@@ -7,16 +7,12 @@ Make original and morphed Source Time Course files
 """
 
 import os
-import yaml
-from functools import partial
 import mne
 from mne.minimum_norm import apply_inverse, read_inverse_operator
-
-mne.set_log_level('WARNING')
+from aux_functions import load_paths, load_params
 
 # config paths
-project_root = '/mnt/scratch/prek'
-subjects_dir = os.path.join(project_root, 'anat')
+data_root, subjects_dir, _ = load_paths()
 fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
                                   'fsaverage-ico-5-src.fif')
 # config other
@@ -26,14 +22,9 @@ snr = 3.
 lambda2 = 1. / snr ** 2
 smoothing_steps = 10
 
-# load subjects
-paramdir = os.path.join('..', '..', 'params')
-yamload = partial(yaml.load, Loader=yaml.FullLoader)
-with open(os.path.join(paramdir, 'subjects.yaml'), 'r') as f:
-    subjects = yamload(f)
-with open(os.path.join(paramdir, 'skip_subjects.yaml'), 'r') as f:
-    skips = yamload(f)
-subjects = sorted(set(subjects) - set(skips))
+# load params
+brain_plot_kwargs, movie_kwargs, subjects = load_params()
+del brain_plot_kwargs, movie_kwargs
 
 # for morph to fsaverage
 fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
@@ -46,7 +37,8 @@ for s in subjects:
     for prepost in ('pre', 'post'):
         print(f'processing {s} {prepost}_camp')
         # paths for this subject / timepoint
-        this_subj = os.path.join(project_root, f'{prepost}_camp', 'twa_hp', s)
+        this_subj = os.path.join(data_root,
+                                 f'{prepost}_camp', 'twa_hp', 'erp', s)
         inv_path = os.path.join(this_subj, 'inverse',
                                 f'{s}-80-sss-meg-inv.fif')
         evk_path = os.path.join(this_subj, 'inverse',

@@ -1,0 +1,2 @@
+- `BehavioralCutpoint.m` was used to create the file `LetterKnowledge.m`
+- `letter_knowledge.py` plots the behavioral data to validate the cutpoint
