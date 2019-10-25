@@ -12,6 +12,7 @@ import mne
 from aux_functions import load_paths, load_params
 
 mlab.options.offscreen = True
+mne.cuda.init_cuda()
 
 # config paths
 data_root, _, results_dir = load_paths()
