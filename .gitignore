@@ -1,2 +1,3 @@
 *.log
 *.tab
+**/__pycache__
