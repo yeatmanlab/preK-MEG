@@ -23,8 +23,8 @@ from aux_functions import load_paths, load_params, prep_cluster_stats_for_yaml
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
 rng = np.random.RandomState(seed=15485863)  # the one millionth prime
-n_jobs = 12
-# threshold_tfce = dict(start=0, step=0.2)
+n_jobs = 10
+threshold_tfce = dict(start=0, step=0.1)
 
 # load params
 brain_plot_kwargs, movie_kwargs, subjects = load_params()
@@ -59,7 +59,7 @@ conn_matrix = mne.spatial_src_connectivity(fsaverage_src)
 
 # prepare clustering function
 one_samp_test = partial(spatio_temporal_cluster_1samp_test,
-                        threshold=None,  # could use threshold_tfce
+                        threshold=threshold_tfce,
                         n_permutations=1024,
                         connectivity=conn_matrix,
                         n_jobs=n_jobs,
