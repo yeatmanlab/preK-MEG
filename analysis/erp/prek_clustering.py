@@ -24,7 +24,7 @@ mlab.options.offscreen = True
 mne.cuda.init_cuda()
 rng = np.random.RandomState(seed=15485863)  # the one millionth prime
 n_jobs = 12
-threshold_tfce = dict(start=0, step=0.1)
+# threshold_tfce = dict(start=0, step=0.2)
 
 # load params
 brain_plot_kwargs, movie_kwargs, subjects = load_params()
@@ -59,13 +59,13 @@ conn_matrix = mne.spatial_src_connectivity(fsaverage_src)
 
 # prepare clustering function
 one_samp_test = partial(spatio_temporal_cluster_1samp_test,
-                        threshold=threshold_tfce,
+                        threshold=None,  # could use threshold_tfce
                         n_permutations='all',
                         connectivity=conn_matrix,
                         n_jobs=n_jobs,
                         seed=rng,
                         spatial_exclude=None,  # bools, shape X, ignore non-ROI
-                        buffer_size=256)
+                        buffer_size=1024)
 
 # loop over algorithms
 for method in methods:
