@@ -60,7 +60,7 @@ conn_matrix = mne.spatial_src_connectivity(fsaverage_src)
 # prepare clustering function
 one_samp_test = partial(spatio_temporal_cluster_1samp_test,
                         threshold=None,  # could use threshold_tfce
-                        n_permutations='all',
+                        n_permutations=1024,
                         connectivity=conn_matrix,
                         n_jobs=n_jobs,
                         seed=rng,
