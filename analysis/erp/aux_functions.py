@@ -35,7 +35,8 @@ def prep_cluster_stats_for_yaml(cluster_results):
     (tvals, clusters, cluster_pvals, hzero) = cluster_results
     # collect clustering results into dict. Hacky conversions to float,
     # int, and list are because yaml doesn't understand numpy dtypes.
-    clusters = [[int(y) for y in x] for x in clusters]
+    clusters = [[time_idx.astype(int).tolist(), vert_idx.astype(int).tolist()]
+                for clust in clusters for (time_idx, vert_idx) in clust]
     stats = dict(n_clusters=len(clusters),
                  clusters=clusters,
                  tvals=tvals.tolist(),

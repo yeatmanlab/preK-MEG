@@ -31,7 +31,7 @@ brain_plot_kwargs, movie_kwargs, subjects = load_params()
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
-cluster_dir = os.path.join(data_root, 'clustering')
+cluster_dir = os.path.join(results_dir, 'clustering')
 if not os.path.isdir(cluster_dir):
     os.mkdir(cluster_dir)
 
