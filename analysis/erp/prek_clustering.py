@@ -15,25 +15,29 @@ import yaml
 from functools import partial
 from itertools import combinations
 import numpy as np
-from mayavi import mlab
 import mne
 from mne.stats import spatio_temporal_cluster_1samp_test
 from aux_functions import load_paths, load_params, prep_cluster_stats_for_yaml
 
-mlab.options.offscreen = True
 mne.cuda.init_cuda()
 rng = np.random.RandomState(seed=15485863)  # the one millionth prime
 n_jobs = 10
-threshold_tfce = dict(start=0, step=0.1)
+threshold = dict(start=0, step=0.1)  # or None
 
 # load params
 brain_plot_kwargs, movie_kwargs, subjects = load_params()
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
+# cluster results get different subfolders depending on threshold setting
 cluster_dir = os.path.join(results_dir, 'clustering')
+if isinstance(threshold, dict):
+    cluster_dir = os.path.join(cluster_dir,
+                               'tfce_{start}_{step}'.format(threshold))
+elif threshold is not None:
+    cluster_dir = os.path.join(cluster_dir, f'thresh_{threshold}')
 if not os.path.isdir(cluster_dir):
-    os.mkdir(cluster_dir)
+    os.makedirs(cluster_dir, exist_ok=True)
 
 # set cache dir
 cache_dir = os.path.join(data_root, 'cache')
@@ -59,7 +63,7 @@ conn_matrix = mne.spatial_src_connectivity(fsaverage_src)
 
 # prepare clustering function
 one_samp_test = partial(spatio_temporal_cluster_1samp_test,
-                        threshold=None,  # could use threshold_tfce
+                        threshold=threshold,
                         n_permutations=1024,
                         connectivity=conn_matrix,
                         n_jobs=n_jobs,
