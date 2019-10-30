@@ -33,7 +33,7 @@ data_root, subjects_dir, results_dir = load_paths()
 cluster_dir = os.path.join(results_dir, 'clustering')
 if isinstance(threshold, dict):
     cluster_dir = os.path.join(cluster_dir,
-                               'tfce_{start}_{step}'.format(threshold))
+                               'tfce_{start}_{step}'.format_map(threshold))
 elif threshold is not None:
     cluster_dir = os.path.join(cluster_dir, f'thresh_{threshold}')
 if not os.path.isdir(cluster_dir):
