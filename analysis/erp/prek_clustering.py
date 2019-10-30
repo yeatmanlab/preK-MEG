@@ -45,8 +45,8 @@ mne.set_cache_dir(cache_dir)
 conditions = ('words', 'faces', 'cars')  # we purposely omit 'aliens' here
 methods = ('dSPM',)  # dSPM, sLORETA, eLORETA
 
-# generate contrast pairs
-contrasts = combinations(conditions, 2)
+# generate contrast pairs (need list so can reuse)
+contrasts = list(combinations(conditions, 2))
 
 # the "group" name used in the contrast filenames
 group = f'GrandAvgN{len(subjects)}FSAverage'
