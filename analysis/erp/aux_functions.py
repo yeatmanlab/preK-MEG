@@ -35,9 +35,9 @@ def prep_cluster_stats(cluster_results):
     (tvals, clusters, cluster_pvals, hzero) = cluster_results
     stats = dict(n_clusters=len(clusters),
                  clusters=clusters,
-                 tvals=tvals.tolist(),
-                 pvals=cluster_pvals.tolist(),
+                 tvals=tvals,
+                 pvals=cluster_pvals,
                  # this is multicomparison-corrected already:
                  good_cluster_idxs=np.where(cluster_pvals < 0.05),
-                 hzero=hzero.tolist())
+                 hzero=hzero)
     return stats
