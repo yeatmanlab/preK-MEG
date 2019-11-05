@@ -11,13 +11,12 @@ perform parametric spatiotemporal clustering.
 """
 
 import os
-import yaml
 from functools import partial
 from itertools import combinations
 import numpy as np
 import mne
 from mne.stats import spatio_temporal_cluster_1samp_test
-from aux_functions import load_paths, load_params, prep_cluster_stats_for_yaml
+from aux_functions import load_paths, load_params
 
 mne.cuda.init_cuda()
 rng = np.random.RandomState(seed=15485863)  # the one millionth prime
@@ -96,35 +95,32 @@ for method in methods:
         for (cond_0, cond_1) in contrasts:
             X = (condition_dict[prepost][cond_0] -
                  condition_dict[prepost][cond_1])
-            cluster_results = one_samp_test(X)
-            stats = prep_cluster_stats_for_yaml(cluster_results)
+            tvals, clusters, cluster_pvals, hzero = one_samp_test(X)
             # save clustering results
             contr = f'{cond_0.capitalize()}Minus{cond_1.capitalize()}'
-            out_fname = f'{group}_{prepost}Camp_{method}_{contr}.yaml'
+            out_fname = f'{group}_{prepost}Camp_{method}_{contr}.npz'
             out_fpath = os.path.join(cluster_dir, out_fname)
-            with open(out_fpath, 'w') as f:
-                yaml.dump(stats, stream=f)
+            np.savez(out_fpath, tvals=tvals, clusters=clusters,
+                     cluster_pvals=cluster_pvals, hzero=hzero)
 
     # do the post-pre subtraction for single conditions
     for cond in conditions:
         X = condition_dict['post'][cond] - condition_dict['pre'][cond]
-        cluster_results = one_samp_test(X)
-        stats = prep_cluster_stats_for_yaml(cluster_results)
+        tvals, clusters, cluster_pvals, hzero = one_samp_test(X)
         # save clustering results
-        out_fname = f'{group}_PostCampMinusPreCamp_{method}_{cond}.yaml'
+        out_fname = f'{group}_PostCampMinusPreCamp_{method}_{cond}.npz'
         out_fpath = os.path.join(cluster_dir, out_fname)
-        with open(out_fpath, 'w') as f:
-            yaml.dump(stats, stream=f)
+        np.savez(out_fpath, tvals=tvals, clusters=clusters,
+                 cluster_pvals=cluster_pvals, hzero=hzero)
 
     # do the post-pre subtraction for contrasts
     for (cond_0, cond_1) in contrasts:
         X = (condition_dict['post'][cond_0] - condition_dict['post'][cond_1] -
              (condition_dict['pre'][cond_0] - condition_dict['pre'][cond_1]))
-        cluster_results = one_samp_test(X)
-        stats = prep_cluster_stats_for_yaml(cluster_results)
+        tvals, clusters, cluster_pvals, hzero = one_samp_test(X)
         # save clustering results
         contr = f'{cond_0.capitalize()}Minus{cond_1.capitalize()}'
         out_fname = f'{group}_PostCampMinusPreCamp_{method}_{contr}.yaml'
         out_fpath = os.path.join(cluster_dir, out_fname)
-        with open(out_fpath, 'w') as f:
-            yaml.dump(stats, stream=f)
+        np.savez(out_fpath, tvals=tvals, clusters=clusters,
+                 cluster_pvals=cluster_pvals, hzero=hzero)
