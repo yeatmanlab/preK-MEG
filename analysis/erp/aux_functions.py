@@ -3,6 +3,7 @@
 import os
 import yaml
 from functools import partial
+import numpy as np
 
 paramdir = os.path.join('..', '..', 'params')
 yamload = partial(yaml.load, Loader=yaml.FullLoader)
@@ -28,3 +29,19 @@ def load_paths():
     with open(os.path.join(paramdir, 'paths.yaml'), 'r') as f:
         paths = yamload(f)
     return paths['data_root'], paths['subjects_dir'], paths['results_dir']
+
+
+def prep_cluster_stats_for_yaml(cluster_results):
+    (tvals, clusters, cluster_pvals, hzero) = cluster_results
+    # collect clustering results into dict. Hacky conversions to float,
+    # int, or list are because yaml doesn't understand numpy dtypes.
+    clusters = [[clust[0].astype(int).tolist(), clust[1].astype(int).tolist()]
+                for clust in clusters]
+    stats = dict(n_clusters=len(clusters),
+                 clusters=clusters,
+                 tvals=tvals.tolist(),
+                 pvals=cluster_pvals.tolist(),
+                 # this is multicomparison-corrected already:
+                 good_cluster_idxs=np.where(cluster_pvals < 0.05),
+                 hzero=hzero.tolist())
+    return stats
