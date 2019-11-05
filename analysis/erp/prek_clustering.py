@@ -22,7 +22,7 @@ from aux_functions import load_paths, load_params, prep_cluster_stats_for_yaml
 mne.cuda.init_cuda()
 rng = np.random.RandomState(seed=15485863)  # the one millionth prime
 n_jobs = 10
-threshold = dict(start=0, step=0.1)  # or None
+threshold = None  # or dict(start=0, step=0.2) for TFCE
 
 # load params
 brain_plot_kwargs, movie_kwargs, subjects = load_params()
