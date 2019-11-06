@@ -21,7 +21,7 @@ import numpy as np
 
 print(mnefun)
 
-fixed_or_twa = 'twa' # venience variable for doing different runs
+fixed_or_twa = 'twa' # convenience variable for doing different runs
 pre_or_post = 'post'
 
 if fixed_or_twa == 'fixed':
@@ -30,11 +30,11 @@ else:
     trans_to = 'twa'
 
 pskt_dir = '/mnt/scratch/prek/%s_camp/%s_hp/pskt/' % (pre_or_post, fixed_or_twa)
-skip = ['prek_1259', 'prek_1451']
-subjects = [x for x in os.listdir(pskt_dir) if op.isdir(op.join(pskt_dir, x)) and 'prek' in x and not np.in1d(x, skip)]
-# subjects = ['prek_1372', 'prek_1714']
-subjects.sort()
-print(subjects)
+
+# load subjects
+with open(os.path.join('..', '..', 'params', 'subjects.yaml'), 'r') as f:
+    subjects = yaml.load(f, Loader=yaml.FullLoader
+
 structurals = ['PREK%s' %x[4:] for x in subjects]
 
 params = mnefun.Params(tmin=-0.1, tmax=1, n_jobs=2,

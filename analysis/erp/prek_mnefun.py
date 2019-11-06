@@ -34,19 +34,13 @@ params = mnefun.Params(tmin=-0.1, tmax=1, t_adjust=-0.067, n_jobs=2,
                        n_jobs_resample=2,
                        bmin=-0.1, bem_type='5120')
 # load subjects
-# with open(os.path.join('..', '..', 'params', 'subjects.yaml'), 'r') as f:
-#     params.subjects = yaml.load(f, Loader=yaml.FullLoader)
+with open(os.path.join('..', '..', 'params', 'subjects.yaml'), 'r') as f:
+    subjects = yaml.load(f, Loader=yaml.FullLoader)
 
-import os.path as op
-erp_dir = '/mnt/scratch/prek/%s_camp/twa_hp/erp/' % (pre_or_post)
-skip = ['prek_1259', 'prek_1451']
-subjects = [x for x in os.listdir(erp_dir) if op.isdir(op.join(erp_dir, x)) and 'prek' in x and not np.in1d(x, skip)]
-subjects.sort()
 print(subjects)
 structurals = ['PREK%s' %x[4:] for x in subjects]
 
 params.subjects = subjects
-
 params.work_dir = target_dir
 params.subjects_dir = '/mnt/scratch/prek/anat'
 params.score = prek_score
