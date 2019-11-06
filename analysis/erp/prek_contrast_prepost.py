@@ -27,7 +27,7 @@ if not os.path.isdir(prepost_out_path):
 
 # config other
 conditions = ('words', 'faces', 'cars')  # we purposely omit 'aliens' here
-methods = ('dSPM',)  # dSPM, sLORETA, eLORETA
+methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
 
 # load params
 brain_plot_kwargs, movie_kwargs, subjects = load_params()
