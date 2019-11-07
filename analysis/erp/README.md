@@ -12,29 +12,38 @@
     - `prek_setup_source.py` (makes hi-res brain model for each subject,
       creates a source space, plots the source space for quality check)
 
-3. Preliminary analysis:
+3. Preliminary aggregation:
     - `prek_make_stcs.py` (makes STC for each subj, morphs it to fsaverage,
-      makes subj avg for each experimental condition). Results
-      are saved in `/mnt/scratch/prek/<PRE_OR_POST_CAMP>/twa_hp/<SUBJ>/stc`.
+      makes subj avg for each experimental condition). Results are saved in
+      `/mnt/scratch/prek/<PRE_OR_POST_CAMP>/twa_hp/erp/<SUBJ>/stc`.
     - `prek_make_group_averages.py` (makes average STC for each experimental
       condition, across all subjects, separately for pre- and post-intervention
       recordings). Writes group-average STCs and movies to
       `/mnt/scratch/prek/results/group_averages` and `.../movies`
       (respectively).
 
-4. Planned analyses:
+4. Preliminary analyses:
     - `prek_contrast_conds.py` makes across-subject-average STCs (separately
       for pre- and post-camp recordings) for each pairwise condition contrast.
 
+    - `prek_contrast_prepost.py` makes post-camp-minus-pre-camp,
+      across-subject-average STCs for each condition and for each pairwise
+      condition contrast.
+
+5. Planned analyses:
     - `script-not-yet-written.py` makes group comparison STCs between the top
       and bottom half of the participant cohort, as determined by letter-name
       and letter-sound awareness of both uppercase and lowercase glyphs (this
       data stored in `../behavioral/LetterKnowledge.csv`). This group
       comparison is done only for the pre-camp MEG recordings.
 
-    - `prek_contrast_prepost.py` makes post-camp-minus-pre-camp,
-      across-subject-average STCs for each condition and for each pairwise
-      condition contrast.
+    - `script-not-yet-written.py` makes group comparison STCs depending on
+      which treatment group the subject was assigned to ("language"
+      intervention or "literacy" intervention; cohort information is stored in
+      `../behavioral/LetterKnowledge.csv`). This group comparison is done only
+      for the post-camp MEG recordings and the post-camp-minus-pre-camp
+      differences.
+
 
 ## Filename conventions
 

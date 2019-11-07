@@ -56,7 +56,8 @@ for s in subjects:
                                   pick_ori=None) for evk in evokeds]
             # save STCs
             for idx, stc in enumerate(stcs):
-                out_fname = f'{s}_{prepost}Camp_{method}_{evokeds[idx].comment}'  # noqa
+                out_fname = (f'{s}_{prepost}Camp_{method}_'
+                             f'{evokeds[idx].comment}')
                 stc.save(os.path.join(stc_path, out_fname))
             # morph to fsaverage. Doesn't recalculate for `post_camp` since
             # anatomy hasn't changed; uses the most recent STC from the above
@@ -71,5 +72,6 @@ for s in subjects:
             morphed_stcs = [morph.apply(stc) for stc in stcs]
             # save morphed STCs
             for idx, stc in enumerate(morphed_stcs):
-                out_fname = f'{s}FSAverage_{prepost}Camp_{method}_{evokeds[idx].comment}'  # noqa
+                out_fname = (f'{s}FSAverage_{prepost}Camp_{method}_'
+                             f'{evokeds[idx].comment}')
                 stc.save(os.path.join(stc_path, out_fname))
