@@ -32,13 +32,14 @@ methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
 # load params
 brain_plot_kwargs, movie_kwargs, subjects = load_params()
 
-# generate contrast pairs
-contrasts = combinations(conditions, 2)
+# generate contrast pairs (need a list so we can loop over it twice)
+contrasts = list(combinations(conditions, 2))
 
 # make contrast STCs & movies
 group = f'GrandAvgN{len(subjects)}FSAverage'
 # loop over algorithms
 for method in methods:
+    # dict to hold post-minus-pre for each condition
     condition_dict = dict()
     # load the STC for each condition, pre- and post-camp
     for cond in conditions:
@@ -51,12 +52,12 @@ for method in methods:
         stc = prepost_dict['post'] - prepost_dict['pre']
         prepost_fname = f'{group}_PostCampMinusPreCamp_{method}_{cond}'
         stc.save(os.path.join(prepost_path, prepost_fname))
+        # retain post-minus-pre for each condition, for condition contrasts
+        condition_dict[cond] = stc
         # make movie
         brain = stc.plot(subject='fsaverage', **brain_plot_kwargs)
         mov_fname = f'{prepost_fname}.mov'
         brain.save_movie(os.path.join(mov_path, mov_fname), **movie_kwargs)
-        # retain post-minus-pre for each condition, for condition contrasts
-        condition_dict[cond] = stc
     # clean up
     del prepost_dict, brain
 

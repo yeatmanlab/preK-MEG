@@ -31,8 +31,8 @@ methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
 # load params
 brain_plot_kwargs, movie_kwargs, subjects = load_params()
 
-# generate contrast pairs
-contrasts = combinations(conditions, 2)
+# generate contrast pairs (need a list so we can loop over it twice)
+contrasts = list(combinations(conditions, 2))
 
 # make contrast STCs & movies
 group = f'GrandAvgN{len(subjects)}FSAverage'
