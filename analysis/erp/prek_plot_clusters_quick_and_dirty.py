@@ -54,7 +54,7 @@ for method in methods:
                                      stc_fname)
             stc = mne.read_source_estimate(stc_fpath)
             # load the cluster results
-            cluster_fname = f'{stc_fname[:-4]}.npz'
+            cluster_fname = f'{stc_fname}.npz'
             cluster_fpath = os.path.join(cluster_dir, cluster_fname)
             cluster_dict = np.load(cluster_fpath, allow_pickle=True)
             # KEYS: clusters tvals pvals hzero good_cluster_idxs n_clusters.
