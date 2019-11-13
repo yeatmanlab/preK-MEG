@@ -31,8 +31,9 @@ cluster_dir = os.path.join(results_dir, 'clustering')  # TODO could be a subdir
 conditions = ('words', 'faces', 'cars')  # we purposely omit 'aliens' here
 methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
 
-# generate contrast pairs (need a list so we can use it twice)
-contrasts = list(combinations(conditions, 2))
+# generate contrast names
+contrasts = [f'{cond_0.capitalize()}Minus{cond_1.capitalize()}'
+             for (cond_0, cond_1) in combinations(conditions, 2)]
 
 # the "group" name used in the contrast filenames
 group = f'GrandAvgN{len(subjects)}FSAverage'
@@ -101,19 +102,17 @@ for method in methods:
     # loop over pre/post measurement time
     for prepost in ('pre', 'post'):
         # loop over contrasts
-        for (cond_0, cond_1) in contrasts:
-            contr = f'{cond_0.capitalize()}Minus{cond_1.capitalize()}'
-            make_cluster_movie(prepost=prepost, con=contr,
+        for contrast in contrasts:
+            make_cluster_movie(prepost=prepost, con=contrast,
                                results_subdir='condition_contrasts',
                                **common_kwargs)
     # post-pre subtraction for single conditions
-    for cond in conditions:
-        make_cluster_movie(prepost='PostCampMinusPre', con=cond,
+    for condition in conditions:
+        make_cluster_movie(prepost='PostCampMinusPre', con=condition,
                            results_subdir='prepost_contrasts',
                            **common_kwargs)
     # post-pre subtraction for condition contrasts
-    for (cond_0, cond_1) in contrasts:
-        contr = f'{cond_0.capitalize()}Minus{cond_1.capitalize()}'
-        make_cluster_movie(prepost='PostCampMinusPre', con=contr,
+    for contrast in contrasts:
+        make_cluster_movie(prepost='PostCampMinusPre', con=contrast,
                            results_subdir='prepost_contrasts',
                            **common_kwargs)
