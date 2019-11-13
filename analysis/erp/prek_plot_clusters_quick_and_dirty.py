@@ -33,25 +33,22 @@ cluster_dir = os.path.join(results_dir, 'clustering')
 conditions = ('words', 'faces', 'cars')  # we purposely omit 'aliens' here
 methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
 
-# generate contrast pairs
-contrasts = combinations(conditions, 2)
-contrast_strings = [f'{cond_0.capitalize()}Minus{cond_1.capitalize()}'
-                    for (cond_0, cond_1) in contrasts]
+# generate contrast pairs (need a list so we can use it twice)
+contrasts = list(combinations(conditions, 2))
 
 # the "group" name used in the contrast filenames
 group = f'GrandAvgN{len(subjects)}FSAverage'
 
-all_conds = list(conditions) + contrast_strings
 
 # loop over algorithms
 for method in methods:
-    condition_dict = dict()
     # loop over pre/post measurement time
-    for prepost in ('pre', 'post', 'PostCampMinusPre'):
+    for prepost in ('pre', 'post'):
         # loop over condition
-        for con in all_conds:
+        for (cond_0, cond_1) in contrasts:
+            contr = f'{cond_0.capitalize()}Minus{cond_1.capitalize()}'
             # load the STC
-            stc_fname = f'{group}_{prepost}Camp_{method}_{con}'
+            stc_fname = f'{group}_{prepost}Camp_{method}_{contr}'
             stc_fpath = os.path.join(results_dir, 'condition_contrasts',
                                      stc_fname)
             stc = mne.read_source_estimate(stc_fpath)
