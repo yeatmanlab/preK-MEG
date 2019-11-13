@@ -66,9 +66,18 @@ for method in methods:
             # all clusters, each subsequent time point shows a single cluster,
             # and the colormap indicates the duration for which the cluster was
             # significant
-            cluster_stc = mne.stats.summarize_clusters_stc(clu)
-            cluster_stc.save(os.path.join(obj_path, f'{stc_fname}_clusters'))
-            # plot the clusters
-            brain = cluster_stc.plot(**brain_plot_kwargs)
-            outfile = os.path.join(img_path, f'{stc_fname}_clusters.png')
-            brain.save_image(outfile)
+            cluster_stc_fname = os.path.join(obj_path, f'{stc_fname}_clusters')
+            has_signif_clusters = False
+            try:
+                cluster_stc = mne.stats.summarize_clusters_stc(clu)
+                has_signif_clusters = True
+            except RuntimeError:
+                with open(f'{cluster_stc_fname}_NO-SIGNIFICANT-CLUSTERS.txt',
+                          'w') as f:
+                    f.write('no significant clusters')
+            if has_signif_clusters:
+                cluster_stc.save(cluster_stc_fname)
+                # plot the clusters
+                brain = cluster_stc.plot(**brain_plot_kwargs)
+                outfile = os.path.join(img_path, f'{stc_fname}_clusters.png')
+                brain.save_image(outfile)
