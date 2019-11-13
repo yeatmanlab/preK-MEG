@@ -33,23 +33,25 @@ cluster_dir = os.path.join(results_dir, 'clustering')
 conditions = ('words', 'faces', 'cars')  # we purposely omit 'aliens' here
 methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
 
-# generate contrast pairs (need a list so we can use it twice)
-contrasts = list(combinations(conditions, 2))
+# generate contrast pairs
+contrasts = combinations(conditions, 2)
+contrast_strings = [f'{cond_0.capitalize()}Minus{cond_1.capitalize()}'
+                    for (cond_0, cond_1) in contrasts]
 
 # the "group" name used in the contrast filenames
 group = f'GrandAvgN{len(subjects)}FSAverage'
 
+all_conds = list(conditions) + contrast_strings
 
 # loop over algorithms
 for method in methods:
     condition_dict = dict()
     # loop over pre/post measurement time
-    for prepost in ('pre', 'post'):
+    for prepost in ('pre', 'post', 'PostCampMinusPre'):
         # loop over condition
-        for (cond_0, cond_1) in contrasts:
-            contr = f'{cond_0.capitalize()}Minus{cond_1.capitalize()}'
+        for con in all_conds:
             # load the STC
-            stc_fname = f'{group}_{prepost}Camp_{method}_{contr}'
+            stc_fname = f'{group}_{prepost}Camp_{method}_{con}'
             stc_fpath = os.path.join(results_dir, 'condition_contrasts',
                                      stc_fname)
             stc = mne.read_source_estimate(stc_fpath)
@@ -72,8 +74,9 @@ for method in methods:
                 cluster_stc = mne.stats.summarize_clusters_stc(clu)
                 has_signif_clusters = True
             except RuntimeError:
-                with open(f'{cluster_stc_fname}_NO-SIGNIFICANT-CLUSTERS.txt',
-                          'w') as f:
+                txt_path = os.path.join(
+                    img_path, f'{stc_fname}_NO-SIGNIFICANT-CLUSTERS.txt')
+                with open(txt_path, 'w') as f:
                     f.write('no significant clusters')
             if has_signif_clusters:
                 cluster_stc.save(cluster_stc_fname)
