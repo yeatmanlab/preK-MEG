@@ -46,7 +46,8 @@ for method in methods:
     # loop over pre/post measurement time
     for prepost in ('pre', 'post'):
         # loop over condition
-        for contr in contrasts:
+        for (cond_0, cond_1) in contrasts:
+            contr = f'{cond_0.capitalize()}Minus{cond_1.capitalize()}'
             # load the STC
             stc_fname = f'{group}_{prepost}Camp_{method}_{contr}'
             stc_fpath = os.path.join(results_dir, 'condition_contrasts',
