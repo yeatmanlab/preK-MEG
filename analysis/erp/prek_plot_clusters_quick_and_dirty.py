@@ -45,8 +45,11 @@ group = f'GrandAvgN{len(subjects)}FSAverage'
 def make_cluster_stc(group, prepost, method, con, results_dir,
                      results_subdir, cluster_dir, cluster_stc_dir, img_dir):
     """NB: 'con' can be either condition (str) or contrast (tuple)."""
-    # we don't need to load the STC, but we need its name
+    # load the STC
     stc_fname = f'{group}_{prepost}Camp_{method}_{con}'
+    stc_fpath = os.path.join(results_dir, results_subdir, stc_fname)
+    stc = mne.read_source_estimate(stc_fpath)
+    vertices = stc.vertices
     # load the cluster results
     cluster_fname = f'{stc_fname}.npz'
     cluster_fpath = os.path.join(cluster_dir, cluster_fname)
@@ -63,7 +66,7 @@ def make_cluster_stc(group, prepost, method, con, results_dir,
     cluster_stc_fpath = os.path.join(cluster_stc_dir, f'{stc_fname}_clusters')
     has_signif_clusters = False
     try:
-        cluster_stc = mne.stats.summarize_clusters_stc(clu)
+        cluster_stc = mne.stats.summarize_clusters_stc(clu, vertices=vertices)
         has_signif_clusters = True
     except RuntimeError:
         txt_path = os.path.join(
