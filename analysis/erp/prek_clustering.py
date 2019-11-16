@@ -60,6 +60,37 @@ fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
 fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
 conn_matrix = mne.spatial_src_connectivity(fsaverage_src)
 
+# labels to exclude (medial wall), from 10.1016/j.neuroimage.2010.06.010
+label_names = ('G_and_S_paracentral',      # 3
+               'G_and_S_cingul-Ant',       # 6
+               'G_and_S_cingul-Mid-Ant',   # 7
+               'G_and_S_cingul-Mid-Post',  # 8
+               'G_cingul-Post-dorsal',     # 9
+               'G_cingul-Post-ventral',    # 10
+               'G_front_sup',              # 16
+               'G_oc-temp_med-Parahip',    # 23
+               'G_precuneus',              # 30
+               'G_rectus',                 # 31
+               'G_subcallosal',            # 32
+               'S_cingul-Marginalis',      # 46
+               'S_pericallosal',           # 66
+               'S_suborbital',             # 70
+               'S_subparietal',            # 71
+               )
+regexp = '|'.join(label_names)
+medial_wall = dict()
+for hemi in ('lh', 'rh'):
+    medial_wall[hemi] = mne.read_labels_from_annot(
+        subject='fsaverage', parc='aparc.a2009s', hemi=hemi,
+        subjects_dir=subjects_dir, regexp=regexp)
+    assert len(medial_wall[hemi]) == len(label_names)
+    # merge the labels using the sum(..., start) hack
+    medial_wall[hemi] = sum(medial_wall[hemi][1:], medial_wall[hemi][0])
+    assert len(medial_wall[hemi].name.split('+')) == len(label_names)
+spatial_exclude = np.concatenate(
+    [medial_wall['lh'].vertices,
+     medial_wall['rh'].vertices + len(fsaverage_src[0]['vertno'])])
+
 # prepare clustering function
 one_samp_test = partial(spatio_temporal_cluster_1samp_test,
                         threshold=threshold,
@@ -67,7 +98,7 @@ one_samp_test = partial(spatio_temporal_cluster_1samp_test,
                         connectivity=conn_matrix,
                         n_jobs=n_jobs,
                         seed=rng,
-                        spatial_exclude=None,  # bools, shape X, ignore non-ROI
+                        spatial_exclude=spatial_exclude,
                         buffer_size=1024)
 
 # loop over algorithms
