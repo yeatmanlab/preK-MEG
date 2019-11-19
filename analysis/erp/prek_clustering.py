@@ -46,11 +46,11 @@ contrasts = list(combinations(conditions, 2))
 # the "group" name used in the contrast filenames
 group = f'GrandAvgN{len(subjects)}FSAverage'
 
-# load fsaverage source space to get connectivity matrix
-fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
-                                  'fsaverage-ico-5-src.fif')
-fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
-conn_matrix = mne.spatial_src_connectivity(fsaverage_src)
+# # load fsaverage source space to get n_verts in left hemi
+# fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
+#                                   'fsaverage-ico-5-src.fif')
+# fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
+# conn_matrix = mne.spatial_src_connectivity(fsaverage_src)
 
 if spatial_exclude is not None:
     # labels to exclude, see 10.1016/j.neuroimage.2010.06.010
@@ -83,7 +83,7 @@ if spatial_exclude is not None:
         assert len(exclusion[hemi].name.split('+')) == len(label_names)
     spatial_exclude = np.concatenate(
         [exclusion['lh'].vertices,
-         exclusion['rh'].vertices + len(fsaverage_src[0]['vertno'])])
+         exclusion['rh'].vertices])  # + len(fsaverage_src[0]['vertno']) ??
 
 # cluster results get different subfolders depending on threshold / exclude
 cluster_root = os.path.join(results_dir, 'clustering')
