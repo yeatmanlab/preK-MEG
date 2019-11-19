@@ -83,7 +83,7 @@ def make_cluster_movie(group, prepost, method, con, results_dir,
                            "hemispheres, this shouldn't happen.")
                     raise RuntimeError(err)
                 # select the vertices in the cluster & convert to Label
-                verts = stc.vertices[hemi][spatial_idxs]
+                verts = np.unique(stc.vertices[hemi][spatial_idxs])
                 hemi_str = ('lh', 'rh')[hemi]
                 label = mne.Label(verts, hemi=hemi_str,
                                   subject=stc.subject)
