@@ -86,7 +86,7 @@ if spatial_exclude is not None:
                            fsaverage_src[hemi_idx]['vertno'])
     spatial_exclude = np.concatenate(
         [exclusion['lh'].vertices,
-         exclusion['rh'].vertices + len(fsaverage_src[0]['vertno']])
+         exclusion['rh'].vertices + len(fsaverage_src[0]['vertno'])])
 # cluster results get different subfolders depending on threshold / exclude
 cluster_root = os.path.join(results_dir, 'clustering')
 if spatial_exclude is not None:
