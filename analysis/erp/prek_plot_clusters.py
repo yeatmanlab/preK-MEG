@@ -22,10 +22,11 @@ brain_plot_kwargs, movie_kwargs, subjects = load_params()
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
+cluster_dir = os.path.join(results_dir, 'clustering')
+frames_dir = os.path.join(cluster_dir, 'frames')
 mov_dir = os.path.join(results_dir, 'movies', 'clustering')
 if not os.path.isdir(mov_dir):
     os.mkdir(mov_dir)
-cluster_dir = os.path.join(results_dir, 'clustering')  # TODO could be a subdir
 
 # config other
 conditions = ('words', 'faces', 'cars')  # we purposely omit 'aliens' here
@@ -59,9 +60,8 @@ def make_cluster_movie(group, prepost, method, con, results_dir,
     # keys: clusters tvals pvals hzero good_cluster_idxs n_clusters
     signif_clu = cluster_dict['good_cluster_idxs'][0]
     # prepare output directory
-    frames_dir = os.path.join(mov_dir, f'{stc_fname}_frames')
-    if not os.path.isdir(frames_dir):
-        os.mkdir(frames_dir)
+    this_frames_dir = os.path.join(frames_dir, f'{stc_fname}_frames')
+    os.makedirs(this_frames_dir, exist_ok=True)
     # plot the brain
     brain = stc.plot(subject='fsaverage', **brain_plot_kwargs)
     # loop over time points
@@ -88,10 +88,10 @@ def make_cluster_movie(group, prepost, method, con, results_dir,
                 label = mne.Label(verts, hemi=hemi_str,
                                   subject=stc.subject)
                 # fill in verts that are surrounded by cluster verts
-                # label = label.fill(fsaverage_src)
+                label = label.fill(fsaverage_src)
                 brain.add_label(label, borders=True, color='m')
         frame_fname = f'{stc_fname}_{t_idx:03}.png'
-        brain.save_image(os.path.join(frames_dir, frame_fname))
+        brain.save_image(os.path.join(this_frames_dir, frame_fname))
         brain.remove_labels()
 
 
