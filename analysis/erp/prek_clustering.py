@@ -73,7 +73,7 @@ if spatial_exclude is not None:
                    )
     regexp = '|'.join(label_names)
     exclusion = dict()
-    for hemi in ('lh', 'rh'):
+    for hemi_idx, hemi in enumerate(('lh', 'rh')):
         exclusion[hemi] = mne.read_labels_from_annot(
             subject='fsaverage', parc='aparc.a2009s', hemi=hemi,
             subjects_dir=subjects_dir, regexp=regexp)
@@ -81,10 +81,12 @@ if spatial_exclude is not None:
         # merge the labels using the sum(..., start) hack
         exclusion[hemi] = sum(exclusion[hemi][1:], exclusion[hemi][0])
         assert len(exclusion[hemi].name.split('+')) == len(label_names)
+        exclusion[hemi].vertices = \
+            np.intersect1d(exclusion[hemi].vertices,
+                           fsaverage_src[hemi_idx]['vertno'])
     spatial_exclude = np.concatenate(
         [exclusion['lh'].vertices,
-         exclusion['rh'].vertices])  # + len(fsaverage_src[0]['vertno']) ??
-
+         exclusion['rh'].vertices + len(fsaverage_src[0]['vertno']])
 # cluster results get different subfolders depending on threshold / exclude
 cluster_root = os.path.join(results_dir, 'clustering')
 if spatial_exclude is not None:
