@@ -22,7 +22,7 @@ mne.cuda.init_cuda()
 rng = np.random.RandomState(seed=15485863)  # the one millionth prime
 n_jobs = 10
 threshold = None        # or dict(start=0, step=0.2) for TFCE
-spatial_exclude = None  # None -> whole brain; True -> use labels listed below
+spatial_exclude = True  # None -> whole brain; True -> use labels listed below
 
 # load params
 brain_plot_kwargs, movie_kwargs, subjects = load_params()
