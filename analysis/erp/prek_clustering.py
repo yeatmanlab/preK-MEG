@@ -21,8 +21,8 @@ from aux_functions import load_paths, load_params, prep_cluster_stats
 mne.cuda.init_cuda()
 rng = np.random.RandomState(seed=15485863)  # the one millionth prime
 n_jobs = 10
-threshold = None  # or dict(start=0, step=0.2) for TFCE
-spatial_exclude = True
+threshold = None        # or dict(start=0, step=0.2) for TFCE
+spatial_exclude = None  # None -> whole brain; True -> use labels listed below
 
 # load params
 brain_plot_kwargs, movie_kwargs, subjects = load_params()
@@ -52,7 +52,7 @@ fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
 fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
 conn_matrix = mne.spatial_src_connectivity(fsaverage_src)
 
-if spatial_exclude:
+if spatial_exclude is not None:
     # labels to exclude (medial wall), from 10.1016/j.neuroimage.2010.06.010
     label_names = ('G_and_S_paracentral',      # 3
                    'G_and_S_cingul-Ant',       # 6
@@ -86,7 +86,7 @@ if spatial_exclude:
 
 # cluster results get different subfolders depending on threshold / exclude
 cluster_root = os.path.join(results_dir, 'clustering')
-if spatial_exclude:
+if spatial_exclude is not None:
     cluster_subdir = f"exclude-{exclusion['lh'].name.replace(' ', '')}"
 else:
     cluster_subdir = 'whole-brain'
