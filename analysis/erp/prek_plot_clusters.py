@@ -22,11 +22,14 @@ brain_plot_kwargs, movie_kwargs, subjects = load_params()
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
-cluster_dir = os.path.join(results_dir, 'clustering')
-frames_dir = os.path.join(cluster_dir, 'frames')
+cluster_root = os.path.join(results_dir, 'clustering')
 mov_dir = os.path.join(results_dir, 'movies', 'clustering')
 if not os.path.isdir(mov_dir):
     os.mkdir(mov_dir)
+# get most current cluster subfolder
+with open(os.path.join(cluster_root, 'most-recent-clustering.txt'), 'r') as f:
+    cluster_dir = f.readline().strip()
+frames_dir = os.path.join(cluster_dir, 'frames')
 
 # config other
 conditions = ('words', 'faces', 'cars')  # we purposely omit 'aliens' here

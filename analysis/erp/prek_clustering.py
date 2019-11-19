@@ -22,21 +22,13 @@ mne.cuda.init_cuda()
 rng = np.random.RandomState(seed=15485863)  # the one millionth prime
 n_jobs = 10
 threshold = None  # or dict(start=0, step=0.2) for TFCE
+spatial_exclude = True
 
 # load params
 brain_plot_kwargs, movie_kwargs, subjects = load_params()
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
-# cluster results get different subfolders depending on threshold setting
-cluster_dir = os.path.join(results_dir, 'clustering')
-if isinstance(threshold, dict):
-    cluster_dir = os.path.join(cluster_dir,
-                               'tfce_{start}_{step}'.format_map(threshold))
-elif threshold is not None:
-    cluster_dir = os.path.join(cluster_dir, f'thresh_{threshold}')
-if not os.path.isdir(cluster_dir):
-    os.makedirs(cluster_dir, exist_ok=True)
 
 # set cache dir
 cache_dir = os.path.join(data_root, 'cache')
@@ -60,36 +52,55 @@ fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
 fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
 conn_matrix = mne.spatial_src_connectivity(fsaverage_src)
 
-# labels to exclude (medial wall), from 10.1016/j.neuroimage.2010.06.010
-label_names = ('G_and_S_paracentral',      # 3
-               'G_and_S_cingul-Ant',       # 6
-               'G_and_S_cingul-Mid-Ant',   # 7
-               'G_and_S_cingul-Mid-Post',  # 8
-               'G_cingul-Post-dorsal',     # 9
-               'G_cingul-Post-ventral',    # 10
-               'G_front_sup',              # 16
-               'G_oc-temp_med-Parahip',    # 23
-               'G_precuneus',              # 30
-               'G_rectus',                 # 31
-               'G_subcallosal',            # 32
-               'S_cingul-Marginalis',      # 46
-               'S_pericallosal',           # 66
-               'S_suborbital',             # 70
-               'S_subparietal',            # 71
-               )
-regexp = '|'.join(label_names)
-medial_wall = dict()
-for hemi in ('lh', 'rh'):
-    medial_wall[hemi] = mne.read_labels_from_annot(
-        subject='fsaverage', parc='aparc.a2009s', hemi=hemi,
-        subjects_dir=subjects_dir, regexp=regexp)
-    assert len(medial_wall[hemi]) == len(label_names)
-    # merge the labels using the sum(..., start) hack
-    medial_wall[hemi] = sum(medial_wall[hemi][1:], medial_wall[hemi][0])
-    assert len(medial_wall[hemi].name.split('+')) == len(label_names)
-spatial_exclude = np.concatenate(
-    [medial_wall['lh'].vertices,
-     medial_wall['rh'].vertices + len(fsaverage_src[0]['vertno'])])
+if spatial_exclude:
+    # labels to exclude (medial wall), from 10.1016/j.neuroimage.2010.06.010
+    label_names = ('G_and_S_paracentral',      # 3
+                   'G_and_S_cingul-Ant',       # 6
+                   'G_and_S_cingul-Mid-Ant',   # 7
+                   'G_and_S_cingul-Mid-Post',  # 8
+                   'G_cingul-Post-dorsal',     # 9
+                   'G_cingul-Post-ventral',    # 10
+                   'G_front_sup',              # 16
+                   'G_oc-temp_med-Parahip',    # 23
+                   'G_precuneus',              # 30
+                   'G_rectus',                 # 31
+                   'G_subcallosal',            # 32
+                   'S_cingul-Marginalis',      # 46
+                   'S_pericallosal',           # 66
+                   'S_suborbital',             # 70
+                   'S_subparietal',            # 71
+                   )
+    regexp = '|'.join(label_names)
+    exclusion = dict()
+    for hemi in ('lh', 'rh'):
+        exclusion[hemi] = mne.read_labels_from_annot(
+            subject='fsaverage', parc='aparc.a2009s', hemi=hemi,
+            subjects_dir=subjects_dir, regexp=regexp)
+        assert len(exclusion[hemi]) == len(label_names)
+        # merge the labels using the sum(..., start) hack
+        exclusion[hemi] = sum(exclusion[hemi][1:], exclusion[hemi][0])
+        assert len(exclusion[hemi].name.split('+')) == len(label_names)
+    spatial_exclude = np.concatenate(
+        [exclusion['lh'].vertices,
+         exclusion['rh'].vertices + len(fsaverage_src[0]['vertno'])])
+
+# cluster results get different subfolders depending on threshold / exclude
+cluster_root = os.path.join(results_dir, 'clustering')
+if spatial_exclude:
+    cluster_subdir = f"exclude-{exclusion['lh'].name.replace(' ', '')}"
+else:
+    cluster_subdir = 'whole-brain'
+cluster_subsubdir = '.'
+if isinstance(threshold, dict):
+    cluster_subsubdir = 'tfce_{start}_{step}'.format_map(threshold)
+elif threshold is not None:
+    cluster_subsubdir = f'thresh_{threshold}'
+# write most recently used cluster dir to file
+cluster_dir = os.path.join(cluster_root, cluster_subdir, cluster_subsubdir)
+with open(os.path.join(cluster_root, 'most-recent-clustering.txt'), 'w') as f:
+    f.write(cluster_dir)
+if not os.path.isdir(cluster_dir):
+    os.makedirs(cluster_dir, exist_ok=True)
 
 # prepare clustering function
 one_samp_test = partial(spatio_temporal_cluster_1samp_test,
