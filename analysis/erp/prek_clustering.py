@@ -53,7 +53,8 @@ fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
 conn_matrix = mne.spatial_src_connectivity(fsaverage_src)
 
 if spatial_exclude is not None:
-    # labels to exclude (medial wall), from 10.1016/j.neuroimage.2010.06.010
+    # labels to exclude, see 10.1016/j.neuroimage.2010.06.010
+    label_descr = 'medial-wall'
     label_names = ('G_and_S_paracentral',      # 3
                    'G_and_S_cingul-Ant',       # 6
                    'G_and_S_cingul-Mid-Ant',   # 7
@@ -87,7 +88,7 @@ if spatial_exclude is not None:
 # cluster results get different subfolders depending on threshold / exclude
 cluster_root = os.path.join(results_dir, 'clustering')
 if spatial_exclude is not None:
-    cluster_subdir = f"exclude-{exclusion['lh'].name.replace(' ', '')}"
+    cluster_subdir = f"exclude-{label_descr}"
 else:
     cluster_subdir = 'whole-brain'
 cluster_subsubdir = '.'
