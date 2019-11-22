@@ -70,6 +70,7 @@ if spatial_exclude is not None:
                    'S_pericallosal',           # 66
                    'S_suborbital',             # 70
                    'S_subparietal',            # 71
+                   'Unknown',
                    )
     regexp = '|'.join(label_names)
     exclusion = dict()
