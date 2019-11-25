@@ -6,7 +6,7 @@ subID,event,group,AlphabetKnowledge,Decoding,PhonemeMatching,PhonemeSegmenting,E
 1112,Visit 2,Letter,23,0,12,4,66,13,10,pre
 1112,Visit 3,Letter,36,0,14,1,79,11,11,post
 1113,Visit 2,Language,31,0,7,1,66,10,8,pre
-1113,Visit 3,Language,34,0,8,0,65,NaN,NaN,post
+1113,Visit 3,Language,34,0,8,0,65,0,0,post
 1184,Visit 2,Language,82,0,15,4,91,7,6,pre
 1184,Visit 3,Language,89,5,8,3,85,10,9,post
 1208,Visit 2,Language,31,0,7,NaN,83,11,8,pre
@@ -34,7 +34,7 @@ subID,event,group,AlphabetKnowledge,Decoding,PhonemeMatching,PhonemeSegmenting,E
 1443,Visit 2,Language,97,16,16,6,86,6,6,pre
 1443,Visit 3,Language,98,3,18,6,89,14,11,post
 1460,Visit 2,Language,96,13,13,6,103,13,11,pre
-1460,Visit 3,Language,93,5,12,6,99,16,12,post
+1460,Visit 3,Language,93,5,12,6,99,15,11,post
 1490,Visit 2,Letter,11,0,12,1,72,12,10,pre
 1490,Visit 3,Letter,17,0,10,0,79,8,7,post
 1505,Visit 2,Language,69,0,12,2,103,12,9,pre
@@ -46,7 +46,7 @@ subID,event,group,AlphabetKnowledge,Decoding,PhonemeMatching,PhonemeSegmenting,E
 1691,Visit 2,Letter,17,0,7,1,75,9,8,pre
 1691,Visit 3,Letter,27,0,9,3,81,13,11,post
 1706,Visit 2,Letter,72,5,15,3,81,17,13,pre
-1706,Visit 3,Letter,80,11,12,4,97,14,11,post
+1706,Visit 3,Letter,80,9,12,4,97,14,11,post
 1714,Visit 2,Letter,71,0,11,2,97,9,6,pre
 1714,Visit 3,Letter,89,1,7,0,81,19,13,post
 1715,Visit 2,Letter,76,0,6,0,86,12,9,pre
@@ -56,15 +56,17 @@ subID,event,group,AlphabetKnowledge,Decoding,PhonemeMatching,PhonemeSegmenting,E
 1751,Visit 2,Letter,80,0,11,0,97,17,13,pre
 1751,Visit 3,Letter,86,0,7,0,93,17,11,post
 1756,Visit 2,Language,19,0,6,1,102,19,11,pre
-1756,Visit 3,Language,18,0,11,1,104,14,11,post
+1756,Visit 3,Language,18,0,11,1,104,18,12,post
 1762,Visit 2,Letter,56,0,8,2,70,10,9,pre
 1762,Visit 3,Letter,68,0,9,1,68,16,13,post
 1768,Visit 2,Letter,29,0,9,2,94,15,11,pre
 1768,Visit 3,Letter,40,0,8,1,99,11,9,post
 1790,Visit 2,Letter,28,0,10,0,77,3,3,pre
 1790,Visit 3,Letter,48,2,11,1,84,10,7,post
+1798,Visit 2,Language,80,0,12,1,75,14,9,pre
+1798,Visit 3,Language,81,0,9,1,81,7,7,post
 1812,Visit 2,Language,79,0,8,1,67,16,13,pre
-1812,Visit 3,Language,68,0,10,3,82,21,14,post
+1812,Visit 3,Language,69,0,10,3,82,21,14,post
 1818,Visit 2,Letter,49,0,8,2,88,6,6,pre
 1818,Visit 3,Letter,62,0,8,1,80,9,8,post
 1868,Visit 2,Language,88,1,14,2,80,9,8,pre
@@ -91,3 +93,5 @@ subID,event,group,AlphabetKnowledge,Decoding,PhonemeMatching,PhonemeSegmenting,E
 1951,Visit 3,Letter,98,16,10,4,105,10,10,post
 1964,Visit 2,Letter,43,0,9,0,71,12,10,pre
 1964,Visit 3,Letter,56,7,11,1,74,14,12,post
+1966,Visit 2,Language,86,0,14,4,105,13,9,pre
+1966,Visit 3,Language,90,1,13,2,114,19,13,post
