@@ -28,10 +28,10 @@ from prek_score import prek_score
 pre_or_post = 'post' # convenience variable for rerunning 
 target_dir = '/mnt/scratch/prek/%s_camp/twa_hp/erp/' % pre_or_post
 
-params = mnefun.Params(tmin=-0.1, tmax=1, t_adjust=-0.067, n_jobs=2,
-                       proj_sfreq=200, n_jobs_fir=2,
+params = mnefun.Params(tmin=-0.1, tmax=1, t_adjust=-0.067, n_jobs=8,
+                       proj_sfreq=200, n_jobs_fir=8,
                        filter_length='5s', lp_cut=80.,
-                       n_jobs_resample=2,
+                       n_jobs_resample=8,
                        bmin=-0.1, bem_type='5120')
 # load subjects
 with open(os.path.join('..', '..', 'params', 'subjects.yaml'), 'r') as f:
@@ -80,15 +80,16 @@ params.subject_run_indices = None
 params.get_projs_from = np.arange(1)
 params.inv_names = ['%s']
 params.inv_runs = np.arange(1)
-params.runs_empty = []
+params.runs_empty = ['%s_erm']
 # proj
 params.proj_nums = [[1, 1, 0],  # ECG: grad/mag/eeg
                     [1, 1, 0],  # EOG
                     [0, 0, 0]]  # Continuous (from ERM)
-params.cov_method = 'empirical'
+params.cov_method = 'shrunk'
 params.bem_type = '5120'
 params.compute_rank = True
 params.cov_rank = None
+params.force_erm_cov_rank_full=False
 # Epoching
 params.reject_epochs_by_annot = False   # new param due to EOG annots
 params.in_names = ['words', 'faces', 'cars', 'aliens']
@@ -152,14 +153,14 @@ params.report_params.update(  # add plots
 mnefun.do_processing(
     params,
     fetch_raw=False,
-    do_sss=False,        # do tSSS
-    do_score=False,       # do scoring
-    gen_ssp=False,        # generate ssps
-    apply_ssp=False,      # apply ssps
-    write_epochs=False,   # epoching & filtering
-    gen_covs=False,       # make covariance
-    gen_fwd=False,        # generate fwd model
-    gen_inv=False,        # general inverse
+    do_sss=True,        # do tSSS
+    do_score=True,       # do scoring
+    gen_ssp=True,        # generate ssps
+    apply_ssp=True,      # apply ssps
+    write_epochs=True,   # epoching & filtering
+    gen_covs=True,       # make covariance
+    gen_fwd=True,        # generate fwd model
+    gen_inv=True,        # general inverse
     gen_report=True,    # print report
     print_status=True    # show status
 )
