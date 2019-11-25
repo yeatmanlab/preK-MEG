@@ -46,7 +46,7 @@ mne.set_cache_dir(cache_dir)
 
 # config other
 conditions = ('words', 'faces', 'cars')  # we purposely omit 'aliens' here
-methods = ('dSPM',)  # dSPM, sLORETA, eLORETA
+methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
 
 # generate contrast pairs (need list so can reuse)
 contrasts = list(combinations(conditions, 2))
