@@ -95,7 +95,10 @@ def GetSsnData( aPFNmPattern ):
 #%%
 # Now we can execute the function for this list of args...:
 
+# the following is only appropriate for /mnt/scratch/prek/visit1
 tPFNmPatterns = [ x + '/*/*raw_sss.fif' for x in sorted( glob.glob( 'prek_????' ) ) ]
+
+# for actual data in /mnt/scratch/prek/p*/fixed_hp/prek_????/sss_pca_fif/*raw_sss.fif
 
 
 # using the following list comprehension:
