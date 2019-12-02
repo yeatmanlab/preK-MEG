@@ -6,15 +6,15 @@ Created on Mon Sep 30 15:05:05 2019
 @author: pettetmw
 """
 
-# epo2xdawn2tcirc.py
+# epo2tcirc.py
 
+import os
+from glob import glob
+import numpy as np
+import matplotlib.pyplot as plt
 import mne
 import mnefun
-import os
-import numpy as np
 from mne.externals.h5io import write_hdf5
-import matplotlib.pyplot as plt
-from glob import glob
 
 def Sss2Epo(sssPath):
     # needed to handle pilot 'bad_000' (larson_eric)
@@ -32,115 +32,54 @@ def Sss2Epo(sssPath):
     # this needs better solution
     assert sssPath == epoPath 
     epochs.save(epoPath)
-
-
-def Epo2Xdawn(epoPath,xdawnPath=None):
-    # Compute and save (into xdawnPath) XDAWN responses to signal and noise,
-    # given epoch data in epoPath; returns status string
     
-    # Determine destination path
-    if xdawnPath == None:
-        # try to derive destination file name from source file name
-        xdawnPath = epoPath.replace('-epo.fif','_xdawn_ave.fif')
-        
-    if xdawnPath == epoPath: # e.g., if find/replace fails, or if incorrect args
-        # prevent overwriting epoPath
-        errMsg = basename(epoPath) + ' --> error: xdawnPath would overwrite epoPath'
-        print( errMsg )
-        return errMsg
+    # merge above from badbaby, with following from PreK
     
-    epochs = mne.read_epochs(epoPath)
-    epochs.pick_types(meg=True)
-    signal_cov = mne.compute_covariance(epochs, method='oas', n_jobs=18)
-#    signal_cov = mne.cov.regularize(signal_cov, epochs.info, rank='full')
+#def GetSsnData( aPFNmPattern ):
+##%%
+#    # start with desired duration for each segment of the 20-sec trial
+#    tDur = 20
+#    fSplitEvent = lambda aEv: aEv + np.arange(0,20,tDur) * int(tSR)
+#    fRaw = lambda aFile: mne.io.Raw( aFile, allow_maxshield=True, preload=True )
+#    fFindEvents = lambda aRaw: mne.find_events( aRaw, stim_channel=['STI001'])
+#    tRawPFNms = sorted( glob.glob( aPFNmPattern ) )
+#    tRaws = mne.concatenate_raws( [ fRaw( tF ) for tF in tRawPFNms ] )
+#    tSR = tRaws.info['sfreq']
+#    tEvs = fFindEvents( tRaws )
+##    tEvs = np.array([ [ i, 0, 5 ] for i in np.hstack([ fSplitEvent(E) for E in tEvs[:,0] ]) ])
+#    
+#    #lowpass = 40.
+#    #highpass = 0.5
+#    #tRaws.filter(highpass, lowpass, fir_design='firwin')
+#    
+#    
+#    #%%
+#    # default: dict(mag=1e-12)
+##    tRejCrit = dict(grad=3000e-13, mag=3e-12, eog=np.inf, ecg=np.inf)
+##    tRejCrit = dict(grad=4000e-13, mag=4e-12, eog=np.inf, ecg=np.inf)
+#    tRejCrit = dict(grad=8000e-13, mag=8e-12, eog=np.inf, ecg=np.inf)
+##    tRejCrit = dict(grad=np.inf, mag=np.inf, eog = np.inf, ecg = np.inf)
+##    
+#    # ECG and EOG projections
+#    tECG = mne.preprocessing.compute_proj_ecg( tRaws, n_grad=1, n_mag=1, n_eeg=0, average=False, reject=tRejCrit)[0]
+#    tEOG = mne.preprocessing.compute_proj_eog(tRaws, n_grad=1, n_mag=1, n_eeg=0, average=False, reject=tRejCrit)[0]
+#    tRaws.info['projs'] += tECG  + tEOG
+#    
+#    video_delay = .066
+#    
+#    # create epochs
+#    tSsn = mne.Epochs(tRaws, tEvs, event_id=None, tmin=0., tmax=tDur, proj=True, baseline=None, reject=tRejCrit)
+##    tSsn.plot( scalings=dict(grad=4000e-13, mag=4e-12) );
+##    tSsn.plot();
     
-    rank = mne.compute_rank(signal_cov, rank='full', info=epochs.info)
-    signal_cov = mne.cov.regularize(signal_cov, epochs.info, rank=rank)
-    
-    
-    xd = mne.preprocessing.Xdawn(n_components=1, signal_cov=signal_cov,
-                                 correct_overlap=False, reg='ledoit_wolf')
-    xd.fit(epochs)
-
-    # fit() creates decomposition matrix called filters_ (or "unmixing")
-    # and the inverse, called "patterns_" for remixing responses after
-    # supressing contribution of selected filters_ components
-
-    # apply() method restricts the reponse to those projected on the
-    # filters_ components specified in the "include" arg.  The first tNFC
-    # components are the "signal" for purposes of SSNR optimization.
-
-    # calc the signal reponses, as Evoked object
-    # (by default, include=list(np.arange(0,1)), i.e., includes only one
-    # "signal" component)
-    signal = xd.apply(epochs)['tone'].average() # 'tone' is for babies;
-                                                # use 'Auditory' for bad_000 pilot
-
-    # calc the noise responses, as Evoked object
-    noiseinclude = list(np.arange(1, epochs.info['nchan']))  # a range excluding signal "0"
-    noise = xd.apply(epochs, include=noiseinclude)['tone'].average()
-
-    ## create arg to force both plots to have same fixed scaling
-    #ts_args = dict(ylim=dict(grad=[-100, 100], mag=[-500, 500]))
-    #signal.plot_joint(ts_args=ts_args)
-    #noise.plot_joint(ts_args=ts_args)
-
-    ## fit() also computes xd.evokeds_ which seems to be the same as
-    ## epochs.average(), but it's calculated in a complicated way that
-    ## compensates for overlap (when present).
-    ## Keep this handy to compare with xdawn results.
-    #xd.evokeds_['Auditory'].average().plot_joint(ts_args=ts_args)
-    #epochs.average().plot_joint(ts_args=ts_args)
-
-    # save signal and noise
-    # first, replace "Auditory" tag with "signal" and "noise"
-    signal.comment = 'signal'
-    noise.comment = 'noise'
-    
-    try:
-        mne.write_evokeds( xdawnPath, [ signal, noise ] )
-    except:
-        errMsg = basename(epoPath) + ' --> error writing ' + xdawnPath
-        print( errMsg )
-        return errMsg
-    
-    # Everything worked, so return status string
-    return basename(epoPath) + ' --> ' + basename(xdawnPath)
-
-def Xdawn2Tcirc(xdawnPath,tmin=None,tmax=None,fundfreqhz=None):
-    # create tcirc stats from xdawn 'signal' and 'noise' that have been
-    # saved into xdawnPath by Epo2Xdawn
-    
-    signal = mne.read_evokeds(xdawnPath,allow_maxshield=True)[0] # "[0]" is 'signal'
-    signalTcirc=Tcirc(signal.data,signal.info['sfreq'],tmin=0.5,tmax=1.0,fundfreqhz=20.) # signal t-circ stats
-    noise = mne.read_evokeds(xdawnPath,allow_maxshield=True)[1] # "[1]" is 'noise'
-    noiseTcirc=Tcirc(noise.data,noise.info['sfreq'],tmin=0.5,tmax=1.0,fundfreqhz=20.) # noise t-circ stats
-    
-    signalFtzs=None # fisher transformed z-score stats,
-                    # for estimating within-subject longitudinal significance
-    noiseFtzs=None
-    sfreqhz=None # sampling frequency in Hz (from Evoked.info['sfreq']?)
-    
-    # save the results
-    tcircPath = xdawnPath.replace('_xdawn_ave.fif','_tcirc.h5')
-    # if find/replace fails, prevent overwriting the input file
-    # this needs better solution
-    assert xdawnPath == tcircPath
-    write_hdf5(tcircPath,
-               dict(signaltcirc=signalTcirc,
-                    signalftzs=signalFtzs,
-                    noisetcirc=noiseTcirc,
-                    noiseftzs=noiseFtzs,
-                    sfreqhz=sfreqhz),
-               title='tcirc', overwrite=True)
 
 def Tcirc(epoOrAve,tmin=None,tmax=None,fundfreqhz=None):
     # create tcirc stats from epoched or evoked file epoOrAve
     # note that np.fft.fft "axis" parameter defaults to -1
     
     # # untested implicit logic for special parameter values
-    # if tmin==None, tmin= 0
-    # if tmax==None, tmax= end of data along time dim
+    if tmin==None: tmin= 0  # careful, tmin == 0 implies beginning of baseline?
+    if tmax==None: tmax= -1
     # if fundfreqhz == None, fundfreqhz = 1 / (tmax-tmin), an appropriate
     #   default if tcirc is to be estimated from epoch data
     #   For evokeds, use fundfreqhz = N / (tmax-tmin) to divide into N epochs
@@ -155,20 +94,32 @@ def Tcirc(epoOrAve,tmin=None,tmax=None,fundfreqhz=None):
     
     sfreq = epoOrAve.info['sfreq'] # to compute location of tmin,tmax
     imn = int( sfreq * tmin )
-    imx = int( sfreq * tmax )
-    
-    
+    imx = -1
+      
     # if evoked, reshape it into fakey epochs, based on fundfreqhz
     if type(epoOrAve) == mne.evoked.Evoked:
-        tY = epoOrAve.data[ :, imn:imx ] # 
+        tY = epoOrAve.data
+        if tmax==-1:
+            tmax = tY.shape[1] / sfreq
+        else:
+            imx = int( sfreq * tmax )
+        tY = tY[ :, imn:imx ] # 
+        if fundfreqhz == None:
+            fundfreqhz = 1 / (tmax-tmin)
         tNCh = tY.shape[0]
         tNTrl = int( ( tmax - tmin ) * fundfreqhz ) # the number of "trials"
         tY = np.reshape( tY, (tNCh, tNTrl, -1 ) )
         tY = np.transpose(tY,(1,0,2)) # Trials-by-Chan-by-Freq
 #        plt.plot(np.mean(tY,axis=0).T,'r-')
     else:
-        tY = epoOrAve.get_data()[ :, :, imn:imx ] # remove odd sample (make this conditional)
+#        tY = epoOrAve.get_data()[ :, :, imn:imx ] # remove odd sample (make this conditional)
         # more needed here to select time window
+        tY = epoOrAve.get_data()
+        if tmax==-1:
+            tmax = tY.shape[1] / sfreq
+        else:
+            imx = int( sfreq * tmax )
+        tY = tY[ :, :, imn:imx ]
 
     tNTrl, tNCh, tNS = tY.shape # number of trials, channels, and time samples
     
@@ -185,22 +136,28 @@ def Tcirc(epoOrAve,tmin=None,tmax=None,fundfreqhz=None):
     
     return tcirc 
 
-dataPath = '/mnt/scratch/badbaby/tone/'
+#dataPath = '/mnt/scratch/badbaby/tone/'
+##tPaths = sorted(glob(dataPath + 'bad*a/epochs/*epo.fif')) # get the existing a's
+#tPaths = sorted(glob(dataPath + 'bad*b/epochs/*epo.fif')) # get the existing a's
+##tPaths = tPaths[5:8] # quickie test
 
-#tPaths = sorted(glob(dataPath + 'bad*a/epochs/*epo.fif')) # get the existing a's
-tPaths = sorted(glob(dataPath + 'bad*b/epochs/*epo.fif')) # get the existing a's
-#tPaths = tPaths[5:8] # quickie test
+# e.g.: '/mnt/scratch/prek/pre_camp/twa_hp/erp/prek_1112/epochs/All_80-sss_prek_1112-epo.fif'
+dataPath = '/mnt/scratch/prek/pre_camp/twa_hp/erp/'
+tPaths = sorted(glob(dataPath + 'prek_*/epochs/*epo.fif')) # get the existing a's
+tPaths = tPaths[5:8] # quickie test
+
 
 ## for comparison, the adult pilot
 #tPaths = sorted(glob(dataPath + 'bad_000/epochs/bad_000_tone_epo.fif')) # bad_000 is Adult pilot (E Larson)
 
-tcircs = [ Tcirc(mne.read_epochs(p),tmin=0.5,tmax=1.0) for p in tPaths ]
+tcircs = [ Tcirc(mne.read_epochs(p)) for p in tPaths ]
 tcircavg = np.mean( np.stack( tcircs, 2 ), 2 )
 #
 info = mne.io.read_info(tPaths[0])
-info['sfreq']=0.5;
+info['sfreq']=20.0 # =0.5
 tcircave = mne.EvokedArray( tcircavg, info )
-tcircave.plot_joint(times=[2.0,4.0,6.0,38.0,40.0,42.0],ts_args=dict(xlim=(0,60),ylim=(0,4),scalings=dict(grad=1, mag=1),units=dict(grad='Tcirc', mag='Tcirc')))
+#tcircave.plot_joint(times=[2.0,4.0,6.0,38.0,40.0,42.0],ts_args=dict(xlim=(0,60),ylim=(0,4),scalings=dict(grad=1, mag=1),units=dict(grad='Tcirc', mag='Tcirc')))
+tcircave.plot_joint(times=[1.95,2.00,2.05,5.95,6.00,6.05],ts_args=dict(xlim=(0,8),ylim=(0,4),scalings=dict(grad=1, mag=1),units=dict(grad='Tcirc', mag='Tcirc')))
 
 ## for evokeds, you must supply fundfreqhz
 #xdawnPath = 'bad_000_tone_xdawn_ave.fif'
