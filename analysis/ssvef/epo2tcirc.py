@@ -17,61 +17,22 @@ import mnefun
 from mne.externals.h5io import write_hdf5
 
 def Sss2Epo(sssPath):
-    # needed to handle pilot 'bad_000' (larson_eric)
+    # the following assumes that sssPath is in sss_pca_fif, whose raw_sss.fif
+    # contain no event channel. So we get events from corresponding file in sss_fif:
+    eventPath = sssPath.replace('sss_pca_fif','sss_fif').replace('_allclean_fil80_','_')
+    eventSss =  mne.io.read_raw_fif(eventPath, allow_maxshield='yes')
+    events = mne.find_events(eventSss, stim_channel=['STI001'])
+    # now read the 'sss_pca_fif' with desired data
     sss = mne.io.read_raw_fif(sssPath, allow_maxshield='yes')
-    events = mne.find_events(sss)
     picks = mne.pick_types(sss.info, meg=True)
-    event_id = {'Auditory': 1} # 'Auditory' only for bad_000; babies are 'tone'; cf Epo2Xdawn
-    tmin, tmax = -0.2, 1.1 # from process.py
-    decim = 3 # from process.py
+    event_id = None 
+    tmin, tmax = -0., 20.
+    tRejCrit = dict(grad=8000e-13, mag=8e-12, eog=np.inf, ecg=np.inf)
     epochs = mne.Epochs(sss, events, event_id, tmin, tmax, picks=picks,
-        decim=decim, baseline=(None, 0), reject=dict(grad=4000e-13),
-        preload=True)
-    epoPath = sssPath.replace('sss_fif','epochs').replace('_raw_sss.fif','_epo.fif')
-    # if find/replace fails, prevent overwriting the input file
-    # this needs better solution
-    assert sssPath == epoPath 
-    epochs.save(epoPath)
+        baseline=None, reject=tRejCrit, preload=True)
+    return epochs
     
-    # merge above from badbaby, with following from PreK
-    
-#def GetSsnData( aPFNmPattern ):
-##%%
-#    # start with desired duration for each segment of the 20-sec trial
-#    tDur = 20
-#    fSplitEvent = lambda aEv: aEv + np.arange(0,20,tDur) * int(tSR)
-#    fRaw = lambda aFile: mne.io.Raw( aFile, allow_maxshield=True, preload=True )
-#    fFindEvents = lambda aRaw: mne.find_events( aRaw, stim_channel=['STI001'])
-#    tRawPFNms = sorted( glob.glob( aPFNmPattern ) )
-#    tRaws = mne.concatenate_raws( [ fRaw( tF ) for tF in tRawPFNms ] )
-#    tSR = tRaws.info['sfreq']
-#    tEvs = fFindEvents( tRaws )
-##    tEvs = np.array([ [ i, 0, 5 ] for i in np.hstack([ fSplitEvent(E) for E in tEvs[:,0] ]) ])
-#    
-#    #lowpass = 40.
-#    #highpass = 0.5
-#    #tRaws.filter(highpass, lowpass, fir_design='firwin')
-#    
-#    
-#    #%%
-#    # default: dict(mag=1e-12)
-##    tRejCrit = dict(grad=3000e-13, mag=3e-12, eog=np.inf, ecg=np.inf)
-##    tRejCrit = dict(grad=4000e-13, mag=4e-12, eog=np.inf, ecg=np.inf)
-#    tRejCrit = dict(grad=8000e-13, mag=8e-12, eog=np.inf, ecg=np.inf)
-##    tRejCrit = dict(grad=np.inf, mag=np.inf, eog = np.inf, ecg = np.inf)
-##    
-#    # ECG and EOG projections
-#    tECG = mne.preprocessing.compute_proj_ecg( tRaws, n_grad=1, n_mag=1, n_eeg=0, average=False, reject=tRejCrit)[0]
-#    tEOG = mne.preprocessing.compute_proj_eog(tRaws, n_grad=1, n_mag=1, n_eeg=0, average=False, reject=tRejCrit)[0]
-#    tRaws.info['projs'] += tECG  + tEOG
-#    
-#    video_delay = .066
-#    
-#    # create epochs
-#    tSsn = mne.Epochs(tRaws, tEvs, event_id=None, tmin=0., tmax=tDur, proj=True, baseline=None, reject=tRejCrit)
-##    tSsn.plot( scalings=dict(grad=4000e-13, mag=4e-12) );
-##    tSsn.plot();
-    
+   
 
 def Tcirc(epoOrAve,tmin=None,tmax=None,fundfreqhz=None):
     # create tcirc stats from epoched or evoked file epoOrAve
@@ -136,60 +97,26 @@ def Tcirc(epoOrAve,tmin=None,tmax=None,fundfreqhz=None):
     
     return tcirc 
 
-#dataPath = '/mnt/scratch/badbaby/tone/'
-##tPaths = sorted(glob(dataPath + 'bad*a/epochs/*epo.fif')) # get the existing a's
-#tPaths = sorted(glob(dataPath + 'bad*b/epochs/*epo.fif')) # get the existing a's
-##tPaths = tPaths[5:8] # quickie test
+dataPath = '/mnt/scratch/prek/'
+# start with comprehensive list of "run files"
+runPaths = glob(dataPath + '*_camp/fixed_hp/pskt/prek_*/sss_pca_fif/*_raw_sss.fif')
+# next, the enclosing "session" directories for each run file:
+ssnPaths = sorted( list( set( [ os.path.dirname(p) for p in runPaths ] ) ) )
+ssnPaths = ssnPaths[5:9] # quickie test
+# for each session, get it's list of runPaths
+runPaths = [ np.array( runPaths )[bi] for bi in # the following list of "b(oolean) i(ndices)":
+            [ [ r.find(s)>-1 for r in runPaths ] for s in ssnPaths ] ]
+# create congruent list of corrensponding epochs
+epos = [ [ Sss2Epo(p) for p in rps ] for rps in runPaths ]
 
-# e.g.: '/mnt/scratch/prek/pre_camp/twa_hp/erp/prek_1112/epochs/All_80-sss_prek_1112-epo.fif'
-dataPath = '/mnt/scratch/prek/pre_camp/twa_hp/erp/'
-tPaths = sorted(glob(dataPath + 'prek_*/epochs/*epo.fif')) # get the existing a's
-tPaths = tPaths[5:8] # quickie test
+# now we must somehow protect against error thrown by concatenate_epochs
+# when a run has no epochs; also tcirc needs at least two epochs
 
+epos = [ mne.concatenate_epochs(e) for e in epos ] # this throws error when epo[][].get_data().shape[0]==0
 
-## for comparison, the adult pilot
-#tPaths = sorted(glob(dataPath + 'bad_000/epochs/bad_000_tone_epo.fif')) # bad_000 is Adult pilot (E Larson)
-
-tcircs = [ Tcirc(mne.read_epochs(p)) for p in tPaths ]
-tcircavg = np.mean( np.stack( tcircs, 2 ), 2 )
-#
-info = mne.io.read_info(tPaths[0])
-info['sfreq']=20.0 # =0.5
-tcircave = mne.EvokedArray( tcircavg, info )
-#tcircave.plot_joint(times=[2.0,4.0,6.0,38.0,40.0,42.0],ts_args=dict(xlim=(0,60),ylim=(0,4),scalings=dict(grad=1, mag=1),units=dict(grad='Tcirc', mag='Tcirc')))
-tcircave.plot_joint(times=[1.95,2.00,2.05,5.95,6.00,6.05],ts_args=dict(xlim=(0,8),ylim=(0,4),scalings=dict(grad=1, mag=1),units=dict(grad='Tcirc', mag='Tcirc')))
-
-## for evokeds, you must supply fundfreqhz
-#xdawnPath = 'bad_000_tone_xdawn_ave.fif'
-#signal = mne.read_evokeds(xdawnPath,allow_maxshield=True,condition='signal') # or 'noise'
-#signalTcirc=Tcirc(signal,tmin=0.5,tmax=1.0,fundfreqhz=20.)
-
-## for epoched, fundfreqhz argument ignored, implicitly 1 /(tmax-tmin) Hz
-#epoPath = 'bad_000_tone_epo.fif'
-#signal = mne.read_epochs(epoPath)
-#signalTcirc=Tcirc(signal,tmin=0.5,tmax=1.0)
-#
-##info = signal.info;
 #info = mne.io.read_info(tPaths[0])
-#info['sfreq']=0.5;
-#tYFFTT = mne.EvokedArray( signalTcirc, info )
-#tYFFTT = mne.EvokedArray( signalTcirc, info )
-#
-#tYFFTT.plot_joint(times=[38.0,40.0,42.0],ts_args=dict(xlim=(0,60),scalings=dict(grad=1, mag=1),units=dict(grad='Tcirc', mag='Tcirc')))
-
-
-## this pattern can be used for plotting
-## borrowed (from https://github.com/ktavabi/badbaby/blob/master/badbaby/Notebooks/SIMMS_tone.ipynb)
-## yet to be tested...
-#       evoked = read_evokeds(evoked_file,
-#        ...
-#        evoked.data, evoked.times = calc_plv(good_epochs,
-#                                             freq_picks=(39, 40, 41))
-#        evokeds.append(evoked)
-#    grndavr_fft = grand_average(evokeds)
-#    print(name)    
-#    fig = grndavr_fft.plot_topomap(times=evoked.times, vmin=0, vmax=1, 
-#                                   scale=4, scale_time=1, unit='PLV',
-#                                   cmap = 'seismic', res=128, size=2,
-#                                   time_format='%d Hz')
+#info['sfreq']=20.0 # =0.5
+#tcircave = mne.EvokedArray( tcircavg, info )
+##tcircave.plot_joint(times=[2.0,4.0,6.0,38.0,40.0,42.0],ts_args=dict(xlim=(0,60),ylim=(0,4),scalings=dict(grad=1, mag=1),units=dict(grad='Tcirc', mag='Tcirc')))
+#tcircave.plot_joint(times=[1.95,2.00,2.05,5.95,6.00,6.05],ts_args=dict(xlim=(0,8),ylim=(0,4),scalings=dict(grad=1, mag=1),units=dict(grad='Tcirc', mag='Tcirc')))
 
