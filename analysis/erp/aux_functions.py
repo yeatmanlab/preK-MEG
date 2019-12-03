@@ -24,6 +24,20 @@ def load_params(skip=True):
     return brain_plot_kwargs, movie_kwargs, subjects
 
 
+def load_cohorts():
+    """load intervention and knowledge groups."""
+    with open(os.path.join(paramdir, 'intervention_cohorts.yaml'), 'r') as f:
+        intervention_group = yamload(f)
+    with open(os.path.join(paramdir, 'letter_knowledge_cohorts.yaml'),
+              'r') as f:
+        letter_knowledge_group = yamload(f)
+    # convert 1103 → 'prek_1103'
+    for _dict in (intervention_group, letter_knowledge_group):
+        for key, value in _dict.items():
+            _dict[key] = [f'prek_{num}' for num in value]
+    return intervention_group, letter_knowledge_group
+
+
 def load_paths():
     """Load necessary filesystem paths."""
     with open(os.path.join(paramdir, 'paths.yaml'), 'r') as f:

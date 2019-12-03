@@ -7,6 +7,10 @@ import pandas as pd
 # load the data
 metadata = pd.read_csv('preK_InterventionData.csv')
 
+# remap values
+mapping = dict(Letter='LetterIntervention', Language='LanguageIntervention')
+metadata.replace(dict(group=mapping), inplace=True)
+
 # extract grouping based on intervention received
 camp_groups = (metadata
                .set_index('group')
@@ -23,7 +27,8 @@ precamp = metadata.groupby('visit').get_group('pre')
 bins = metadata[cutvar].quantile([0, 0.5, 1])
 bins.at[0.5] = precamp[cutvar].quantile(0.5)
 metadata['cohort'] = pd.cut(metadata[cutvar], bins=bins, include_lowest=True,
-                            retbins=True, labels=('lower', 'upper'))[0]
+                            retbins=True, labels=('LowerKnowledge',
+                                                  'UpperKnowledge'))[0]
 cohort_groups = (metadata
                  .groupby('visit')
                  .get_group('pre')
@@ -33,8 +38,8 @@ cohort_groups = (metadata
                  .to_dict())
 
 # validate
-lower = set(cohort_groups['lower'])
-upper = set(cohort_groups['upper'])
+lower = set(cohort_groups['LowerKnowledge'])
+upper = set(cohort_groups['UpperKnowledge'])
 # cohorts are unique:
 assert len(lower.intersection(upper)) == 0
 # cohorts are exhaustive:

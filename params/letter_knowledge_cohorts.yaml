@@ -1,4 +1,4 @@
-lower:
+LowerKnowledge:
 - 1103
 - 1112
 - 1113
@@ -23,7 +23,7 @@ lower:
 - 1936
 - 1940
 - 1964
-upper:
+UpperKnowledge:
 - 1110
 - 1184
 - 1210
