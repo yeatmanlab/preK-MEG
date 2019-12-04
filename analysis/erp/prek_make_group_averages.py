@@ -37,9 +37,6 @@ groups = dict(GrandAvg=subjects)
 groups.update(intervention_group)
 groups.update(letter_knowledge_group)
 
-# name for entire subject population
-
-
 # loop over pre/post measurement time
 for prepost in ('pre', 'post'):
     # loop over experimental conditions
@@ -60,7 +57,7 @@ for prepost in ('pre', 'post'):
                     fname = f'{s}FSAverage_{prepost}Camp_{method}_{cond}-lh.stc'  # noqa
                     stc_path = os.path.join(this_subj, 'stc', fname)
                     avg += mne.read_source_estimate(stc_path)
-                avg /= len(subjects)
+                avg /= len(group_members)
                 # save
                 avg_fname = f'{group}_{prepost}Camp_{method}_{cond}'
                 avg.save(os.path.join(groupavg_path, avg_fname))
