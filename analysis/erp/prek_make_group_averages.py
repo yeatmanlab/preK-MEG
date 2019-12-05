@@ -46,6 +46,7 @@ for prepost in ('pre', 'post'):
         for method in methods:
             # loop over groups
             for group_name, group_members in groups.items():
+                avg = 0
                 group = f'{group_name}N{len(group_members)}FSAverage'
                 avg_fname = f'{group}_{prepost}Camp_{method}_{cond}'
                 mov_fname = f'{avg_fname}.mov'
@@ -58,7 +59,6 @@ for prepost in ('pre', 'post'):
                 if prepost == 'post' and group_name.endswith('Knowledge'):
                     continue
                 # make cross-subject average
-                avg = 0
                 for s in group_members:
                     this_subj = os.path.join(data_root, f'{prepost}_camp',
                                              'twa_hp', 'erp', s)
