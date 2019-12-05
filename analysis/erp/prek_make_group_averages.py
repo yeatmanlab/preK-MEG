@@ -13,6 +13,7 @@ from aux_functions import load_paths, load_params, load_cohorts
 
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
+overwrite = False
 
 # config paths
 data_root, _, results_dir = load_paths()
@@ -46,6 +47,13 @@ for prepost in ('pre', 'post'):
             # loop over groups
             for group_name, group_members in groups.items():
                 group = f'{group_name}N{len(group_members)}FSAverage'
+                avg_fname = f'{group}_{prepost}Camp_{method}_{cond}'
+                mov_fname = f'{avg_fname}.mov'
+                # if the movie already exists, so must the STC, so skip both
+                if (os.path.exists(os.path.join(mov_path, mov_fname)) and
+                        not overwrite):
+                    print(f'skipping {avg_fname}')
+                    continue
                 # we only compare incoming knowledge for pre-intervention data
                 if prepost == 'post' and group_name.endswith('Knowledge'):
                     continue
@@ -54,15 +62,15 @@ for prepost in ('pre', 'post'):
                 for s in group_members:
                     this_subj = os.path.join(data_root, f'{prepost}_camp',
                                              'twa_hp', 'erp', s)
-                    fname = f'{s}FSAverage_{prepost}Camp_{method}_{cond}-lh.stc'  # noqa
+                    fname = f'{s}FSAverage_{prepost}Camp_{method}_{cond}'
                     stc_path = os.path.join(this_subj, 'stc', fname)
                     avg += mne.read_source_estimate(stc_path)
                 avg /= len(group_members)
-                # save
-                avg_fname = f'{group}_{prepost}Camp_{method}_{cond}'
+                # save group average STCs
                 avg.save(os.path.join(groupavg_path, avg_fname))
                 # make movie
                 brain = avg.plot(subject='fsaverage', **brain_plot_kwargs)
-                mov_fname = f'{avg_fname}.mov'
                 brain.save_movie(os.path.join(mov_path, mov_fname),
                                  **movie_kwargs)
+                del brain
+            del avg
