@@ -36,8 +36,12 @@ def Sss2Epo(sssPath):
         baseline=None, reject=tRejCrit, preload=True)
     
     epoPath = sssPath.replace('sss_pca_fif','epochs').replace('_raw_sss','-epo')
-    IfMkDir( os.path.dirname( epoPath ) )
-    epochs.save(epoPath)
+    if not epoPath == sssPath:
+        IfMkDir( os.path.dirname( epoPath ) )
+        epochs.save(epoPath)
+    else:
+        print("Could not create destination epoPath from input sssPath")
+        raise
     #return epochs
     
    
