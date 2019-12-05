@@ -16,6 +16,10 @@ import mne
 import mnefun
 from mne.externals.h5io import write_hdf5
 
+def IfMkDir( aPNm ):
+    if not os.path.exists( aPNm ):
+        os.mkdir( aPNm )
+        
 def Sss2Epo(sssPath):
     # the following assumes that sssPath is in sss_pca_fif, whose raw_sss.fif
     # contain no event channel. So we get events from corresponding file in sss_fif:
@@ -30,7 +34,11 @@ def Sss2Epo(sssPath):
     tRejCrit = dict(grad=8000e-13, mag=8e-12, eog=np.inf, ecg=np.inf)
     epochs = mne.Epochs(sss, events, event_id, tmin, tmax, picks=picks,
         baseline=None, reject=tRejCrit, preload=True)
-    return epochs
+    
+    epoPath = sssPath.replace('sss_pca_fif','epochs').replace('_raw_sss','-epo')
+    IfMkDir( os.path.dirname( epoPath ) )
+    epochs.save(epoPath)
+    #return epochs
     
    
 
@@ -97,22 +105,36 @@ def Tcirc(epoOrAve,tmin=None,tmax=None,fundfreqhz=None):
     
     return tcirc 
 
+def SafeCatEpo( aEpos ):
+    try:
+        return mne.concatenate_epochs(aEpos)
+    except:
+        return aEpos
+
+
 dataPath = '/mnt/scratch/prek/'
-# start with comprehensive list of "run files"
-runPaths = glob(dataPath + '*_camp/fixed_hp/pskt/prek_*/sss_pca_fif/*_raw_sss.fif')
+# globbing pattern for comprehensive list of "run files"
+globPatt = '*_camp/fixed_hp/pskt/prek_*/sss_pca_fif/*_raw_sss.fif'
+runPaths = glob(dataPath + globPatt )
 # next, the enclosing "session" directories for each run file:
 ssnPaths = sorted( list( set( [ os.path.dirname(p) for p in runPaths ] ) ) )
 ssnPaths = ssnPaths[5:9] # quickie test
+
 # for each session, get it's list of runPaths
-runPaths = [ np.array( runPaths )[bi] for bi in # the following list of "b(oolean) i(ndices)":
-            [ [ r.find(s)>-1 for r in runPaths ] for s in ssnPaths ] ]
+#runPaths = [ np.array( runPaths )[bi] for bi in # the following list of "b(oolean) i(ndices)":
+#            [ [ r.find(s)>-1 for r in runPaths ] for s in ssnPaths ] ]
+runPaths = [ glob( s + '/*_raw_sss.fif' ) for s in ssnPaths ] # should be [ nSsn of [ 2 path strings] ]
 # create congruent list of corrensponding epochs
-epos = [ [ Sss2Epo(p) for p in rps ] for rps in runPaths ]
+epos = [ [ Sss2Epo(p) for p in rps ] for rps in runPaths ] # should be [ nSsn of [ 2 epos ] ]
 
 # now we must somehow protect against error thrown by concatenate_epochs
 # when a run has no epochs; also tcirc needs at least two epochs
 
-epos = [ mne.concatenate_epochs(e) for e in epos ] # this throws error when epo[][].get_data().shape[0]==0
+# try to make [ nSsn epos ]
+#epos = [ mne.concatenate_epochs(e) for e in epos ] # this throws error when epo[][].get_data().shape[0]==0
+epos = ( SafeCatEpo(e) for e in epos ) # this returns input when epo[][].get_data().shape[0]==0
+
+badSsnPaths = [ ssnPaths[i] for i,o in enumerate(epos) if type(o)==list ] # who's been naughty?
 
 #info = mne.io.read_info(tPaths[0])
 #info['sfreq']=20.0 # =0.5
