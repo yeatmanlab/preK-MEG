@@ -47,7 +47,8 @@ group = f'GrandAvgN{len(subjects)}FSAverage'
 # workhorse function
 def make_cluster_stc(group, prepost, method, con, results_dir,
                      results_subdir, cluster_dir, cluster_stc_dir, img_dir):
-    """NB: 'con' can be either condition (str) or contrast (tuple)."""
+    """NB: 'con' can be either condition string ('faces') or contrast string
+    ('FacesMinusCars')."""
     # load the STC
     stc_fname = f'{group}_{prepost}Camp_{method}_{con}'
     stc_fpath = os.path.join(results_dir, results_subdir, stc_fname)
@@ -69,7 +70,8 @@ def make_cluster_stc(group, prepost, method, con, results_dir,
     cluster_stc_fpath = os.path.join(cluster_stc_dir, f'{stc_fname}_clusters')
     has_signif_clusters = False
     try:
-        cluster_stc = mne.stats.summarize_clusters_stc(clu, vertices=vertices)
+        cluster_stc = mne.stats.summarize_clusters_stc(clu, vertices=vertices,
+                                                       tstep=stc.sfreq * 1000)
         has_signif_clusters = True
     except RuntimeError:
         txt_path = os.path.join(
@@ -79,7 +81,12 @@ def make_cluster_stc(group, prepost, method, con, results_dir,
     if has_signif_clusters:
         cluster_stc.save(cluster_stc_fpath)
         # plot the clusters
-        brain = cluster_stc.plot(**brain_plot_kwargs)
+        clim_dict = dict(kind='value', pos_lims=[0.5, 1, len(stc.times)])
+        brain = cluster_stc.plot(**brain_plot_kwargs,
+                                 smoothing_steps='nearest',
+                                 clim=clim_dict,
+                                 time_unit='ms',
+                                 time_label='auto')
         img_fpath = os.path.join(img_dir, f'{stc_fname}_clusters.png')
         brain.save_image(img_fpath)
 
