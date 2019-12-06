@@ -54,7 +54,7 @@ def make_cluster_stc(group, prepost, method, con, results_dir,
     stc_fpath = os.path.join(results_dir, results_subdir, stc_fname)
     stc = mne.read_source_estimate(stc_fpath)
     vertices = stc.vertices
-    stc_tstep_ms = 1000. / stc.sfreq  # in milliseconds
+    stc_tstep_ms = 1000 * stc.tstep  # in milliseconds
     # load the cluster results
     cluster_fname = f'{stc_fname}.npz'
     cluster_fpath = os.path.join(cluster_dir, cluster_fname)
@@ -87,6 +87,7 @@ def make_cluster_stc(group, prepost, method, con, results_dir,
         brain = cluster_stc.plot(smoothing_steps='nearest',
                                  clim=clim_dict,
                                  time_unit='ms',
+                                 time_label='temporal extent',
                                  **brain_plot_kwargs)
         img_fpath = os.path.join(img_dir, f'{stc_fname}_clusters.png')
         brain.save_image(img_fpath)
