@@ -66,7 +66,6 @@ for method in methods:
             mov_fname = f'{contr_fname}.mov'
             brain.save_movie(os.path.join(mov_path, mov_fname), **movie_kwargs)
             # clean up
-            mlab.close(all=True)
             del brain
 
     # do the group contrast (UpperMinusLower)
@@ -81,5 +80,4 @@ for method in methods:
         mov_fname = f'{con_fname}.mov'
         brain.save_movie(os.path.join(mov_path, mov_fname), **movie_kwargs)
         # clean up
-        mlab.close(all=True)
         del brain
