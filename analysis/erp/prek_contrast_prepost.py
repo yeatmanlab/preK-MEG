@@ -66,6 +66,7 @@ for method in methods:
             mov_fname = f'{prepost_fname}.mov'
             brain.save_movie(os.path.join(mov_path, mov_fname), **movie_kwargs)
             # clean up
+            mlab.close(all=True)
             del brain
         del prepost_dict
 
@@ -79,4 +80,6 @@ for method in methods:
             brain = stc.plot(subject='fsaverage', **brain_plot_kwargs)
             mov_fname = f'{contr_fname}.mov'
             brain.save_movie(os.path.join(mov_path, mov_fname), **movie_kwargs)
+            # clean up
+            mlab.close(all=True)
             del brain
