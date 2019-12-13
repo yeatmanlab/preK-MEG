@@ -38,7 +38,7 @@ _, letter_knowledge_group = load_cohorts()
 groups = letter_knowledge_group
 
 # generate contrast pairs (need a list so we can loop over it twice)
-contrasts = list(combinations(conditions, 2))
+contrasts = tuple(combinations(conditions, 2))
 
 # loop over algorithms
 for method in methods:
