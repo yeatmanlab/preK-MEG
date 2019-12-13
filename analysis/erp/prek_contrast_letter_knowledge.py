@@ -69,7 +69,8 @@ for method in methods:
             del brain
 
     # do the group contrast (UpperMinusLower)
-    for con in conditions + contrasts:
+    contr = [f'{c[0].capitalize()}Minus{c[1].capitalize()}' for c in contrasts]
+    for con in conditions + contr:
         stc = (group_dict['UpperKnowledge'][con] -
                group_dict['LowerKnowledge'][con])
         con_fname = f'UpperMinusLowerKnowledge_preCamp_{method}_{con}'
