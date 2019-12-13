@@ -25,7 +25,7 @@ if not os.path.isdir(contrast_path):
     os.makedirs(contrast_path, exist_ok=True)
 
 # config other
-conditions = ('words', 'faces', 'cars')  # we purposely omit 'aliens' here
+conditions = ['words', 'faces', 'cars']  # we purposely omit 'aliens' here
 methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
 
 # load params
@@ -38,7 +38,7 @@ _, letter_knowledge_group = load_cohorts()
 groups = letter_knowledge_group
 
 # generate contrast pairs (need a list so we can loop over it twice)
-contrasts = tuple(combinations(conditions, 2))
+contrasts = list(combinations(conditions, 2))
 
 # loop over algorithms
 for method in methods:
