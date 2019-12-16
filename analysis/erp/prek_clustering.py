@@ -139,9 +139,9 @@ for method in methods:
                 for s in group_members:
                     this_subj = os.path.join(data_root, f'{prepost}_camp',
                                              'twa_hp', 'erp', s, 'stc')
-                    stc_fname = f'{group}_{prepost}Camp_{method}_{cond}'
-                    stc_fpath = os.path.join(this_subj, stc_fname)
-                    stc = mne.read_source_estimate(stc_fpath)
+                    fname = f'{s}FSAverage_{prepost}Camp_{method}_{cond}'
+                    stc_path = os.path.join(this_subj, fname)
+                    stc = mne.read_source_estimate(stc_path)
                     stc_data = stc.data.transpose(1, 0)  # need (subj, time, space)
                     condition_dict[group][prepost][cond].append(stc_data)
                 condition_dict[group][prepost][cond] = \
