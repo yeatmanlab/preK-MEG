@@ -57,6 +57,7 @@ groups.update(intervention_group)
 fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
                                   'fsaverage-ico-5-src.fif')
 fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
+hemi_nverts = len(fsaverage_src[0]['vertno'])
 conn_matrix = mne.spatial_src_connectivity(fsaverage_src)
 
 if spatial_exclude is not None:
@@ -92,9 +93,8 @@ if spatial_exclude is not None:
         exclusion[hemi].vertices = \
             np.intersect1d(exclusion[hemi].vertices,
                            fsaverage_src[hemi_idx]['vertno'])
-    spatial_exclude = np.concatenate(
-        [exclusion['lh'].vertices,
-         exclusion['rh'].vertices + len(fsaverage_src[0]['vertno'])])
+    spatial_exclude = np.concatenate([exclusion['lh'].vertices,
+                                      exclusion['rh'].vertices + hemi_nverts])
 # cluster results get different subfolders depending on threshold / exclude
 cluster_root = os.path.join(results_dir, 'clustering')
 if spatial_exclude is not None:
@@ -142,7 +142,7 @@ for method in methods:
                     fname = f'{s}FSAverage_{prepost}Camp_{method}_{cond}'
                     stc_path = os.path.join(this_subj, fname)
                     stc = mne.read_source_estimate(stc_path)
-                    stc_data = stc.data.transpose(1, 0)  # need (subj, time, space)
+                    stc_data = stc.data.transpose(1, 0)  # noqa; need (subj, time, space)
                     condition_dict[group][prepost][cond].append(stc_data)
                 condition_dict[group][prepost][cond] = \
                     np.array(condition_dict[group][prepost][cond])
@@ -151,13 +151,17 @@ for method in methods:
             #for (cond_0, cond_1) in contrasts:
             #    X = (condition_dict[group][prepost][cond_0] -
             #         condition_dict[group][prepost][cond_1])
-            #    cluster_results = one_samp_test(X)
-            #    stats = prep_cluster_stats(cluster_results)
-            #    # save clustering results
-            #    contr = f'{cond_0.capitalize()}Minus{cond_1.capitalize()}'
-            #    out_fname = f'{group}_{prepost}Camp_{method}_{contr}.npz'
-            #    out_fpath = os.path.join(cluster_dir, out_fname)
-            #    np.savez(out_fpath, **stats)
+            #    # do each hemisphere separately:
+            #    for hemi in ('lh', 'rh'):
+            #        this_X = (X[..., :hemi_nverts] if hemi == 'lh' else
+            #                  X[..., hemi_nverts:])
+            #        cluster_results = one_samp_test(this_X)
+            #        stats = prep_cluster_stats(cluster_results)
+            #        # save clustering results
+            #        contr = f'{cond_0.capitalize()}Minus{cond_1.capitalize()}'
+            #        out_fname = f'{group}_{prepost}Camp_{method}_{contr}.npz'
+            #        out_fpath = os.path.join(cluster_dir, out_fname)
+            #        np.savez(out_fpath, **stats)
 
         # do the post-pre subtraction for single conditions
         for cond in conditions:
@@ -165,25 +169,30 @@ for method in methods:
                 continue
             X = (condition_dict[group]['post'][cond] -
                  condition_dict[group]['pre'][cond])
-            cluster_results = one_samp_test(X)
-            stats = prep_cluster_stats(cluster_results)
-            # save clustering results
-            out_fname = f'{group}_PostCampMinusPreCamp_{method}_{cond}.npz'
-            out_fpath = os.path.join(cluster_dir, out_fname)
-            np.savez(out_fpath, **stats)
+            # do each hemisphere separately:
+            for hemi in ('lh', 'rh'):
+                this_X = (X[..., :hemi_nverts] if hemi == 'lh' else
+                          X[..., hemi_nverts:])
+                cluster_results = one_samp_test(this_X)
+                stats = prep_cluster_stats(cluster_results)
+                # save clustering results
+                out_fname = f'{group}_PostCampMinusPreCamp_{method}_{cond}_{hemi}.npz'  # noqa
+                out_fpath = os.path.join(cluster_dir, out_fname)
+                np.savez(out_fpath, **stats)
 
         # do the post-pre subtraction for contrasts
         for (cond_0, cond_1) in contrasts:
-            if group_name == 'LetterIntervention':
-                continue
             X = ((condition_dict[group]['post'][cond_0] -
                   condition_dict[group]['post'][cond_1]) -
                  (condition_dict[group]['pre'][cond_0] -
                   condition_dict[group]['pre'][cond_1]))
-            cluster_results = one_samp_test(X)
-            stats = prep_cluster_stats(cluster_results)
-            # save clustering results
-            contr = f'{cond_0.capitalize()}Minus{cond_1.capitalize()}'
-            out_fname = f'{group}_PostCampMinusPreCamp_{method}_{contr}.npz'
-            out_fpath = os.path.join(cluster_dir, out_fname)
-            np.savez(out_fpath, **stats)
+            for hemi in ('lh', 'rh'):
+                this_X = (X[..., :hemi_nverts] if hemi == 'lh' else
+                          X[..., hemi_nverts:])
+                cluster_results = one_samp_test(this_X)
+                stats = prep_cluster_stats(cluster_results)
+                # save clustering results
+                contr = f'{cond_0.capitalize()}Minus{cond_1.capitalize()}'
+                out_fname = f'{group}_PostCampMinusPreCamp_{method}_{contr}_{hemi}.npz'  # noqa
+                out_fpath = os.path.join(cluster_dir, out_fname)
+                np.savez(out_fpath, **stats)
