@@ -159,27 +159,31 @@ for method in methods:
             #    out_fpath = os.path.join(cluster_dir, out_fname)
             #    np.savez(out_fpath, **stats)
 
-    # do the post-pre subtraction for single conditions
-    for cond in conditions:
-        X = (condition_dict[group]['post'][cond] -
-             condition_dict[group]['pre'][cond])
-        cluster_results = one_samp_test(X)
-        stats = prep_cluster_stats(cluster_results)
-        # save clustering results
-        out_fname = f'{group}_PostCampMinusPreCamp_{method}_{cond}.npz'
-        out_fpath = os.path.join(cluster_dir, out_fname)
-        np.savez(out_fpath, **stats)
+        # do the post-pre subtraction for single conditions
+        for cond in conditions:
+            if group_name == 'LetterIntervention':
+                continue
+            X = (condition_dict[group]['post'][cond] -
+                 condition_dict[group]['pre'][cond])
+            cluster_results = one_samp_test(X)
+            stats = prep_cluster_stats(cluster_results)
+            # save clustering results
+            out_fname = f'{group}_PostCampMinusPreCamp_{method}_{cond}.npz'
+            out_fpath = os.path.join(cluster_dir, out_fname)
+            np.savez(out_fpath, **stats)
 
-    # do the post-pre subtraction for contrasts
-    for (cond_0, cond_1) in contrasts:
-        X = ((condition_dict[group]['post'][cond_0] -
-              condition_dict[group]['post'][cond_1]) -
-             (condition_dict[group]['pre'][cond_0] -
-              condition_dict[group]['pre'][cond_1]))
-        cluster_results = one_samp_test(X)
-        stats = prep_cluster_stats(cluster_results)
-        # save clustering results
-        contr = f'{cond_0.capitalize()}Minus{cond_1.capitalize()}'
-        out_fname = f'{group}_PostCampMinusPreCamp_{method}_{contr}.npz'
-        out_fpath = os.path.join(cluster_dir, out_fname)
-        np.savez(out_fpath, **stats)
+        # do the post-pre subtraction for contrasts
+        for (cond_0, cond_1) in contrasts:
+            if group_name == 'LetterIntervention':
+                continue
+            X = ((condition_dict[group]['post'][cond_0] -
+                  condition_dict[group]['post'][cond_1]) -
+                 (condition_dict[group]['pre'][cond_0] -
+                  condition_dict[group]['pre'][cond_1]))
+            cluster_results = one_samp_test(X)
+            stats = prep_cluster_stats(cluster_results)
+            # save clustering results
+            contr = f'{cond_0.capitalize()}Minus{cond_1.capitalize()}'
+            out_fname = f'{group}_PostCampMinusPreCamp_{method}_{contr}.npz'
+            out_fpath = os.path.join(cluster_dir, out_fname)
+            np.savez(out_fpath, **stats)
