@@ -16,7 +16,8 @@ from itertools import combinations
 import numpy as np
 import mne
 from mne.stats import spatio_temporal_cluster_1samp_test
-from aux_functions import load_paths, load_params, prep_cluster_stats
+from aux_functions import (load_paths, load_params, load_cohorts,
+                           prep_cluster_stats)
 
 mne.cuda.init_cuda()
 rng = np.random.RandomState(seed=15485863)  # the one millionth prime
@@ -40,11 +41,17 @@ mne.set_cache_dir(cache_dir)
 conditions = ('words', 'faces', 'cars')  # we purposely omit 'aliens' here
 methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
 
-# generate contrast pairs (need list so can reuse)
+# load cohort info (keys Language/LetterIntervention and Lower/UpperKnowledge)
+intervention_group, letter_knowledge_group = load_cohorts()
+
+# generate contrast pairs (need a list so we can loop over it twice)
 contrasts = list(combinations(conditions, 2))
 
-# the "group" name used in the contrast filenames
-group = f'GrandAvgN{len(subjects)}FSAverage'
+# assemble groups to iterate over
+# groups = dict(GrandAvg=subjects)
+# groups.update(letter_knowledge_group)
+groups = dict()
+groups.update(intervention_group)
 
 # load fsaverage source space to get connectivity matrix
 fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
@@ -103,8 +110,7 @@ elif threshold is not None:
 cluster_dir = os.path.join(cluster_root, cluster_subdir, cluster_subsubdir)
 with open(os.path.join(cluster_root, 'most-recent-clustering.txt'), 'w') as f:
     f.write(cluster_dir)
-if not os.path.isdir(cluster_dir):
-    os.makedirs(cluster_dir, exist_ok=True)
+os.makedirs(cluster_dir, exist_ok=True)
 
 # prepare clustering function
 one_samp_test = partial(spatio_temporal_cluster_1samp_test,
@@ -119,39 +125,44 @@ one_samp_test = partial(spatio_temporal_cluster_1samp_test,
 # loop over algorithms
 for method in methods:
     condition_dict = dict()
-    # loop over pre/post measurement time
-    for prepost in ('pre', 'post'):
-        condition_dict[prepost] = dict()
-        # load the individual subject STCs for each condition
-        for cond in conditions:
-            condition_dict[prepost][cond] = list()
-            # loop over subjects
-            for s in subjects:
-                this_subj = os.path.join(data_root, f'{prepost}_camp',
-                                         'twa_hp', 'erp', s, 'stc')
-                stc_fname = f'{s}FSAverage_{prepost}Camp_{method}_{cond}'
-                stc_fpath = os.path.join(this_subj, stc_fname)
-                stc = mne.read_source_estimate(stc_fpath)
-                stc_data = stc.data.transpose(1, 0)  # need (subj, time, space)
-                condition_dict[prepost][cond].append(stc_data)
-            condition_dict[prepost][cond] = \
-                np.array(condition_dict[prepost][cond])
+    # loop over groups
+    for group_name, group_members in groups.items():
+        group = f'{group_name}N{len(group_members)}FSAverage'
+        condition_dict[group] = dict()
+        # loop over pre/post measurement time
+        for prepost in ('pre', 'post'):
+            condition_dict[group][prepost] = dict()
+            # load the individual subject STCs for each condition
+            for cond in conditions:
+                condition_dict[group][prepost][cond] = list()
+                # loop over subjects
+                for s in group_members:
+                    this_subj = os.path.join(data_root, f'{prepost}_camp',
+                                             'twa_hp', 'erp', s, 'stc')
+                    stc_fname = f'{group}_{prepost}Camp_{method}_{cond}'
+                    stc_fpath = os.path.join(this_subj, stc_fname)
+                    stc = mne.read_source_estimate(stc_fpath)
+                    stc_data = stc.data.transpose(1, 0)  # need (subj, time, space)
+                    condition_dict[group][prepost][cond].append(stc_data)
+                condition_dict[group][prepost][cond] = \
+                    np.array(condition_dict[group][prepost][cond])
 
-        # do the condition subtraction
-        for (cond_0, cond_1) in contrasts:
-            X = (condition_dict[prepost][cond_0] -
-                 condition_dict[prepost][cond_1])
-            cluster_results = one_samp_test(X)
-            stats = prep_cluster_stats(cluster_results)
-            # save clustering results
-            contr = f'{cond_0.capitalize()}Minus{cond_1.capitalize()}'
-            out_fname = f'{group}_{prepost}Camp_{method}_{contr}.npz'
-            out_fpath = os.path.join(cluster_dir, out_fname)
-            np.savez(out_fpath, **stats)
+            # do the condition subtraction
+            #for (cond_0, cond_1) in contrasts:
+            #    X = (condition_dict[group][prepost][cond_0] -
+            #         condition_dict[group][prepost][cond_1])
+            #    cluster_results = one_samp_test(X)
+            #    stats = prep_cluster_stats(cluster_results)
+            #    # save clustering results
+            #    contr = f'{cond_0.capitalize()}Minus{cond_1.capitalize()}'
+            #    out_fname = f'{group}_{prepost}Camp_{method}_{contr}.npz'
+            #    out_fpath = os.path.join(cluster_dir, out_fname)
+            #    np.savez(out_fpath, **stats)
 
     # do the post-pre subtraction for single conditions
     for cond in conditions:
-        X = condition_dict['post'][cond] - condition_dict['pre'][cond]
+        X = (condition_dict[group]['post'][cond] -
+             condition_dict[group]['pre'][cond])
         cluster_results = one_samp_test(X)
         stats = prep_cluster_stats(cluster_results)
         # save clustering results
@@ -161,8 +172,10 @@ for method in methods:
 
     # do the post-pre subtraction for contrasts
     for (cond_0, cond_1) in contrasts:
-        X = (condition_dict['post'][cond_0] - condition_dict['post'][cond_1] -
-             (condition_dict['pre'][cond_0] - condition_dict['pre'][cond_1]))
+        X = ((condition_dict[group]['post'][cond_0] -
+              condition_dict[group]['post'][cond_1]) -
+             (condition_dict[group]['pre'][cond_0] -
+              condition_dict[group]['pre'][cond_1]))
         cluster_results = one_samp_test(X)
         stats = prep_cluster_stats(cluster_results)
         # save clustering results
