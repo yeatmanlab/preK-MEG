@@ -47,12 +47,14 @@ group = f'GrandAvgN{len(subjects)}FSAverage'
 # workhorse function
 def make_cluster_stc(group, prepost, method, con, results_dir,
                      results_subdir, cluster_dir, cluster_stc_dir, img_dir):
-    """NB: 'con' can be either condition (str) or contrast (tuple)."""
+    """NB: 'con' can be either condition string ('faces') or contrast string
+    ('FacesMinusCars')."""
     # load the STC
     stc_fname = f'{group}_{prepost}Camp_{method}_{con}'
     stc_fpath = os.path.join(results_dir, results_subdir, stc_fname)
     stc = mne.read_source_estimate(stc_fpath)
     vertices = stc.vertices
+    stc_tstep_ms = 1000 * stc.tstep  # in milliseconds
     # load the cluster results
     cluster_fname = f'{stc_fname}.npz'
     cluster_fpath = os.path.join(cluster_dir, cluster_fname)
@@ -69,7 +71,8 @@ def make_cluster_stc(group, prepost, method, con, results_dir,
     cluster_stc_fpath = os.path.join(cluster_stc_dir, f'{stc_fname}_clusters')
     has_signif_clusters = False
     try:
-        cluster_stc = mne.stats.summarize_clusters_stc(clu, vertices=vertices)
+        cluster_stc = mne.stats.summarize_clusters_stc(clu, vertices=vertices,
+                                                       tstep=stc_tstep_ms)
         has_signif_clusters = True
     except RuntimeError:
         txt_path = os.path.join(
@@ -79,7 +82,13 @@ def make_cluster_stc(group, prepost, method, con, results_dir,
     if has_signif_clusters:
         cluster_stc.save(cluster_stc_fpath)
         # plot the clusters
-        brain = cluster_stc.plot(**brain_plot_kwargs)
+        stc_dur_ms = 1000 * (stc.times[-1] - stc.times[0])
+        clim_dict = dict(kind='value', pos_lims=[0, stc_tstep_ms, stc_dur_ms])
+        brain = cluster_stc.plot(smoothing_steps='nearest',
+                                 clim=clim_dict,
+                                 time_unit='ms',
+                                 time_label='temporal extent',
+                                 **brain_plot_kwargs)
         img_fpath = os.path.join(img_dir, f'{stc_fname}_clusters.png')
         brain.save_image(img_fpath)
 

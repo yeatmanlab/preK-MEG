@@ -9,10 +9,11 @@ Make average Source Time Course across all subjects, for each condition
 import os
 from mayavi import mlab
 import mne
-from aux_functions import load_paths, load_params
+from aux_functions import load_paths, load_params, load_cohorts
 
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
+overwrite = False
 
 # config paths
 data_root, _, results_dir = load_paths()
@@ -29,28 +30,47 @@ methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
 # load params
 brain_plot_kwargs, movie_kwargs, subjects = load_params()
 
-# make group averages & movies
-group = f'GrandAvgN{len(subjects)}FSAverage'
+# load cohort info (keys Language/LetterIntervention and Lower/UpperKnowledge)
+intervention_group, letter_knowledge_group = load_cohorts()
+
+# assemble groups to iterate over
+groups = dict(GrandAvg=subjects)
+groups.update(intervention_group)
+groups.update(letter_knowledge_group)
+
 # loop over pre/post measurement time
 for prepost in ('pre', 'post'):
     # loop over experimental conditions
     for cond in conditions:
         # loop over algorithms
         for method in methods:
-            avg = 0
-            # make cross-subject average
-            for s in subjects:
-                this_subj = os.path.join(data_root, f'{prepost}_camp',
-                                         'twa_hp', 'erp', s)
-                fname = f'{s}FSAverage_{prepost}Camp_{method}_{cond}-lh.stc'
-                stc_path = os.path.join(this_subj, 'stc', fname)
-                avg += mne.read_source_estimate(stc_path)
-            avg /= len(subjects)
-            # save
-            avg_fname = f'{group}_{prepost}Camp_{method}_{cond}'
-            avg.save(os.path.join(groupavg_path, avg_fname))
-            # make movie
-            brain = avg.plot(subject='fsaverage', **brain_plot_kwargs)
-            mov_fname = f'{avg_fname}.mov'
-            brain.save_movie(os.path.join(mov_path, mov_fname),
-                             **movie_kwargs)
+            # loop over groups
+            for group_name, group_members in groups.items():
+                avg = 0
+                group = f'{group_name}N{len(group_members)}FSAverage'
+                avg_fname = f'{group}_{prepost}Camp_{method}_{cond}'
+                mov_fname = f'{avg_fname}.mov'
+                # if the movie already exists, so must the STC, so skip both
+                if (os.path.exists(os.path.join(mov_path, mov_fname)) and
+                        not overwrite):
+                    print(f'skipping {avg_fname}')
+                    continue
+                # we only compare incoming knowledge for pre-intervention data
+                if prepost == 'post' and group_name.endswith('Knowledge'):
+                    continue
+                # make cross-subject average
+                for s in group_members:
+                    this_subj = os.path.join(data_root, f'{prepost}_camp',
+                                             'twa_hp', 'erp', s)
+                    fname = f'{s}FSAverage_{prepost}Camp_{method}_{cond}'
+                    stc_path = os.path.join(this_subj, 'stc', fname)
+                    avg += mne.read_source_estimate(stc_path)
+                avg /= len(group_members)
+                # save group average STCs
+                avg.save(os.path.join(groupavg_path, avg_fname))
+                # make movie
+                brain = avg.plot(subject='fsaverage', **brain_plot_kwargs)
+                brain.save_movie(os.path.join(mov_path, mov_fname),
+                                 **movie_kwargs)
+                del brain
+            del avg
