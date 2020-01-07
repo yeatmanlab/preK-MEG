@@ -31,11 +31,11 @@
       condition contrast.
 
 5. Planned analyses:
-    - `script-not-yet-written.py` makes group comparison STCs between the top
-      and bottom half of the participant cohort, as determined by letter-name
-      and letter-sound awareness of both uppercase and lowercase glyphs (this
-      data stored in `../behavioral/LetterKnowledge.csv`). This group
-      comparison is done only for the pre-camp MEG recordings.
+    - `prek_contrast_letter_knowledge.py` makes group comparison STCs between
+      the top and bottom half of the participant cohort, as determined by
+      letter-name and letter-sound awareness of both uppercase and lowercase
+      glyphs (this data stored in `../behavioral/LetterKnowledge.csv`). This
+      group comparison is done only for the pre-camp MEG recordings.
 
     - `script-not-yet-written.py` makes group comparison STCs depending on
       which treatment group the subject was assigned to ("language"
