@@ -38,12 +38,12 @@ groups = dict(GrandAvg=subjects)
 groups.update(intervention_group)
 groups.update(letter_knowledge_group)
 
-# loop over pre/post measurement time
-for prepost in ('pre', 'post'):
-    # loop over experimental conditions
-    for cond in conditions:
-        # loop over algorithms
-        for method in methods:
+# loop over algorithms
+for method in methods:
+    # loop over pre/post measurement time
+    for prepost in ('pre', 'post'):
+        # loop over experimental conditions
+        for cond in conditions:
             # loop over groups
             for group_name, group_members in groups.items():
                 avg = 0
