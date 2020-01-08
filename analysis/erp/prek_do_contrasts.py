@@ -59,7 +59,7 @@ for method in methods:
                 fname = f'{group}_{timepoint}_{method}_{cond}'
                 avg_fpath = os.path.join(groupavg_path, fname)
                 if dry_run:
-                    print(f'dry run: loading {fname}')
+                    print(f'dry run: loading     {fname}')
                 else:
                     stc = mne.read_source_estimate(avg_fpath)
                     stc_dict[method][group][timepoint][cond] = stc
@@ -67,7 +67,7 @@ for method in methods:
             # CONTRAST TRIAL CONDITIONS
             for contr_key, (contr_0, contr_1) in contrasts.items():
                 if dry_run:
-                    print(f'dry run: subtracting {method}_{group}_{timepoint}_{contr_key}')  # noqa
+                    print(f'dry run: subtracting {group}_{timepoint}_{method}_{contr_key}')  # noqa
                 else:
                     stc = (stc_dict[method][group][timepoint][contr_0] -
                            stc_dict[method][group][timepoint][contr_1])
@@ -75,7 +75,7 @@ for method in methods:
                 # save the contrast STC
                 fname = f'{group}_{timepoint}_{method}_{contr_key}'
                 if dry_run:
-                    print(f'dry run: saving {fname}')
+                    print(f'dry run: saving      {fname}')
                 else:
                     stc.save(os.path.join(groupavg_path, fname))
 
@@ -83,7 +83,7 @@ for method in methods:
         timepoint = 'PostCampMinusPreCamp'
         for con in conditions + list(contrasts):
             if dry_run:
-                print(f'dry run: subtracting {method}_{group}_{timepoint}_{con}')  # noqa
+                print(f'dry run: subtracting {group}_{timepoint}_{method}_{con}')  # noqa
             else:
                 stc = (stc_dict[method][group]['postCamp'][con] -
                        stc_dict[method][group]['preCamp'][con])
@@ -91,7 +91,7 @@ for method in methods:
             # save the contrast STC
             fname = f'{group}_{timepoint}_{method}_{con}'
             if dry_run:
-                print(f'dry run: saving {fname}')
+                print(f'dry run: saving      {fname}')
             else:
                 stc.save(os.path.join(groupavg_path, fname))
 
@@ -103,7 +103,7 @@ for method in methods:
     timepoint = 'preCamp'
     for con in conditions + list(contrasts):
         if dry_run:
-            print(f'dry run: subtracting {method}_{group}_{timepoint}_{con}')
+            print(f'dry run: subtracting {group}_{timepoint}_{method}_{con}')
         else:
             stc = (stc_dict[method]['UpperKnowledge'][timepoint][con] -
                    stc_dict[method]['LowerKnowledge'][timepoint][con])
@@ -111,7 +111,7 @@ for method in methods:
         # save the contrast STC
         fname = f'{group}_{timepoint}_{method}_{con}'
         if dry_run:
-            print(f'dry run: saving {fname}')
+            print(f'dry run: saving      {fname}')
         else:
             stc.save(os.path.join(groupavg_path, fname))
 
@@ -123,7 +123,7 @@ for method in methods:
     timepoint = 'PostCampMinusPreCamp'
     for con in conditions + list(contrasts):
         if dry_run:
-            print(f'dry run: subtracting {method}_{group}_{timepoint}_{con}')
+            print(f'dry run: subtracting {group}_{timepoint}_{method}_{con}')
         else:
             stc = (stc_dict[method]['LetterIntervention'][timepoint][con] -
                    stc_dict[method]['LanguageIntervention'][timepoint][con])
@@ -131,7 +131,7 @@ for method in methods:
         # save the contrast STC
         fname = f'{group}_{timepoint}_{method}_{con}'
         if dry_run:
-            print(f'dry run: saving {fname}')
+            print(f'dry run: saving      {fname}')
         else:
             stc.save(os.path.join(groupavg_path, fname))
 
