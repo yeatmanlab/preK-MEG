@@ -85,6 +85,9 @@ for method in methods:
         # CONTRAST POST-MINUS-PRE
         timepoint = 'PostCampMinusPreCamp'
         for con in conditions + list(contrasts):
+            # skip conditions we don't need / care about
+            if group_name.endswith('Knowledge'):
+                continue
             if dry_run:
                 print(f'dry run: subtracting {group}_{timepoint}_{method}_{con}')  # noqa
             else:
@@ -99,11 +102,11 @@ for method in methods:
                 stc.save(os.path.join(groupavg_path, fname))
 
     # CONTRAST PRE-INTERVENTION LETTER KNOWLEDGE
+    timepoint = 'preCamp'
     group_name = 'UpperMinusLowerKnowledge'
     n_subj = '-'.join([str(len(groups[g])) for g in ('UpperKnowledge',
                                                      'LowerKnowledge')])
     group = f'{group_name}N{n_subj}FSAverage'
-    timepoint = 'preCamp'
     for con in conditions + list(contrasts):
         if dry_run:
             print(f'dry run: subtracting {group}_{timepoint}_{method}_{con}')
@@ -119,11 +122,11 @@ for method in methods:
             stc.save(os.path.join(groupavg_path, fname))
 
     # CONTRAST EFFECT OF INTERVENTION ON COHORTS
+    timepoint = 'PostCampMinusPreCamp'
     group_name = 'LetterMinusLanguageIntervention'
     n_subj = '-'.join([str(len(groups[g])) for g in ('LetterIntervention',
                                                      'LanguageIntervention')])
     group = f'{group_name}N{n_subj}FSAverage'
-    timepoint = 'PostCampMinusPreCamp'
     for con in conditions + list(contrasts):
         if dry_run:
             print(f'dry run: subtracting {group}_{timepoint}_{method}_{con}')
