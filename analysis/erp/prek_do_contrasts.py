@@ -124,7 +124,7 @@ for method in methods:
 for method, group_dict in stc_dict.items():
     for group, timepoint_dict in group_dict.items():
         for timepoint, condition_dict in timepoint_dict.items():
-            for con, stc in condition_dict:
+            for con, stc in condition_dict.items():
                 # if the movie already exists and overwrite=False, skip it
                 mov_fname = f'{group}_{timepoint}_{method}_{con}.mov'
                 mov_fpath = os.path.join(mov_path, mov_fname)
