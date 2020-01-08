@@ -17,7 +17,6 @@ from aux_functions import load_paths, load_params, load_cohorts
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
 overwrite = True
-dry_run = True
 
 # config paths
 _, _, results_dir = load_paths()
@@ -61,26 +60,17 @@ for method in methods:
             for cond in conditions:
                 fname = f'{group}_{timepoint}_{method}_{cond}'
                 avg_fpath = os.path.join(groupavg_path, fname)
-                if dry_run:
-                    print(f'dry run: loading     {fname}')
-                else:
-                    stc = mne.read_source_estimate(avg_fpath)
-                    stc_dict[method][group][timepoint][cond] = stc
+                stc = mne.read_source_estimate(avg_fpath)
+                stc_dict[method][group][timepoint][cond] = stc
 
             # CONTRAST TRIAL CONDITIONS
             for contr_key, (contr_0, contr_1) in contrasts.items():
-                if dry_run:
-                    print(f'dry run: subtracting {group}_{timepoint}_{method}_{contr_key}')  # noqa
-                else:
-                    stc = (stc_dict[method][group][timepoint][contr_0] -
-                           stc_dict[method][group][timepoint][contr_1])
-                    stc_dict[method][group][timepoint][contr_key] = stc
+                stc = (stc_dict[method][group][timepoint][contr_0] -
+                       stc_dict[method][group][timepoint][contr_1])
+                stc_dict[method][group][timepoint][contr_key] = stc
                 # save the contrast STC
                 fname = f'{group}_{timepoint}_{method}_{contr_key}'
-                if dry_run:
-                    print(f'dry run: saving      {fname}')
-                else:
-                    stc.save(os.path.join(groupavg_path, fname))
+                stc.save(os.path.join(groupavg_path, fname))
 
         # CONTRAST POST-MINUS-PRE
         timepoint = 'PostCampMinusPreCamp'
@@ -88,18 +78,12 @@ for method in methods:
             # skip conditions we don't need / care about
             if group_name.endswith('Knowledge'):
                 continue
-            if dry_run:
-                print(f'dry run: subtracting {group}_{timepoint}_{method}_{con}')  # noqa
-            else:
-                stc = (stc_dict[method][group]['postCamp'][con] -
-                       stc_dict[method][group]['preCamp'][con])
-                stc_dict[method][group][timepoint][con] = stc
+            stc = (stc_dict[method][group]['postCamp'][con] -
+                   stc_dict[method][group]['preCamp'][con])
+            stc_dict[method][group][timepoint][con] = stc
             # save the contrast STC
             fname = f'{group}_{timepoint}_{method}_{con}'
-            if dry_run:
-                print(f'dry run: saving      {fname}')
-            else:
-                stc.save(os.path.join(groupavg_path, fname))
+            stc.save(os.path.join(groupavg_path, fname))
 
     # CONTRAST PRE-INTERVENTION LETTER KNOWLEDGE
     timepoint = 'preCamp'
@@ -108,18 +92,12 @@ for method in methods:
                                                      'LowerKnowledge')])
     group = f'{group_name}N{n_subj}FSAverage'
     for con in conditions + list(contrasts):
-        if dry_run:
-            print(f'dry run: subtracting {group}_{timepoint}_{method}_{con}')
-        else:
-            stc = (stc_dict[method]['UpperKnowledge'][timepoint][con] -
-                   stc_dict[method]['LowerKnowledge'][timepoint][con])
-            stc_dict[method][group][timepoint][con] = stc
+        stc = (stc_dict[method]['UpperKnowledge'][timepoint][con] -
+               stc_dict[method]['LowerKnowledge'][timepoint][con])
+        stc_dict[method][group][timepoint][con] = stc
         # save the contrast STC
         fname = f'{group}_{timepoint}_{method}_{con}'
-        if dry_run:
-            print(f'dry run: saving      {fname}')
-        else:
-            stc.save(os.path.join(groupavg_path, fname))
+        stc.save(os.path.join(groupavg_path, fname))
 
     # CONTRAST EFFECT OF INTERVENTION ON COHORTS
     timepoint = 'PostCampMinusPreCamp'
@@ -128,23 +106,14 @@ for method in methods:
                                                      'LanguageIntervention')])
     group = f'{group_name}N{n_subj}FSAverage'
     for con in conditions + list(contrasts):
-        if dry_run:
-            print(f'dry run: subtracting {group}_{timepoint}_{method}_{con}')
-        else:
-            stc = (stc_dict[method]['LetterIntervention'][timepoint][con] -
-                   stc_dict[method]['LanguageIntervention'][timepoint][con])
-            stc_dict[method][group][timepoint][con] = stc
+        stc = (stc_dict[method]['LetterIntervention'][timepoint][con] -
+               stc_dict[method]['LanguageIntervention'][timepoint][con])
+        stc_dict[method][group][timepoint][con] = stc
         # save the contrast STC
         fname = f'{group}_{timepoint}_{method}_{con}'
-        if dry_run:
-            print(f'dry run: saving      {fname}')
-        else:
-            stc.save(os.path.join(groupavg_path, fname))
+        stc.save(os.path.join(groupavg_path, fname))
 
 # MAKE THE MOVIES
-if dry_run:
-    print('dry run: skipping movies')
-    exit()
 for method, group_dict in stc_dict.items():
     for group, timepoint_dict in group_dict.items():
         for timepoint, condition_dict in timepoint_dict.items():
