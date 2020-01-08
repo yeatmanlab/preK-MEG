@@ -68,9 +68,3 @@ for method in methods:
                 avg /= len(group_members)
                 # save group average STCs
                 avg.save(os.path.join(groupavg_path, avg_fname))
-                # make movie
-                brain = avg.plot(subject='fsaverage', **brain_plot_kwargs)
-                brain.save_movie(os.path.join(mov_path, mov_fname),
-                                 **movie_kwargs)
-                del brain
-            del avg
