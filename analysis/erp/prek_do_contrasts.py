@@ -89,12 +89,14 @@ for method in methods:
     # CONTRAST PRE-INTERVENTION LETTER KNOWLEDGE
     timepoint = 'preCamp'
     group_name = 'UpperMinusLowerKnowledge'
-    n_subj = '-'.join([str(len(groups[g])) for g in ('UpperKnowledge',
-                                                     'LowerKnowledge')])
-    group = f'{group_name}N{n_subj}FSAverage'
+    knowledge_groups = ('UpperKnowledge', 'LowerKnowledge')
+    n_subj = {g: len(groups[g]) for g in knowledge_groups}
+    n = '-'.join([str(n_subj[g]) for g in knowledge_groups])
+    group = f'{group_name}N{n}FSAverage'
+    keys = {g: f'{g}N{n_subj[g]}FSAverage' for g in knowledge_groups}
     for con in conditions + list(contrasts):
-        stc = (stc_dict[method]['UpperKnowledge'][timepoint][con] -
-               stc_dict[method]['LowerKnowledge'][timepoint][con])
+        stc = (stc_dict[method][keys['UpperKnowledge']][timepoint][con] -
+               stc_dict[method][keys['LowerKnowledge']][timepoint][con])
         stc_dict[method][group][timepoint][con] = stc
         # save the contrast STC
         fname = f'{group}_{timepoint}_{method}_{con}'
