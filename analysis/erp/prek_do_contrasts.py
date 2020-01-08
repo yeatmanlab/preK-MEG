@@ -53,6 +53,9 @@ for method in methods:
         stc_dict[method][group] = dict()
         # loop over pre/post measurement time
         for timepoint in timepoints:
+            # skip conditions we don't need / care about
+            if group_name.endswith('Knowledge') and timepoint == 'postCamp':
+                continue
             stc_dict[method][group][timepoint] = dict()
             # loop over conditions
             for cond in conditions:
