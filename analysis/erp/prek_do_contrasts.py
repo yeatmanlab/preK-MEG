@@ -74,6 +74,7 @@ for method in methods:
 
         # CONTRAST POST-MINUS-PRE
         timepoint = 'PostCampMinusPreCamp'
+        stc_dict[method][group][timepoint] = dict()
         for con in conditions + list(contrasts):
             # skip conditions we don't need / care about
             if group_name.endswith('Knowledge'):
