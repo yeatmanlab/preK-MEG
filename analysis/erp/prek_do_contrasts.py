@@ -89,11 +89,12 @@ for method in methods:
     # CONTRAST PRE-INTERVENTION LETTER KNOWLEDGE
     timepoint = 'preCamp'
     group_name = 'UpperMinusLowerKnowledge'
-    knowledge_groups = ('UpperKnowledge', 'LowerKnowledge')
-    n_subj = {g: len(groups[g]) for g in knowledge_groups}
-    n = '-'.join([str(n_subj[g]) for g in knowledge_groups])
+    n_subj = {g: len(groups[g]) for g in letter_knowledge_group}
+    n = '-'.join([str(n_subj[g]) for g in letter_knowledge_group])
     group = f'{group_name}N{n}FSAverage'
-    keys = {g: f'{g}N{n_subj[g]}FSAverage' for g in knowledge_groups}
+    stc_dict[method][group] = dict()
+    stc_dict[method][group][timepoint] = dict()
+    keys = {g: f'{g}N{n_subj[g]}FSAverage' for g in letter_knowledge_group}
     for con in conditions + list(contrasts):
         stc = (stc_dict[method][keys['UpperKnowledge']][timepoint][con] -
                stc_dict[method][keys['LowerKnowledge']][timepoint][con])
@@ -105,12 +106,15 @@ for method in methods:
     # CONTRAST EFFECT OF INTERVENTION ON COHORTS
     timepoint = 'PostCampMinusPreCamp'
     group_name = 'LetterMinusLanguageIntervention'
-    n_subj = '-'.join([str(len(groups[g])) for g in ('LetterIntervention',
-                                                     'LanguageIntervention')])
-    group = f'{group_name}N{n_subj}FSAverage'
+    n_subj = {g: len(groups[g]) for g in intervention_group}
+    n = '-'.join([str(n_subj[g]) for g in intervention_group])
+    group = f'{group_name}N{n}FSAverage'
+    stc_dict[method][group] = dict()
+    stc_dict[method][group][timepoint] = dict()
+    keys = {g: f'{g}N{n_subj[g]}FSAverage' for g in intervention_group}
     for con in conditions + list(contrasts):
-        stc = (stc_dict[method]['LetterIntervention'][timepoint][con] -
-               stc_dict[method]['LanguageIntervention'][timepoint][con])
+        stc = (stc_dict[method][keys['LetterIntervention']][timepoint][con] -
+               stc_dict[method][keys['LanguageIntervention']][timepoint][con])
         stc_dict[method][group][timepoint][con] = stc
         # save the contrast STC
         fname = f'{group}_{timepoint}_{method}_{con}'
