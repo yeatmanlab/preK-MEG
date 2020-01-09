@@ -52,7 +52,6 @@ _, _, subjects = load_params()
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
-groupavg_path = os.path.join(results_dir, 'group_averages')
 
 # set cache dir
 cache_dir = os.path.join(data_root, 'cache')
@@ -123,13 +122,14 @@ if spatial_exclude is not None:
         exclusion[hemi].vertices = \
             np.intersect1d(exclusion[hemi].vertices,
                            fsaverage_src[hemi_idx]['vertno'])
-        if hemi == 'rh':
-            exclusion[hemi].vertices += hemi_nverts
-    name = ' + '.join(exclusion[hemi].name for hemi in ('lh', 'rh'))
-    exclusion['both'] = mne.BiHemiLabel(exclusion['lh'], exclusion['rh'],
-                                        name=name)
-    exclusion['both'].vertices = np.concatenate([exclusion['lh'].vertices,
-                                                 exclusion['rh'].vertices])
+        # # unnecessary b/c separate src for each hemi:
+        # if hemi == 'rh':
+        #     exclusion[hemi].vertices += hemi_nverts
+    # name = ' + '.join(exclusion[hemi].name for hemi in ('lh', 'rh'))
+    # exclusion['both'] = mne.BiHemiLabel(exclusion['lh'], exclusion['rh'],
+    #                                     name=name)
+    # exclusion['both'].vertices = np.concatenate([exclusion['lh'].vertices,
+    #                                              exclusion['rh'].vertices])
 # cluster results get different subfolders depending on threshold / exclude
 cluster_root = os.path.join(results_dir, 'clustering')
 if spatial_exclude is not None:
