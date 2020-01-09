@@ -80,9 +80,15 @@ fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
 fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
 hemi_nverts = len(fsaverage_src[0]['vertno'])
 
+# make separate source spaces for each hemisphere
+lh_src = fsaverage_src.copy()
+rh_src = fsaverage_src.copy()
+_ = lh_src.pop(1)
+_ = rh_src.pop(0)
+
 conn_matrices = dict(both=mne.spatial_src_connectivity(fsaverage_src),
-                     lh=mne.spatial_src_connectivity(fsaverage_src[0]),
-                     rh=mne.spatial_src_connectivity(fsaverage_src[1]))
+                     lh=mne.spatial_src_connectivity(lh_src),
+                     rh=mne.spatial_src_connectivity(rh_src))
 
 if spatial_exclude is not None:
     # labels to exclude, see 10.1016/j.neuroimage.2010.06.010
