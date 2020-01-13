@@ -119,7 +119,8 @@ for hemi in spatial_limits['hemi']:
     if spatial_limits['region'] is None:
         cluster_subdir = f'whole-brain-{hemi}'
     else:
-        cluster_subdir = '{action}-{region}-{hemi}'.format_map(spatial_limits)
+        cluster_subdir = ('{action}-{region}-'.format_map(spatial_limits) +
+                          f'{hemi}')
     # ...and different sub-subfolders depending on thresholding method
     cluster_subsubdir = '.'
     if isinstance(threshold, dict):
