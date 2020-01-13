@@ -57,7 +57,7 @@ def prep_cluster_stats(cluster_results):
     return stats
 
 
-def define_labels(region, action, hemi):
+def define_labels(region, action, hemi, subjects_dir=None):
     from mne import read_labels_from_annot
     if action not in ('include', 'exclude'):
         raise ValueError('action must be "include" or "exclude".')
@@ -105,7 +105,7 @@ def define_labels(region, action, hemi):
     labels = read_labels_from_annot(subject='fsaverage',
                                     parc='aparc.a2009s',
                                     hemi=hemi,
-                                    subjects_dir=None,
+                                    subjects_dir=subjects_dir,
                                     regexp=regexp)
     n_hemis = 2 if hemi == 'both' else 1
     assert len(labels) == n_hemis * len(label_names)

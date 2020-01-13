@@ -96,7 +96,7 @@ for hemi in spatial_limits['hemi']:
     # get the label
     label = define_labels(region=spatial_limits['region'],
                           action=spatial_limits['action'],
-                          hemi=hemi)
+                          hemi=hemi, subjects_dir=subjects_dir)
     # make sure label vertex density matches source space density
     label.restrict(source_space)
     # if label is region to *include*, get complement of vertices to use as
