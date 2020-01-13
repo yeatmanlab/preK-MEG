@@ -28,7 +28,8 @@ threshold = None        # or dict(start=0, step=0.2) for TFCE
 def do_clustering(X, label, connectivity, groups=1):
     fun = (spatio_temporal_cluster_1samp_test if groups == 1 else
            spatio_temporal_cluster_test)
-    cluster_results = fun(X, spatial_exclude=label, connectivity=connectivity,
+    cluster_results = fun(X, spatial_exclude=label.vertices,
+                          connectivity=connectivity,
                           threshold=threshold, n_permutations=1024,
                           n_jobs=n_jobs, seed=rng, buffer_size=1024)
     stats = prep_cluster_stats(cluster_results)
