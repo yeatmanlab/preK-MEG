@@ -155,11 +155,13 @@ for hemi in spatial_limits['hemi']:
                         this_subj = os.path.join(data_root,
                                                  f'{timepoint[:-4]}_camp',
                                                  'twa_hp', 'erp', s, 'stc')
-                        stc_hemi = '' if hemi == 'both' else f'-{hemi}.stc'
-                        fname = f'{s}FSAverage_{timepoint}_{method}_{cond}{stc_hemi}'  # noqa
+                        fname = f'{s}FSAverage_{timepoint}_{method}_{cond}'
                         stc_path = os.path.join(this_subj, fname)
                         stc = mne.read_source_estimate(stc_path)
-                        stc_data = stc.data.transpose(1, 0)  # noqa; need (subj, time, space)
+                        # get just the hemisphere(s) we want; transpose because
+                        # we ultimately need (subj, time, space)
+                        attr = dict(lh='lh_data', rh='rh_data', both='data')
+                        stc_data = getattr(stc, attr[hemi]).transpose(1, 0)
                         data_dict[group][timepoint][cond].append(stc_data)
                     data_dict[group][timepoint][cond] = \
                         np.array(data_dict[group][timepoint][cond])
