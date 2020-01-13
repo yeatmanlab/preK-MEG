@@ -154,7 +154,7 @@ for hemi in spatial_limits['hemi']:
                         this_subj = os.path.join(data_root,
                                                  f'{timepoint[:-4]}_camp',
                                                  'twa_hp', 'erp', s, 'stc')
-                        stc_hemi = '' if hemi == 'both' else f'-{hemi}'
+                        stc_hemi = '' if hemi == 'both' else f'-{hemi}.stc'
                         fname = f'{s}FSAverage_{timepoint}_{method}_{cond}{stc_hemi}'  # noqa
                         stc_path = os.path.join(this_subj, fname)
                         stc = mne.read_source_estimate(stc_path)
