@@ -38,13 +38,7 @@ def make_cluster_stc(cluster_fname):
     stc_fname = re.sub(r'(_[lr]h)?\.npz$', '', cluster_fname)
     stc_fpath = os.path.join(results_dir, 'group_averages', stc_fname)
     stc = mne.read_source_estimate(stc_fpath)
-    # pick correct hemisphere(s)
-    if cluster_fname.rstrip('.npz').endswith('_lh'):
-        vertices = stc.vertices[0]
-    elif cluster_fname.rstrip('.npz').endswith('_rh'):
-        vertices = stc.vertices[1]
-    else:
-        vertices = stc.vertices
+    vertices = stc.vertices
     stc_tstep_ms = 1000 * stc.tstep  # in milliseconds
     # load the cluster results
     cluster_fpath = os.path.join(cluster_dir, cluster_fname)
