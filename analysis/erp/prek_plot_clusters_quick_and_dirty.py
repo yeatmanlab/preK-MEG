@@ -64,7 +64,7 @@ def make_cluster_stc(cluster_fname):
                                                        tstep=stc_tstep_ms)
         has_signif_clusters = True
     except RuntimeError:
-        txt_fname = stc_fname.replace('.stc', '_NO-SIGNIFICANT-CLUSTERS.txt')
+        txt_fname = cluster_fname.replace('.npz', '_NO-SIGNIFICANT-CLUSTERS.txt')  # noqa
         txt_fpath = os.path.join(img_dir, txt_fname)
         with open(txt_fpath, 'w') as f:
             f.write('no significant clusters')
