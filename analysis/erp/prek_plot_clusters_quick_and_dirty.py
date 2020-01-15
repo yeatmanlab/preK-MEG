@@ -82,6 +82,6 @@ def make_cluster_stc(cluster_fname):
         brain.save_image(os.path.join(img_dir, img_fname))
 
 
-cluster_fnames = sorted(os.listdir(cluster_dir))
+cluster_fnames = sorted([x for x in os.scandir(cluster_dir) if x.is_file()])
 for cluster_fname in cluster_fnames:
-    make_cluster_stc(cluster_fname)
+    make_cluster_stc(cluster_fname.name)
