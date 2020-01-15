@@ -7,11 +7,11 @@ Plot movies with significant cluster regions highlighted.
 """
 
 import os
-from itertools import combinations
+import re
 import numpy as np
 from mayavi import mlab
 import mne
-from aux_functions import load_paths, load_params, load_cohorts
+from aux_functions import load_paths, load_params
 
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
@@ -32,37 +32,15 @@ for folder in (img_dir, cluster_stc_dir):
     if not os.path.isdir(folder):
         os.mkdir(folder)
 
-# config other
-conditions = ('words', 'faces', 'cars')  # we purposely omit 'aliens' here
-methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
 
-# generate contrast names
-contrasts = [f'{cond_0.capitalize()}Minus{cond_1.capitalize()}'
-             for (cond_0, cond_1) in combinations(conditions, 2)]
-
-# load cohort info (keys Language/LetterIntervention and Lower/UpperKnowledge)
-intervention_group, letter_knowledge_group = load_cohorts()
-
-# assemble groups to iterate over
-# groups = dict(GrandAvg=subjects)
-# groups.update(letter_knowledge_group)
-groups = dict()
-groups.update(intervention_group)
-
-
-# workhorse function
-def make_cluster_stc(group, prepost, method, con, results_dir,
-                     results_subdir, cluster_dir, cluster_stc_dir, img_dir):
-    """NB: 'con' can be either condition string ('faces') or contrast string
-    ('FacesMinusCars')."""
+def make_cluster_stc(cluster_fname):
     # load the STC
-    stc_fname = f'{group}_{prepost}Camp_{method}_{con}'
-    stc_fpath = os.path.join(results_dir, results_subdir, stc_fname)
+    stc_fname = re.sub(r'(_[lr]h)?\.npz$', '', cluster_fname)
+    stc_fpath = os.path.join(results_dir, 'group_averages', stc_fname)
     stc = mne.read_source_estimate(stc_fpath)
     vertices = stc.vertices
     stc_tstep_ms = 1000 * stc.tstep  # in milliseconds
     # load the cluster results
-    cluster_fname = f'{stc_fname}.npz'
     cluster_fpath = os.path.join(cluster_dir, cluster_fname)
     cluster_dict = np.load(cluster_fpath, allow_pickle=True)
     # KEYS: clusters tvals pvals hzero good_cluster_idxs n_clusters
@@ -74,16 +52,16 @@ def make_cluster_stc(group, prepost, method, con, results_dir,
     # all clusters, each subsequent time point shows a single cluster,
     # and the colormap indicates the duration for which the cluster was
     # significant
-    cluster_stc_fpath = os.path.join(cluster_stc_dir, f'{stc_fname}_clusters')
+    cluster_stc_fpath = os.path.join(cluster_stc_dir, stc_fname + '.stc')
     has_signif_clusters = False
     try:
         cluster_stc = mne.stats.summarize_clusters_stc(clu, vertices=vertices,
                                                        tstep=stc_tstep_ms)
         has_signif_clusters = True
     except RuntimeError:
-        txt_path = os.path.join(
-            img_dir, f'{stc_fname}_NO-SIGNIFICANT-CLUSTERS.txt')
-        with open(txt_path, 'w') as f:
+        txt_fname = stc_fname.replace('.stc', '_NO-SIGNIFICANT-CLUSTERS.txt')
+        txt_fpath = os.path.join(img_dir, txt_fname)
+        with open(txt_fpath, 'w') as f:
             f.write('no significant clusters')
     if has_signif_clusters:
         cluster_stc.save(cluster_stc_fpath)
@@ -95,35 +73,10 @@ def make_cluster_stc(group, prepost, method, con, results_dir,
                                  time_unit='ms',
                                  time_label='temporal extent',
                                  **brain_plot_kwargs)
-        img_fpath = os.path.join(img_dir, f'{stc_fname}_clusters.png')
-        brain.save_image(img_fpath)
+        img_fname = cluster_fname.replace('.npz', '_clusters.png')
+        brain.save_image(os.path.join(img_dir, img_fname))
 
 
-# loop over algorithms
-for method in methods:
-    # loop over groups
-    for group_name, group_members in groups.items():
-        group = f'{group_name}N{len(group_members)}FSAverage'
-        common_kwargs = dict(group=group,
-                             method=method,
-                             results_dir=results_dir,
-                             cluster_dir=cluster_dir,
-                             cluster_stc_dir=cluster_stc_dir,
-                             img_dir=img_dir)
-        # loop over pre/post measurement time
-        #for prepost in ('pre', 'post'):
-        #    # loop over contrasts
-        #    for contrast in contrasts:
-        #        make_cluster_stc(prepost=prepost, con=contrast,
-        #                         results_subdir='condition_contrasts',
-        #                         **common_kwargs)
-        # post-pre subtraction for single conditions
-        for condition in conditions:
-            make_cluster_stc(prepost='PostCampMinusPre', con=condition,
-                             results_subdir='prepost_contrasts',
-                             **common_kwargs)
-        # post-pre subtraction for condition contrasts
-        for contrast in contrasts:
-            make_cluster_stc(prepost='PostCampMinusPre', con=contrast,
-                             results_subdir='prepost_contrasts',
-                             **common_kwargs)
+cluster_fnames = sorted(os.listdir(cluster_dir))
+for cluster_fname in cluster_fnames:
+    make_cluster_stc(cluster_fname)
