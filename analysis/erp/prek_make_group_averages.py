@@ -38,12 +38,12 @@ groups = dict(GrandAvg=subjects)
 groups.update(intervention_group)
 groups.update(letter_knowledge_group)
 
-# loop over pre/post measurement time
-for prepost in ('pre', 'post'):
-    # loop over experimental conditions
-    for cond in conditions:
-        # loop over algorithms
-        for method in methods:
+# loop over algorithms
+for method in methods:
+    # loop over pre/post measurement time
+    for prepost in ('pre', 'post'):
+        # loop over experimental conditions
+        for cond in conditions:
             # loop over groups
             for group_name, group_members in groups.items():
                 avg = 0
@@ -68,9 +68,3 @@ for prepost in ('pre', 'post'):
                 avg /= len(group_members)
                 # save group average STCs
                 avg.save(os.path.join(groupavg_path, avg_fname))
-                # make movie
-                brain = avg.plot(subject='fsaverage', **brain_plot_kwargs)
-                brain.save_movie(os.path.join(mov_path, mov_fname),
-                                 **movie_kwargs)
-                del brain
-            del avg
