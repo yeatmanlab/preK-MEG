@@ -57,7 +57,6 @@ def make_cluster_stc(cluster_fname):
     # all clusters, each subsequent time point shows a single cluster,
     # and the colormap indicates the duration for which the cluster was
     # significant
-    cluster_stc_fpath = os.path.join(cluster_stc_dir, stc_fname + '.stc')
     has_signif_clusters = False
     try:
         cluster_stc = mne.stats.summarize_clusters_stc(clu, vertices=vertices,
@@ -69,17 +68,24 @@ def make_cluster_stc(cluster_fname):
         with open(txt_fpath, 'w') as f:
             f.write('no significant clusters')
     if has_signif_clusters:
-        cluster_stc.save(cluster_stc_fpath)
+        cluster_stc.save(os.path.join(cluster_stc_dir, stc_fname))
         # plot the clusters
         stc_dur_ms = 1000 * (stc.times[-1] - stc.times[0])
         clim_dict = dict(kind='value', pos_lims=[0, stc_tstep_ms, stc_dur_ms])
-        brain = cluster_stc.plot(smoothing_steps='nearest',
-                                 clim=clim_dict,
-                                 time_unit='ms',
-                                 time_label='temporal extent',
-                                 **brain_plot_kwargs)
-        img_fname = cluster_fname.replace('.npz', '_clusters.png')
-        brain.save_image(os.path.join(img_dir, img_fname))
+        # Each "time" in a cluster STC shows one signif. cluster, except for
+        # time zero, which shows the sum of all signif. clusters. So here we
+        # plot each "time" as a separate image (skipping the first time).
+        for idx, this_time in enumerate(cluster_stc.times):
+            if idx == 0:
+                continue
+            brain = cluster_stc.plot(smoothing_steps='nearest',
+                                     clim=clim_dict,
+                                     time_unit='ms',
+                                     time_label='temporal extent',
+                                     initial_time=this_time,
+                                     **brain_plot_kwargs)
+            img_fname = cluster_fname.replace('.npz', f'_cluster{idx:02}.png')
+            brain.save_image(os.path.join(img_dir, img_fname))
 
 
 cluster_fnames = sorted([x.name for x in os.scandir(cluster_dir)
