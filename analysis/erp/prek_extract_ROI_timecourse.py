@@ -8,7 +8,6 @@ Extract mean activation time course from region-of-interest.
 
 import os
 import re
-from itertools import combinations
 import numpy as np
 import pandas as pd
 from mayavi import mlab
@@ -46,6 +45,15 @@ fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
 hemi_nverts = len(fsaverage_src[0]['vertno'])
 
 
+# helper function
+def build_group_key(group):
+    if group in ('letter', 'language'):
+        key = f'{group.capitalize()}Intervention'
+    elif group in ('upper', 'lower'):
+        key = f'{group.capitalize()}Knowledge'
+    return key
+
+
 # workhorse function
 def extract_time_course(cluster_fname):
     """."""
@@ -62,14 +70,13 @@ def extract_time_course(cluster_fname):
 
     # extract condition names from filenames
     group, timepoint, method, condition = avg_stc_fname.split('_')
-    group_key = group[:group.index('N')]
     hemi_str = re.sub(r'\.npz$', '', cluster_fname)[-2:]
 
     # convert condition names as needed
     timepoints = dict(preCamp=['pre'], postCamp=['post'],
                       PostCampMinusPreCamp=['post', 'pre'])[timepoint]
     conditions = [x.lower() for x in condition.split('Minus')]
-    groups = re.sub(r'(Intervention|Knowledge)$', '', group_key)
+    groups = re.sub(r'(Intervention|Knowledge)$', '', group[:group.index('N')])
     groups = [x.lower() for x in groups.split('Minus')]
 
     # loop over clusters
@@ -100,6 +107,7 @@ def extract_time_course(cluster_fname):
                 time_courses[timept][con] = dict()
                 for grp in groups:
                     time_courses[timept][con][grp] = dict()
+                    group_key = build_group_key(grp)
                     group_members = groups_dict[group_key]
                     for s in group_members:
                         this_subj = os.path.join(data_root, f'{timept}_camp',
