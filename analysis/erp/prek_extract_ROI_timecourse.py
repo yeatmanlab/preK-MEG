@@ -31,20 +31,13 @@ with open(os.path.join(cluster_root, 'most-recent-clustering.txt'), 'r') as f:
 ts_dir = os.path.join(cluster_dir, 'time-series')
 os.makedirs(ts_dir, exist_ok=True)
 
-# config other
-methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
-timepoints = ('preCamp', 'postCamp')
-conditions = ['words', 'faces', 'cars']  # we purposely omit 'aliens' here
-contrasts = {f'{contr[0].capitalize()}Minus{contr[1].capitalize()}': contr
-             for contr in list(combinations(conditions, 2))}
-
 # load cohort info (keys Language/LetterIntervention and Lower/UpperKnowledge)
 intervention_group, letter_knowledge_group = load_cohorts()
 
 # assemble groups to iterate over
-groups = dict(GrandAvg=subjects)
-groups.update(intervention_group)
-groups.update(letter_knowledge_group)
+groups_dict = dict(GrandAvg=subjects)
+groups_dict.update(intervention_group)
+groups_dict.update(letter_knowledge_group)
 
 # load fsaverage source space
 fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
@@ -68,14 +61,14 @@ def extract_time_course(cluster_fname):
     avg_stc = mne.read_source_estimate(avg_stc_fpath)
 
     # extract condition names from filenames
-    grp, timept, method, condtn = avg_stc_fname.split('_')
-    group_key = grp[:grp.index('N')]
+    group, timepoint, method, condition = avg_stc_fname.split('_')
+    group_key = group[:group.index('N')]
     hemi_str = re.sub(r'\.npz$', '', cluster_fname)[-2:]
 
     # convert condition names as needed
     timepoints = dict(preCamp=['pre'], postCamp=['post'],
-                      PostCampMinusPreCamp=['post', 'pre'])[timept]
-    conditions = [x.lower() for x in condtn.split('Minus')]
+                      PostCampMinusPreCamp=['post', 'pre'])[timepoint]
+    conditions = [x.lower() for x in condition.split('Minus')]
     groups = re.sub(r'(Intervention|Knowledge)$', '', group_key)
     groups = [x.lower() for x in groups.split('Minus')]
 
@@ -101,38 +94,45 @@ def extract_time_course(cluster_fname):
 
         time_courses = dict()
         # loop over conditions to handle subtractions
-        for timepoint in timepoints:
-            time_courses[timepoint] = dict()
-            for condition in conditions:
-                time_courses[timepoint][condition] = dict()
-                group_members = groups[group_key]
-                for s in group_members:
-                    this_subj = os.path.join(data_root, f'{timepoint}_camp',
-                                             'twa_hp', 'erp', s, 'stc')
-                    fname = f'{s}FSAverage_{timepoint}Camp_{method}_{condition}'  # noqa E501
-                    stc_path = os.path.join(this_subj, fname)
-                    stc = mne.read_source_estimate(stc_path)
-                    # extract label time course
-                    kwargs = dict(src=fsaverage_src, mode='pca_flip',
-                                  allow_empty=True)
-                    time_course = mne.extract_label_time_course(stc, label,
-                                                                **kwargs)
-                    time_courses[timepoint][condition][s] = time_course
-                # convert dict of each subj's time series to DataFrame
-                df = pd.DataFrame(time_courses[timepoint][condition],
-                                  index=stc.times)
-                time_courses[timepoint][condition] = df
-            # collapse contrasts
+        for timept in timepoints:
+            time_courses[timept] = dict()
+            for con in conditions:
+                time_courses[timept][con] = dict()
+                for grp in groups:
+                    time_courses[timept][con][grp] = dict()
+                    group_members = groups_dict[group_key]
+                    for s in group_members:
+                        this_subj = os.path.join(data_root, f'{timept}_camp',
+                                                 'twa_hp', 'erp', s, 'stc')
+                        fname = f'{s}FSAverage_{timept}Camp_{method}_{con}'
+                        stc_path = os.path.join(this_subj, fname)
+                        stc = mne.read_source_estimate(stc_path)
+                        # extract label time course
+                        kwargs = dict(src=fsaverage_src, mode='pca_flip',
+                                      allow_empty=True)
+                        time_course = mne.extract_label_time_course(stc, label,
+                                                                    **kwargs)
+                        time_courses[timept][con][grp][s] = time_course
+                    # convert dict of each subj's time series to DataFrame
+                    df = pd.DataFrame(time_courses[timept][con][grp],
+                                      index=stc.times)
+                    time_courses[timept][con][grp] = df
+                # collapse contrasts
+                if len(groups) > 1:
+                    time_courses[timept][con] = (time_courses[timept][con][groups[0]] -  # noqa E501
+                                                 time_courses[timept][con][groups[1]])   # noqa E501
+                else:
+                    time_courses[timept][con] = time_courses[timept][con][grp]
             if len(conditions) > 1:
-                time_courses[timepoint] = (time_courses[timepoint][conditions[0]] -  # noqa E501
-                                           time_courses[timepoint][conditions[1]])   # noqa E501
+                time_courses[timept] = (time_courses[timept][conditions[0]] -
+                                        time_courses[timept][conditions[1]])
             else:
-                time_courses[timepoint] = time_courses[timepoint][condition]
+                time_courses[timept] = time_courses[timept][con]
         if len(timepoints) > 1:
             time_courses = (time_courses[timepoints[0]] -
                             time_courses[timepoints[1]])
         else:
-            time_courses = time_courses[timepoint]
+            time_courses = time_courses[timept]
         # save DataFrame
         ts_fname = f'{avg_stc_fname}_cluster{clu:05}.csv'
         time_courses.to_csv(os.path.join(ts_dir, ts_fname))
