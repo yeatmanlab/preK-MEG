@@ -51,6 +51,8 @@ def build_group_key(group):
         key = f'{group.capitalize()}Intervention'
     elif group in ('upper', 'lower'):
         key = f'{group.capitalize()}Knowledge'
+    elif group == 'grandavg':
+        key = 'GrandAvg'
     return key
 
 
