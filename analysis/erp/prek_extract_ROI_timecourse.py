@@ -112,7 +112,7 @@ def extract_time_course(cluster_fname):
                                       allow_empty=True)
                         time_course = mne.extract_label_time_course(stc, label,
                                                                     **kwargs)
-                        time_courses[timept][con][grp][s] = time_course
+                        time_courses[timept][con][grp][s] = np.squeeze(time_course)  # noqa E501
                     # convert dict of each subj's time series to DataFrame
                     df = pd.DataFrame(time_courses[timept][con][grp],
                                       index=stc.times)
