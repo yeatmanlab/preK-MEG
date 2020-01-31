@@ -260,11 +260,11 @@ def make_cluster_stc(cluster_fname):
             # draw the timecourses
             plot_func = sns.lineplot
             plot_kwargs = dict()
-            if len(conditions > 1):
+            if len(conditions) > 1:
                 plot_func = partial(sns.relplot, kind='line', row='condition')
-            if len(groups > 1):
+            if len(groups) > 1:
                 plot_kwargs.update(hue='group')
-            if len(timepoints > 1):
+            if len(timepoints) > 1:
                 plot_kwargs.update(style='timepoint')
             p = plot_func(x='time', y='value', data=df, ax=axs[1:],
                           **plot_kwargs)
