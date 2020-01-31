@@ -266,6 +266,7 @@ def make_cluster_stc(cluster_fname):
                              **plot_kwargs)
             # save plot
             fig.savefig(os.path.join(img_dir, img_fname))
+            plt.close(fig)
 
 
 cluster_fnames = sorted([x.name for x in os.scandir(cluster_dir)
