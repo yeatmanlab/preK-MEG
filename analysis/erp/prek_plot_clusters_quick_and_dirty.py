@@ -20,7 +20,7 @@ from aux_functions import load_paths, load_params, load_cohorts
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
 n_jobs = 10
-sns.set(style='white', font_scale=0.8)
+sns.set(style='whitegrid', font_scale=0.8)
 
 # load params
 brain_plot_kwargs, movie_kwargs, subjects = load_params()
@@ -249,23 +249,25 @@ def make_cluster_stc(cluster_fname):
             n_rows = len(conditions) + 1
             gridspec_kw = dict(height_ratios=[4] + [1] * len(conditions))
             fig, axs = plt.subplots(n_rows, 1, gridspec_kw=gridspec_kw,
-                                    figsize=(8, 16))
+                                    figsize=(9, 15))
             # draw the cluster brain image into first axes
             img_fname = re.sub(r'\.npz$', f'_cluster{cluster_idx:05}.png',
                                cluster_fname)
             cluster_image = imread(os.path.join(img_dir, img_fname))
             axs[0].imshow(cluster_image)
             axs[0].set_axis_off()
+            axs[0].set_title(cluster_fname)
             # draw the timecourses
             plot_kwargs = dict()
-            if len(groups) > 1:
-                plot_kwargs.update(hue='group')
+            if len(conditions) > 1:
+                plot_kwargs.update(hue='condition')
             if len(timepoints) > 1:
                 plot_kwargs.update(style='timepoint')
-            for condition, ax in zip(conditions, axs[1:]):
-                data = df.loc[df['condition'] == condition]
+            for group, ax in zip(groups, axs[1:]):
+                data = df.loc[df['group'] == group]
                 sns.lineplot(x='time', y='value', data=data, ax=ax,
                              **plot_kwargs)
+                ax.set_title(group)
                 # we only need one legend, suppress on subsequent plots
                 plot_kwargs.update(legend=False)
             # save plot
