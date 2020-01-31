@@ -246,10 +246,10 @@ def make_cluster_stc(cluster_fname):
             df = pd.melt(timeseries_dataframe, id_vars=id_vars,
                          var_name='subj')
             # intitialize figure
-            n_rows = len(conditions) + 1
-            gridspec_kw = dict(height_ratios=[4] + [1] * len(conditions))
+            n_rows = len(groups) + 1
+            gridspec_kw = dict(height_ratios=[4] + [1] * len(groups))
             fig, axs = plt.subplots(n_rows, 1, gridspec_kw=gridspec_kw,
-                                    figsize=(9, 15))
+                                    figsize=(9, 14))
             # draw the cluster brain image into first axes
             img_fname = re.sub(r'\.npz$', f'_cluster{cluster_idx:05}.png',
                                cluster_fname)
