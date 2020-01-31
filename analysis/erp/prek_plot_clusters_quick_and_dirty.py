@@ -8,7 +8,6 @@ Plot movies with significant cluster regions highlighted.
 
 import os
 import re
-from functools import partial
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -183,8 +182,6 @@ def extract_time_courses(avg_stc, cluster_fname, cluster_dict, cluster_idx):
     else:
         dfs = (time_courses[t] for t in timepoints)
         time_courses = pd.concat(dfs)
-    # clean up
-    time_courses.reset_index(inplace=True)
     return time_courses
 
 
@@ -240,8 +237,8 @@ def make_cluster_stc(cluster_fname):
                                                         cluster_idx)
             # save to CSV
             timeseries_fname = f'{avg_stc_fname}_cluster{cluster_idx:05}.csv'
-            timeseries_dataframe.to_csv(os.path.join(timeseries_dir,
-                                                     timeseries_fname))
+            timeseries_fpath = os.path.join(timeseries_dir, timeseries_fname)
+            timeseries_dataframe.to_csv(timeseries_fpath, index=False)
             # plot time series alongside cluster location
             all_cols = timeseries_dataframe.columns.values
             subj_cols = timeseries_dataframe.columns.str.startswith('prek')
@@ -258,18 +255,17 @@ def make_cluster_stc(cluster_fname):
             cluster_image = imread(os.path.join(img_dir, img_fname))
             axs[0].imshow(cluster_image)
             # draw the timecourses
-            plot_func = sns.lineplot
             plot_kwargs = dict()
-            if len(conditions) > 1:
-                plot_func = partial(sns.relplot, kind='line', row='condition')
             if len(groups) > 1:
                 plot_kwargs.update(hue='group')
             if len(timepoints) > 1:
                 plot_kwargs.update(style='timepoint')
-            p = plot_func(x='time', y='value', data=df, ax=axs[1:],
-                          **plot_kwargs)
+            for condition, ax in zip(conditions, axs[1:]):
+                data = df.loc[df['condition'] == condition]
+                sns.lineplot(x='time', y='value', data=data, ax=ax,
+                             **plot_kwargs)
             # save plot
-            p.savefig(os.path.join(img_dir, img_fname))
+            fig.savefig(os.path.join(img_dir, img_fname))
 
 
 cluster_fnames = sorted([x.name for x in os.scandir(cluster_dir)
