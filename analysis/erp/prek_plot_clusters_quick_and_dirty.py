@@ -45,6 +45,12 @@ groups_dict = dict(GrandAvg=subjects)
 groups_dict.update(intervention_group)
 groups_dict.update(letter_knowledge_group)
 
+title_dict = dict(language='Language Intervention cohort',
+                  letter='Letter Intervention cohort',
+                  grandavg='All participants',
+                  lower='Pre-test lower half of participants',
+                  upper='Pre-test upper half of participants')
+
 # load fsaverage source space
 fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
                                   'fsaverage-ico-5-src.fif')
@@ -249,7 +255,7 @@ def make_cluster_stc(cluster_fname):
             n_rows = len(groups) + 1
             gridspec_kw = dict(height_ratios=[4] + [1] * len(groups))
             fig, axs = plt.subplots(n_rows, 1, gridspec_kw=gridspec_kw,
-                                    figsize=(9, 14))
+                                    figsize=(9, 13))
             # draw the cluster brain image into first axes
             img_fname = re.sub(r'\.npz$', f'_cluster{cluster_idx:05}.png',
                                cluster_fname)
@@ -267,7 +273,8 @@ def make_cluster_stc(cluster_fname):
                 data = df.loc[df['group'] == group]
                 sns.lineplot(x='time', y='value', data=data, ax=ax,
                              **plot_kwargs)
-                ax.set_title(group)
+                ax.set_title(title_dict[group])
+                ax.set_ylim(0, 4)
                 # we only need one legend, suppress on subsequent plots
                 plot_kwargs.update(legend=False)
             # save plot
