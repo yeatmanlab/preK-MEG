@@ -85,8 +85,8 @@ def plot_clusters(stc, cluster_stc, signif_clu):
                                  initial_time=this_time,
                                  **brain_plot_kwargs)
         cluster_idx = signif_clu[time_idx - 1]
-        img_fname = cluster_fname.replace('.npz',
-                                          f'_cluster{cluster_idx:05}.png')
+        img_fname = re.sub(r'\.npz$', f'_cluster{cluster_idx:05}.png',
+                           cluster_fname)
         brain.save_image(os.path.join(img_dir, img_fname))
 
 
@@ -253,7 +253,9 @@ def make_cluster_stc(cluster_fname):
             gridspec_kw = dict(height_ratios=[2] + [1] * len(conditions))
             fig, axs = plt.subplots(n_rows, 1, gridspec_kw=gridspec_kw)
             # draw the cluster brain image into first axes
-            cluster_image = imread('your_image.png')
+            img_fname = re.sub(r'\.npz$', f'_cluster{cluster_idx:05}.png',
+                               cluster_fname)
+            cluster_image = imread(os.path.join(img_dir, img_fname))
             axs[0].imshow(cluster_image)
             # draw the timecourses
             plot_func = sns.lineplot
@@ -267,8 +269,7 @@ def make_cluster_stc(cluster_fname):
             p = plot_func(x='time', y='value', data=df, ax=axs[1:],
                           **plot_kwargs)
             # save plot
-            plot_fname = f'{avg_stc_fname}_cluster{cluster_idx:05}.png'
-            p.savefig(os.path.join(img_dir, plot_fname))
+            p.savefig(os.path.join(img_dir, img_fname))
 
 
 cluster_fnames = sorted([x.name for x in os.scandir(cluster_dir)
