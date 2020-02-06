@@ -28,17 +28,17 @@ from prek_score import prek_score
 pre_or_post = 'post' # convenience variable for rerunning 
 target_dir = '/mnt/scratch/prek/%s_camp/twa_hp/erp/' % pre_or_post
 
-params = mnefun.Params(tmin=-0.1, tmax=1, t_adjust=-0.067, n_jobs=8,
-                       proj_sfreq=200, n_jobs_fir=8,
+params = mnefun.Params(tmin=-0.1, tmax=1, t_adjust=-0.067, n_jobs='cuda',
+                       proj_sfreq=200, n_jobs_fir='cuda',
                        filter_length='5s', lp_cut=80.,
-                       n_jobs_resample=8,
+                       n_jobs_resample='cuda',
                        bmin=-0.1, bem_type='5120')
 # load subjects
 with open(os.path.join('..', '..', 'params', 'subjects.yaml'), 'r') as f:
     subjects = yaml.load(f, Loader=yaml.FullLoader)
 
 print(subjects)
-structurals = ['PREK%s' %x[4:] for x in subjects]
+structurals = [x.upper() for x in subjects]
 
 params.subjects = subjects
 params.work_dir = target_dir

@@ -33,14 +33,14 @@ pskt_dir = '/mnt/scratch/prek/%s_camp/%s_hp/pskt/' % (pre_or_post, fixed_or_twa)
 
 # load subjects
 with open(os.path.join('..', '..', 'params', 'subjects.yaml'), 'r') as f:
-    subjects = yaml.load(f, Loader=yaml.FullLoader
+    subjects = yaml.load(f, Loader=yaml.FullLoader)
 
-structurals = ['PREK%s' %x[4:] for x in subjects]
+structurals = [x.upper() for x in subjects]
 
-params = mnefun.Params(tmin=-0.1, tmax=1, n_jobs=2,
-                       proj_sfreq=200, n_jobs_fir=2,
+params = mnefun.Params(tmin=-0.1, tmax=1, n_jobs='cuda',
+                       proj_sfreq=200, n_jobs_fir='cuda',
                        filter_length='5s', lp_cut=80., 
-                       n_jobs_resample=2,
+                       n_jobs_resample='cuda',
                        bmin=-0.1, bem_type='5120', )
 
 params.subjects = subjects
