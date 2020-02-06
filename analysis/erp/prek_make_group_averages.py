@@ -7,45 +7,64 @@ Make average Source Time Course across all subjects, for each condition
 """
 
 import os
-import yaml
-from functools import partial
+from mayavi import mlab
 import mne
+from aux_functions import load_paths, load_params, load_cohorts
+
+mlab.options.offscreen = True
+mne.cuda.init_cuda()
+overwrite = False
 
 # config paths
-subj_root = '/mnt/scratch/prek/pre_camp/twa_hp/'
-subjects_dir = '/mnt/scratch/prek/anat'
-avg_out_path = os.path.join(subj_root, 'grand_averages')
-mov_out_path = os.path.join(subj_root, 'movies')
-for _dir in (avg_out_path, mov_out_path):
+data_root, _, results_dir = load_paths()
+groupavg_path = os.path.join(results_dir, 'group_averages')
+mov_path = os.path.join(results_dir, 'movies')
+for _dir in (groupavg_path, mov_path):
     if not os.path.isdir(_dir):
-        os.mkdir(_dir)
+        os.makedirs(_dir, exist_ok=True)
+
 # config other
 conditions = ('words', 'faces', 'cars', 'aliens')
 methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
-# load params
-paramdir = os.path.join('..', '..', 'params')
-yamload = partial(yaml.load, Loader=yaml.FullLoader)
-with open(os.path.join(paramdir, 'brain_plot_params.yaml'), 'r') as f:
-    brain_plot_kwargs = yamload(f)
-with open(os.path.join(paramdir, 'movie_params.yaml'), 'r') as f:
-    movie_kwargs = yamload(f)
-with open(os.path.join(paramdir, 'subjects.yaml'), 'r') as f:
-    subjects = yamload(f)
 
-# make grand average & movie
-for cond in conditions:
-    for method in methods:
-        avg = 0
-        # make cross-subject average
-        for s in subjects:
-            stc_path = os.path.join(subj_root, s, 'stc',
-                                    f'{s}_{method}_fsaverage_{cond}-lh.stc')
-            avg += mne.read_source_estimate(stc_path)
-        avg /= len(subjects)
-        # save
-        avg_fname = f'fsaverage_{method}_{cond}_GrandAvgN{len(subjects)}.stc'
-        avg.save(os.path.join(avg_out_path, avg_fname))
-        # make movie
-        brain = avg.plot(subject='fsaverage', **brain_plot_kwargs)
-        mov_fname = f'{avg_fname[:-4]}.mov'
-        brain.save_movie(os.path.join(mov_out_path, mov_fname), **movie_kwargs)
+# load params
+brain_plot_kwargs, movie_kwargs, subjects = load_params()
+
+# load cohort info (keys Language/LetterIntervention and Lower/UpperKnowledge)
+intervention_group, letter_knowledge_group = load_cohorts()
+
+# assemble groups to iterate over
+groups = dict(GrandAvg=subjects)
+groups.update(intervention_group)
+groups.update(letter_knowledge_group)
+
+# loop over algorithms
+for method in methods:
+    # loop over pre/post measurement time
+    for prepost in ('pre', 'post'):
+        # loop over experimental conditions
+        for cond in conditions:
+            # loop over groups
+            for group_name, group_members in groups.items():
+                avg = 0
+                group = f'{group_name}N{len(group_members)}FSAverage'
+                avg_fname = f'{group}_{prepost}Camp_{method}_{cond}'
+                mov_fname = f'{avg_fname}.mov'
+                # if the movie already exists, so must the STC, so skip both
+                if (os.path.exists(os.path.join(mov_path, mov_fname)) and
+                        not overwrite):
+                    print(f'skipping {avg_fname}')
+                    continue
+                # we only compare incoming knowledge for pre-intervention data
+                if prepost == 'post' and group_name.endswith('Knowledge'):
+                    continue
+                # make cross-subject average
+                for s in group_members:
+                    this_subj = os.path.join(data_root, f'{prepost}_camp',
+                                             'twa_hp', 'erp', s)
+                    fname = f'{s}FSAverage_{prepost}Camp_{method}_{cond}'
+                    stc_path = os.path.join(this_subj, 'stc', fname)
+                    avg += mne.read_source_estimate(stc_path)
+                avg /= len(group_members)
+                # save group average STCs
+                avg.save(os.path.join(groupavg_path, avg_fname))
