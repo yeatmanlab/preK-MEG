@@ -19,9 +19,7 @@ reg = {1: ['lingual_2-lh'] + [f'lateraloccipital_{n}-lh' for n in (4, 5)],
           [f'inferiortemporal_{n}-lh' for n in (5, 6, 7)],
        }
 
-label_kwargs = dict(subject='fsaverage', parc='aparc_sub', hemi='lh',
-                    subjects_dir=None)
-
+label_kwargs = dict(subject='fsaverage', parc='aparc_sub', hemi='lh')
 
 for region_number, label_names in reg.items():
     regexp = r'|'.join(label_names)
