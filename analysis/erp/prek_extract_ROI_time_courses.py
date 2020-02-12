@@ -103,4 +103,5 @@ subj_cols = time_courses.columns.str.startswith('prek')
 id_vars = all_cols[np.logical_not(subj_cols)]
 df = pd.melt(time_courses, id_vars=id_vars, var_name='subj')
 # save
-time_courses.to_csv(os.path.join(timeseries_dir, 'roi-timeseries-all.csv'))
+time_courses.to_csv(os.path.join(timeseries_dir, 'roi-timeseries-wide.csv'))
+df.to_csv(os.path.join(timeseries_dir, 'roi-timeseries-long.csv'))
