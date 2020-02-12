@@ -102,6 +102,15 @@ all_cols = time_courses.columns.values
 subj_cols = time_courses.columns.str.startswith('prek')
 id_vars = all_cols[np.logical_not(subj_cols)]
 df = pd.melt(time_courses, id_vars=id_vars, var_name='subj')
+# add columns for cohort
+intervention_map = {subj: group.lower().rstrip('intervention')
+                    for group, members in intervention_group.items()
+                    for subj in members}
+knowledge_map = {subj: group.lower().rstrip('knowledge')
+                 for group, members in letter_knowledge_group.items()
+                 for subj in members}
+df['intervention'] = df['subj'].map(intervention_map)
+df['pretest'] = df['subj'].map(knowledge_map)
 # save
 time_courses.to_csv(os.path.join(timeseries_dir, 'roi-timeseries-wide.csv'))
 df.to_csv(os.path.join(timeseries_dir, 'roi-timeseries-long.csv'))
