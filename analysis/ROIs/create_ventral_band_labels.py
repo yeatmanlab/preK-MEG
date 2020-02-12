@@ -14,6 +14,9 @@ import mne
 with open(os.path.join('..', '..', 'params', 'paths.yaml'), 'r') as f:
     subjects_dir = yaml.load(f, Loader=yaml.FullLoader)['subjects_dir']
 
+# make sure we have the parcellation
+mne.datasets.fetch_aparc_sub_parcellation(subjects_dir)
+
 # define which labels comprise each region
 reg = {1: ['lingual_2-lh'] + [f'lateraloccipital_{n}-lh' for n in (4, 5)],
        2: ['lingual_1-lh'] + [f'lateraloccipital_{n}-lh' for n in (3, 6, 11)],
