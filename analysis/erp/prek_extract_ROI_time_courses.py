@@ -103,10 +103,10 @@ subj_cols = time_courses.columns.str.startswith('prek')
 id_vars = all_cols[np.logical_not(subj_cols)]
 df = pd.melt(time_courses, id_vars=id_vars, var_name='subj')
 # add columns for cohort
-intervention_map = {subj: group.lower().rstrip('intervention')
+intervention_map = {subj: group.lower()[:-12]
                     for group, members in intervention_group.items()
                     for subj in members}
-knowledge_map = {subj: group.lower().rstrip('knowledge')
+knowledge_map = {subj: group.lower()[:-9]
                  for group, members in letter_knowledge_group.items()
                  for subj in members}
 df['intervention'] = df['subj'].map(intervention_map)
