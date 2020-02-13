@@ -13,6 +13,7 @@ import mne
 from aux_functions import load_paths, load_params, load_cohorts
 
 n_jobs = 10
+use_ventral_band_rois = False
 
 # load params
 brain_plot_kwargs, movie_kwargs, subjects = load_params()
@@ -38,14 +39,20 @@ fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
 
 # load the ROI labels
 rois = dict()
-roi_colors = list('-rgbcm')  # index 0 won't be used
-for region_number in range(1, 6):
-    fpath = os.path.join(roi_dir, f'ventral_band_{region_number}-lh.label')
+roi_colors = list('yrgbcm')
+if use_ventral_band_rois:
+    for region_number in range(1, 6):
+        fpath = os.path.join(roi_dir, f'ventral_band_{region_number}-lh.label')
+        label = mne.read_label(fpath)
+        label.subject = 'fsaverage'
+        label = label.restrict(fsaverage_src)
+        rois[region_number] = label
+else:
+    fpath = os.path.join(roi_dir, 'ventral_ROI-lh.label')
     label = mne.read_label(fpath)
     label.subject = 'fsaverage'
     label = label.restrict(fsaverage_src)
-    rois[region_number] = label
-
+    rois[0] = label
 
 time_courses = dict()
 # loop over source localization algorithms
@@ -112,5 +119,7 @@ knowledge_map = {subj: group.lower()[:-9]
 df['intervention'] = df['subj'].map(intervention_map)
 df['pretest'] = df['subj'].map(knowledge_map)
 # save
-time_courses.to_csv(os.path.join(timeseries_dir, 'roi-timeseries-wide.csv'))
-df.to_csv(os.path.join(timeseries_dir, 'roi-timeseries-long.csv'))
+bands = '-bands' if use_ventral_band_rois else ''
+time_courses.to_csv(os.path.join(timeseries_dir,
+                                 f'roi{bands}-timeseries-wide.csv'))
+df.to_csv(os.path.join(timeseries_dir, f'roi{bands}-timeseries-long.csv'))
