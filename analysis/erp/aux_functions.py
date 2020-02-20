@@ -113,3 +113,116 @@ def define_labels(region, action, hemi, subjects_dir=None):
     merged_label = sum(labels[1:], labels[0])
     assert len(merged_label.name.split('+')) == n_hemis * len(label_names)
     return merged_label
+
+
+def get_stc_from_conditions(method, timepoint, condition, subject):
+    """Load an STC file for the given experimental conditions.
+
+    Parameters
+    ----------
+
+    method : 'dSPM' | 'sLORETA'
+
+    timepoint : 'pre' | 'post'
+
+    condition : 'words' | 'faces' | 'cars' | 'aliens'
+
+    subject : str
+        Can be a subject identifier ('prek_1103'), a group name ('language',
+        'letter', 'upper', or 'lower'), or `None` (to get grand average of all
+        subjects).
+    """
+    from mne import read_source_estimate
+    data_root, _, results_dir = load_paths()
+    # allow both groups and subjects as the "subject" argument
+    group_map = {None: 'GrandAvg',
+                 'language': 'LanguageInterventionN24',
+                 'letter': 'LetterInterventionN24',
+                 'upper': 'UpperKnowledgeN24',
+                 'lower': 'LowerKnowledgeN24'}
+    # if "subject" is not in group_map, use it as-is
+    subject = group_map.get(subject, subject)
+    # filename pattern
+    fname = f'{subject}FSAverage_{timepoint}Camp_{method}_{condition}'
+    if subject in group_map.values():
+        folder = os.path.join(results_dir, 'group_averages')
+    else:
+        folder = os.path.join(data_root, f'{timepoint}_camp', 'twa_hp', 'erp',
+                              subject, 'stc')
+    stc_path = os.path.join(folder, fname)
+    stc = read_source_estimate(stc_path)
+    return stc
+
+
+def get_dataframe_from_label(label, src, methods=('dSPM', 'sLORETA'),
+                             timepoints=('pre', 'post'),
+                             conditions=('words', 'faces', 'cars', 'aliens'),
+                             subjects=None):
+    """Get average timecourse within label across all subjects."""
+    from pandas import DataFrame, concat, melt
+    from mne import Label, extract_label_time_course
+    # allow looping over single Label
+    if isinstance(label, Label):
+        label = [label]
+    # load subjects list
+    if subjects is None:
+        _, _, subjects = load_params()
+    elif isinstance(subjects, str):
+        subjects = [subjects]
+    # load cohort information
+    intervention_group, letter_knowledge_group = load_cohorts()
+    intervention_map = {subj: group.lower()[:-12]
+                        for group, members in intervention_group.items()
+                        for subj in members}
+    knowledge_map = {subj: group.lower()[:-9]
+                     for group, members in letter_knowledge_group.items()
+                     for subj in members}
+
+    time_courses = dict()
+    # loop over source localization algorithms
+    for method in methods:
+        time_courses[method] = dict()
+        # loop over pre/post measurement time
+        for timept in timepoints:
+            time_courses[method][timept] = dict()
+            # loop over conditions
+            for cond in conditions:
+                time_courses[method][timept][cond] = dict()
+                # loop over subjects
+                for subj in subjects:
+                    # load STC
+                    stc = get_stc_from_conditions(method, timept, cond, subj)
+                    # extract label time course
+                    time_courses[method][timept][cond][subj] = np.squeeze(
+                        extract_label_time_course(stc, label, src=src,
+                                                  mode='pca_flip'))
+                # convert dict of each subj's time series to DataFrame
+                df = DataFrame(time_courses[method][timept][cond],
+                               index=range(len(stc.times)))
+                df['time'] = stc.times
+                time_courses[method][timept][cond] = df
+                # store current "condition" in a column before exiting loop
+                time_courses[method][timept][cond]['condition'] = cond
+            # combine DataFrames across conditions
+            dfs = (time_courses[method][timept][c] for c in conditions)
+            time_courses[method][timept] = concat(dfs)
+            # store current "timepoint" in a column before exiting loop
+            time_courses[method][timept]['timepoint'] = timept
+        # combine DataFrames across timepoints
+        dfs = (time_courses[method][t] for t in timepoints)
+        time_courses[method] = concat(dfs)
+        # store current "method" in a column before exiting loop
+        time_courses[method]['method'] = method
+    # combine DataFrames across methods
+    dfs = (time_courses[m] for m in methods)
+    time_courses = concat(dfs)
+
+    # reshape DataFrame
+    all_cols = time_courses.columns.values
+    subj_cols = time_courses.columns.str.startswith('prek')
+    id_vars = all_cols[np.logical_not(subj_cols)]
+    time_courses = melt(time_courses, id_vars=id_vars, var_name='subj')
+    # add columns for intervention cohort and pretest letter knowledge
+    time_courses['intervention'] = time_courses['subj'].map(intervention_map)
+    time_courses['pretest'] = time_courses['subj'].map(knowledge_map)
+    return time_courses

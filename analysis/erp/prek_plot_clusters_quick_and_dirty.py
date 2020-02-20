@@ -15,7 +15,8 @@ from matplotlib.image import imread
 import seaborn as sns
 from mayavi import mlab
 import mne
-from aux_functions import load_paths, load_params, load_cohorts
+from aux_functions import (load_paths, load_params, load_cohorts,
+                           get_dataframe_from_label)
 
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
@@ -95,19 +96,6 @@ def plot_clusters(stc, cluster_stc, signif_clu):
         brain.save_image(os.path.join(img_dir, img_fname))
 
 
-# helper function: get timeseries in label for a particular subject
-def get_subj_time_course(subj, timept, method, con, label):
-    this_subj = os.path.join(data_root, f'{timept}_camp', 'twa_hp', 'erp',
-                             subj, 'stc')
-    fname = f'{subj}FSAverage_{timept}Camp_{method}_{con}'
-    stc_path = os.path.join(this_subj, fname)
-    stc = mne.read_source_estimate(stc_path)
-    # extract label time course
-    kwargs = dict(src=fsaverage_src, mode='pca_flip', allow_empty=True)
-    time_course = mne.extract_label_time_course(stc, label, **kwargs)
-    return np.squeeze(time_course)
-
-
 # helper function: extract condition names from filename
 def get_condition_names(cluster_fname):
     # extract condition names from filenames
@@ -149,45 +137,9 @@ def extract_time_courses(avg_stc, cluster_fname, cluster_dict, cluster_idx):
     label = mne.Label(verts, hemi=hemi_str, subject='fsaverage')
     label = label.restrict(fsaverage_src)
 
-    time_courses = dict()
-    # loop over conditions to handle subtractions
-    for timept in timepoints:
-        time_courses[timept] = dict()
-        for con in conditions:
-            time_courses[timept][con] = dict()
-            for grp in groups:
-                time_courses[timept][con][grp] = dict()
-                group_key = build_group_key(grp)
-                group_members = groups_dict[group_key]
-                for s in group_members:
-                    tc = get_subj_time_course(s, timept, method, con, label)
-                    time_courses[timept][con][grp][s] = tc
-                # convert dict of each subj's time series to DataFrame
-                df = pd.DataFrame(time_courses[timept][con][grp],
-                                  index=range(len(avg_stc.times)))
-                df['time'] = avg_stc.times
-                df['group'] = grp
-                time_courses[timept][con][grp] = df
-            # combine DataFrames across groups
-            if len(groups) == 1:
-                time_courses[timept][con] = time_courses[timept][con][grp]
-            else:
-                dfs = (time_courses[timept][con][g] for g in groups)
-                time_courses[timept][con] = pd.concat(dfs)
-            time_courses[timept][con]['condition'] = con
-        # combine DataFrames across conditions
-        if len(conditions) == 1:
-            time_courses[timept] = time_courses[timept][con]
-        else:
-            dfs = (time_courses[timept][c] for c in conditions)
-            time_courses[timept] = pd.concat(dfs)
-        time_courses[timept]['timepoint'] = timept
-    # combine DataFrames across timepoints
-    if len(timepoints) == 1:
-        time_courses = time_courses[timept]
-    else:
-        dfs = (time_courses[t] for t in timepoints)
-        time_courses = pd.concat(dfs)
+    # get the dataframe
+    time_courses = get_dataframe_from_label(label, fsaverage_src, method,
+                                            timepoints, conditions)
     return time_courses
 
 
