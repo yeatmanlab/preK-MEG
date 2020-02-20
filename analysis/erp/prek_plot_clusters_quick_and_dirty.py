@@ -15,8 +15,7 @@ from matplotlib.image import imread
 import seaborn as sns
 from mayavi import mlab
 import mne
-from aux_functions import (load_paths, load_params, load_cohorts,
-                           get_dataframe_from_label)
+from aux_functions import load_paths, load_params, get_dataframe_from_label
 
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
@@ -38,14 +37,6 @@ timeseries_dir = os.path.join(cluster_dir, 'time-series')
 for folder in (img_dir, cluster_stc_dir, timeseries_dir):
     os.makedirs(folder, exist_ok=True)
 
-# load cohort info (keys Language/LetterIntervention and Lower/UpperKnowledge)
-intervention_group, letter_knowledge_group = load_cohorts()
-
-# assemble groups to iterate over
-groups_dict = dict(GrandAvg=subjects)
-groups_dict.update(intervention_group)
-groups_dict.update(letter_knowledge_group)
-
 title_dict = dict(language='Language Intervention cohort',
                   letter='Letter Intervention cohort',
                   grandavg='All participants',
@@ -57,17 +48,6 @@ fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
                                   'fsaverage-ico-5-src.fif')
 fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
 hemi_nverts = len(fsaverage_src[0]['vertno'])
-
-
-# helper function: reconstruct group dictionary key from filename
-def build_group_key(group):
-    if group in ('letter', 'language'):
-        key = f'{group.capitalize()}Intervention'
-    elif group in ('upper', 'lower'):
-        key = f'{group.capitalize()}Knowledge'
-    elif group == 'grandavg':
-        key = 'GrandAvg'
-    return key
 
 
 # helper function: plot the clusters as pseudo-STC
@@ -184,20 +164,23 @@ def make_cluster_stc(cluster_fname):
         cluster_stc.save(os.path.join(cluster_stc_dir, avg_stc_fname))
         # get indices for which clusters are significant
         signif_clu = cluster_dict['good_cluster_idxs'][0]
-        # plot the clusters
+        # plot the clusters (saves as PNG image)
         plot_clusters(stc, cluster_stc, signif_clu)
         # for each significant cluster, extract the mean (across vertices) time
         # series for each subject, save to a CSV, and plot alongside the
         # cluster location.
         for cluster_idx in signif_clu:
+            # get time series and save it
             timeseries_dataframe = extract_time_courses(stc, cluster_fname,
                                                         cluster_dict,
                                                         cluster_idx)
-            # save to CSV
             timeseries_fname = f'{avg_stc_fname}_cluster{cluster_idx:05}.csv'
             timeseries_fpath = os.path.join(timeseries_dir, timeseries_fname)
             timeseries_dataframe.to_csv(timeseries_fpath, index=False)
-            # plot time series alongside cluster location
+            raise RuntimeError()
+
+            # plot time series alongside cluster location (incorporates and
+            # then overwrites the cluster image PNG)
             all_cols = timeseries_dataframe.columns.values
             subj_cols = timeseries_dataframe.columns.str.startswith('prek')
             id_vars = all_cols[np.logical_not(subj_cols)]
