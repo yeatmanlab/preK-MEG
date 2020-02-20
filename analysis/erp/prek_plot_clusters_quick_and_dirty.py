@@ -118,7 +118,7 @@ def extract_time_courses(avg_stc, cluster_fname, cluster_dict, cluster_idx):
     label = label.restrict(fsaverage_src)
 
     # get the dataframe
-    time_courses = get_dataframe_from_label(label, fsaverage_src, method,
+    time_courses = get_dataframe_from_label(label, fsaverage_src, [method],
                                             timepoints, conditions)
     return time_courses
 
