@@ -24,6 +24,7 @@ sns.set(style='whitegrid', font_scale=0.8)
 # plot setup
 show_all_conditions = True
 show_all_timepoints = True
+show_all_groups = True
 
 # load params
 brain_plot_kwargs, movie_kwargs, subjects = load_params()
@@ -181,8 +182,9 @@ def make_cluster_stc(cluster_fname):
             df.to_csv(timeseries_fpath, index=False)
 
             # plot time series alongside cluster location
-            n_rows = len(groups) + 1
-            gridspec_kw = dict(height_ratios=[4] + [1] * len(groups))
+            n_rows = (3 if show_all_groups and 'grandavg' not in groups else
+                      len(groups) + 1)
+            gridspec_kw = dict(height_ratios=[4] + [1] * (n_rows - 1))
             fig, axs = plt.subplots(n_rows, 1, gridspec_kw=gridspec_kw,
                                     figsize=(9, 13))
             # draw the cluster brain image into first axes
@@ -195,6 +197,8 @@ def make_cluster_stc(cluster_fname):
             # prepare to plot
             all_conditions = ('words', 'faces', 'cars')
             all_timepoints = ('post', 'pre')
+            all_interventions = ('letter', 'language')
+            all_pretest_cohorts = ('lower', 'upper')
             missing_conditions = list(set(all_conditions) - set(conditions))
             missing_timepoints = list(set(all_timepoints) - set(timepoints))
             plot_kwargs = dict(hue='condition', hue_order=all_conditions,
@@ -205,16 +209,28 @@ def make_cluster_stc(cluster_fname):
                       for i, c in enumerate(all_conditions)]
             # draw the timecourses
             for group, ax in zip(groups, axs[1:]):
-                if show_all_timepoints or show_all_conditions:
-                    # select uninteresting data
+                # default selects all data
+                group_idx = np.full(df.shape[:1], True)
+                conds_idx = np.full(df.shape[:1], True)
+                times_idx = np.full(df.shape[:1], True)
+                # narrow down data as warranted
+                if show_all_groups and group in all_interventions:
+                    missing = list(set(all_interventions) - set(group))
+                    group_idx = np.in1d(df['intervention'], missing)
+                elif show_all_groups and group in all_pretest_cohorts:
+                    missing = list(set(all_pretest_cohorts) - set(group))
+                    group_idx = np.in1d(df['pretest'], missing)
+                if show_all_conditions:
                     conds_list = (missing_conditions if show_all_conditions
                                   else conditions)
+                    conds_idx = np.in1d(df['condition'], conds_list)
+                if show_all_timepoints:
                     times_list = (missing_timepoints if show_all_timepoints
                                   else timepoints)
-                    conds_idx = np.in1d(df['condition'], conds_list)
                     times_idx = np.in1d(df['timepoint'], times_list)
-                    group_idx = df['intervention'] == group
-                    data = df.loc[group_idx & times_idx & conds_idx]
+                data = df.loc[group_idx & times_idx & conds_idx]
+                if (show_all_groups or show_all_conditions or
+                        show_all_timepoints):
                     # draw the uninteresting lines in gray
                     with sns.color_palette(grey_vals):
                         grey_kwargs = plot_kwargs.copy()
