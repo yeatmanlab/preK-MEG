@@ -21,11 +21,6 @@ mne.cuda.init_cuda()
 n_jobs = 10
 sns.set(style='whitegrid', font_scale=0.8)
 
-# plot setup
-show_all_conditions = True
-show_all_timepoints = True
-show_all_groups = True
-
 # load params
 brain_plot_kwargs, movie_kwargs, subjects = load_params()
 
@@ -182,8 +177,7 @@ def make_cluster_stc(cluster_fname):
             df.to_csv(timeseries_fpath, index=False)
 
             # plot time series alongside cluster location
-            n_rows = (3 if show_all_groups and 'grandavg' not in groups else
-                      len(groups) + 1)
+            n_rows = len(groups) + 1
             gridspec_kw = dict(height_ratios=[4] + [1] * (n_rows - 1))
             fig, axs = plt.subplots(n_rows, 1, gridspec_kw=gridspec_kw,
                                     figsize=(9, 13))
@@ -199,53 +193,25 @@ def make_cluster_stc(cluster_fname):
             all_timepoints = ('post', 'pre')
             all_interventions = ('letter', 'language')
             all_pretest_cohorts = ('lower', 'upper')
-            # missing_conditions = list(set(all_conditions) - set(conditions))
-            # missing_timepoints = list(set(all_timepoints) - set(timepoints))
             plot_kwargs = dict(hue='condition', hue_order=all_conditions,
                                style='timepoint', style_order=all_timepoints)
             grey_vals = ['0.75', '0.55', '0.35']
             color_vals = ['#004488', '#bb5566', '#ddaa33']
             colors = [color_vals[i] if c in conditions else grey_vals[i]
                       for i, c in enumerate(all_conditions)]
-
             # triage group definition
             if groups[0] in all_interventions:
                 group_column = df['intervention']
-                this_groups = all_interventions
             elif groups[0] in all_pretest_cohorts:
                 group_column = df['pretest']
-                this_groups = all_pretest_cohorts
             else:
                 group_column = np.full(df.shape[:1], 'grandavg')
-                this_groups = ['grandavg']
-            # missing_group = list(set(this_groups) - set(groups))
             # draw the timecourses
-            for group, ax in zip(this_groups, axs[1:]):
-                # # narrow down data as warranted (for gray lines)
-                # conds_idx = (np.in1d(df['condition'], missing_conditions)
-                #              if show_all_conditions else
-                #              np.in1d(df['condition'], conditions))
-                # times_idx = (np.in1d(df['timepoint'], missing_timepoints)
-                #              if show_all_timepoints else
-                #              np.in1d(df['timepoint'], timepoints))
-                # group_idx = (np.in1d(group_column, missing_group)
-                #              if show_all_groups else
-                #              np.in1d(group_column, group))
-                # # draw the uninteresting lines in gray
-                # if (show_all_conditions or show_all_timepoints):
-                #     data = df.loc[group_idx & times_idx & conds_idx]
-                #     with sns.color_palette(grey_vals):
-                #         grey_kwargs = plot_kwargs.copy()
-                #         grey_kwargs.update(legend=False, size=0.4,
-                #                            err_kws=dict(alpha=0.1))
-                #         sns.lineplot(x='time', y='value', data=data, ax=ax,
-                #                      **grey_kwargs)
-                # # draw the relevant lines in color
-                # data = df.loc[(group_column == group) &
-                #               np.in1d(df['timepoint'], timepoints) &
-                #               np.in1d(df['condition'], conditions)]
+            for group, ax in zip(groups, axs[1:]):
                 # draw the relevant lines in color
-                data = df.loc[(group_column == group)]
+                data = df.loc[(group_column == group) &
+                              np.in1d(df['timepoint'], timepoints) &
+                              np.in1d(df['condition'], conditions)]
                 with sns.color_palette(colors):
                     sns.lineplot(x='time', y='value', data=data, ax=ax,
                                  **plot_kwargs)
@@ -255,7 +221,8 @@ def make_cluster_stc(cluster_fname):
                 xmax = stc.times[temporal_idxs.max()]
                 ax.fill_betweenx((0, 4), xmin, xmax, color='k', alpha=0.1)
                 # garnish
-                ax.set_ylim(0, 4)
+                ymax = 4 if method == 'dSPM' else 2
+                ax.set_ylim(0, ymax)
                 ax.set_title(title_dict[group])
                 # we only need one legend, suppress on subsequent plots
                 plot_kwargs.update(legend=False)
