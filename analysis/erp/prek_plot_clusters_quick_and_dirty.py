@@ -209,29 +209,30 @@ def make_cluster_stc(cluster_fname):
                       for i, c in enumerate(all_conditions)]
             # draw the timecourses
             for group, ax in zip(groups, axs[1:]):
-                # default selects all data
-                group_idx = np.full(df.shape[:1], True)
-                conds_idx = np.full(df.shape[:1], True)
-                times_idx = np.full(df.shape[:1], True)
+                # triage group definition
+                if group in all_interventions:
+                    group_column = df['intervention']
+                    missing_group = list(set(all_interventions) - set(group))
+                elif group in all_pretest_cohorts:
+                    group_column = df['pretest']
+                    missing_group = list(set(all_pretest_cohorts) - set(group))
+                else:
+                    group_column = np.full(df.shape[:1], 'grandavg')
+                    missing_group = list()
                 # narrow down data as warranted
-                if show_all_groups and group in all_interventions:
-                    missing = list(set(all_interventions) - set(group))
-                    group_idx = np.in1d(df['intervention'], missing)
-                elif show_all_groups and group in all_pretest_cohorts:
-                    missing = list(set(all_pretest_cohorts) - set(group))
-                    group_idx = np.in1d(df['pretest'], missing)
-                if show_all_conditions:
-                    conds_list = (missing_conditions if show_all_conditions
-                                  else conditions)
-                    conds_idx = np.in1d(df['condition'], conds_list)
-                if show_all_timepoints:
-                    times_list = (missing_timepoints if show_all_timepoints
-                                  else timepoints)
-                    times_idx = np.in1d(df['timepoint'], times_list)
-                data = df.loc[group_idx & times_idx & conds_idx]
+                group_idx = (np.in1d(group_column, missing_group)
+                             if show_all_groups else
+                             np.in1d(group_column, group))
+                conds_idx = (np.in1d(df['condition'], missing_conditions)
+                             if show_all_conditions else
+                             np.in1d(df['condition'], conditions))
+                times_idx = (np.in1d(df['timepoint'], missing_timepoints)
+                             if show_all_timepoints else
+                             np.in1d(df['timepoint'], timepoints))
+                # draw the uninteresting lines in gray
                 if (show_all_groups or show_all_conditions or
                         show_all_timepoints):
-                    # draw the uninteresting lines in gray
+                    data = df.loc[group_idx & times_idx & conds_idx]
                     with sns.color_palette(grey_vals):
                         grey_kwargs = plot_kwargs.copy()
                         grey_kwargs.update(legend=False, size=0.4,
@@ -239,7 +240,7 @@ def make_cluster_stc(cluster_fname):
                         sns.lineplot(x='time', y='value', data=data, ax=ax,
                                      **grey_kwargs)
                 # draw the relevant lines in color
-                data = df.loc[(df['intervention'] == group) &
+                data = df.loc[(group_column == group) &
                               np.in1d(df['timepoint'], timepoints) &
                               np.in1d(df['condition'], conditions)]
                 with sns.color_palette(colors):
