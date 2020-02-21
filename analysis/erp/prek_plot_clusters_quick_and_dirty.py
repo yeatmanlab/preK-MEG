@@ -177,16 +177,8 @@ def make_cluster_stc(cluster_fname):
             timeseries_fname = f'{avg_stc_fname}_cluster{cluster_idx:05}.csv'
             timeseries_fpath = os.path.join(timeseries_dir, timeseries_fname)
             timeseries_dataframe.to_csv(timeseries_fpath, index=False)
-            raise RuntimeError()
 
-            # plot time series alongside cluster location (incorporates and
-            # then overwrites the cluster image PNG)
-            all_cols = timeseries_dataframe.columns.values
-            subj_cols = timeseries_dataframe.columns.str.startswith('prek')
-            id_vars = all_cols[np.logical_not(subj_cols)]
-            df = pd.melt(timeseries_dataframe, id_vars=id_vars,
-                         var_name='subj')
-            # intitialize figure
+            # plot time series alongside cluster location
             n_rows = len(groups) + 1
             gridspec_kw = dict(height_ratios=[4] + [1] * len(groups))
             fig, axs = plt.subplots(n_rows, 1, gridspec_kw=gridspec_kw,
@@ -205,14 +197,14 @@ def make_cluster_stc(cluster_fname):
             if len(timepoints) > 1:
                 plot_kwargs.update(style='timepoint')
             for group, ax in zip(groups, axs[1:]):
-                data = df.loc[df['group'] == group]
+                data = timeseries_dataframe.loc[timeseries_dataframe['intervention'] == group]  # noqa E501
                 sns.lineplot(x='time', y='value', data=data, ax=ax,
                              **plot_kwargs)
                 ax.set_title(title_dict[group])
                 ax.set_ylim(0, 4)
                 # we only need one legend, suppress on subsequent plots
                 plot_kwargs.update(legend=False)
-            # save plot
+            # save plot (overwrites the cluster image PNG)
             sns.despine()
             fig.savefig(os.path.join(img_dir, img_fname))
             plt.close(fig)
