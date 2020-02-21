@@ -205,11 +205,17 @@ def make_cluster_stc(cluster_fname):
                       for i, c in enumerate(all_conditions)]
             # draw the timecourses
             for group, ax in zip(groups, axs[1:]):
-                # draw the uninteresting lines in gray
-                if show_all_conditions:
-                    data = df.loc[(df['intervention'] == group) &
-                                  np.in1d(df['timepoint'], missing_timepoints) &  # noqa E501
-                                  np.in1d(df['condition'], missing_conditions)]
+                if show_all_timepoints or show_all_conditions:
+                    # select uninteresting data
+                    conds_list = (missing_conditions if show_all_conditions
+                                  else conditions)
+                    times_list = (missing_timepoints if show_all_timepoints
+                                  else timepoints)
+                    conds_idx = np.in1d(df['condition'], conds_list)
+                    times_idx = np.in1d(df['timepoint'], times_list)
+                    group_idx = df['intervention'] == group
+                    data = df.loc[group_idx & times_idx & conds_idx]
+                    # draw the uninteresting lines in gray
                     with sns.color_palette(grey_vals):
                         grey_kwargs = plot_kwargs.copy()
                         grey_kwargs.update(legend=False, size=0.4,
