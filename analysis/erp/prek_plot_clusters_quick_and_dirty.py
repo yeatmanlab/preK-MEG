@@ -27,7 +27,7 @@ grey_vals = ['0.75', '0.55', '0.35']
 color_vals = ['#004488', '#bb5566', '#ddaa33']
 
 # load params
-brain_plot_kwargs, movie_kwargs, subjects = load_params()
+brain_plot_kwargs, _, subjects = load_params()
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
 cluster_root = os.path.join(results_dir, 'clustering')
@@ -243,8 +243,9 @@ def make_cluster_stc(cluster_fname):
                 ymax = 4 if method == 'dSPM' else 2
                 ax.set_ylim(0, ymax)
                 ax.set_title(title_dict[group])
-                # we only need one legend, suppress on subsequent plots
-                plot_kwargs.update(legend=False)
+                # suppress x-axis label on upper panel
+                if ax == axs[-2]:
+                    ax.set_xlabel('')
             # save plot (overwrites the cluster image PNG)
             sns.despine()
             fig.savefig(os.path.join(img_dir, img_fname))
