@@ -199,50 +199,53 @@ def make_cluster_stc(cluster_fname):
             all_timepoints = ('post', 'pre')
             all_interventions = ('letter', 'language')
             all_pretest_cohorts = ('lower', 'upper')
-            missing_conditions = list(set(all_conditions) - set(conditions))
-            missing_timepoints = list(set(all_timepoints) - set(timepoints))
+            # missing_conditions = list(set(all_conditions) - set(conditions))
+            # missing_timepoints = list(set(all_timepoints) - set(timepoints))
             plot_kwargs = dict(hue='condition', hue_order=all_conditions,
                                style='timepoint', style_order=all_timepoints)
             grey_vals = ['0.75', '0.55', '0.35']
             color_vals = ['#004488', '#bb5566', '#ddaa33']
             colors = [color_vals[i] if c in conditions else grey_vals[i]
                       for i, c in enumerate(all_conditions)]
+
+            # triage group definition
+            if groups[0] in all_interventions:
+                group_column = df['intervention']
+                this_groups = all_interventions
+            elif groups[0] in all_pretest_cohorts:
+                group_column = df['pretest']
+                this_groups = all_pretest_cohorts
+            else:
+                group_column = np.full(df.shape[:1], 'grandavg')
+                this_groups = ['grandavg']
+            # missing_group = list(set(this_groups) - set(groups))
             # draw the timecourses
-            for group, ax in zip(groups, axs[1:]):
-                # triage group definition
-                if group in all_interventions:
-                    group_column = df['intervention']
-                    missing_group = list(set(all_interventions) - set(group))
-                elif group in all_pretest_cohorts:
-                    group_column = df['pretest']
-                    missing_group = list(set(all_pretest_cohorts) - set(group))
-                else:
-                    group_column = np.full(df.shape[:1], 'grandavg')
-                    missing_group = list()
-                # narrow down data as warranted
-                group_idx = (np.in1d(group_column, missing_group)
-                             if show_all_groups else
-                             np.in1d(group_column, group))
-                conds_idx = (np.in1d(df['condition'], missing_conditions)
-                             if show_all_conditions else
-                             np.in1d(df['condition'], conditions))
-                times_idx = (np.in1d(df['timepoint'], missing_timepoints)
-                             if show_all_timepoints else
-                             np.in1d(df['timepoint'], timepoints))
-                # draw the uninteresting lines in gray
-                if (show_all_groups or show_all_conditions or
-                        show_all_timepoints):
-                    data = df.loc[group_idx & times_idx & conds_idx]
-                    with sns.color_palette(grey_vals):
-                        grey_kwargs = plot_kwargs.copy()
-                        grey_kwargs.update(legend=False, size=0.4,
-                                           err_kws=dict(alpha=0.1))
-                        sns.lineplot(x='time', y='value', data=data, ax=ax,
-                                     **grey_kwargs)
+            for group, ax in zip(this_groups, axs[1:]):
+                # # narrow down data as warranted (for gray lines)
+                # conds_idx = (np.in1d(df['condition'], missing_conditions)
+                #              if show_all_conditions else
+                #              np.in1d(df['condition'], conditions))
+                # times_idx = (np.in1d(df['timepoint'], missing_timepoints)
+                #              if show_all_timepoints else
+                #              np.in1d(df['timepoint'], timepoints))
+                # group_idx = (np.in1d(group_column, missing_group)
+                #              if show_all_groups else
+                #              np.in1d(group_column, group))
+                # # draw the uninteresting lines in gray
+                # if (show_all_conditions or show_all_timepoints):
+                #     data = df.loc[group_idx & times_idx & conds_idx]
+                #     with sns.color_palette(grey_vals):
+                #         grey_kwargs = plot_kwargs.copy()
+                #         grey_kwargs.update(legend=False, size=0.4,
+                #                            err_kws=dict(alpha=0.1))
+                #         sns.lineplot(x='time', y='value', data=data, ax=ax,
+                #                      **grey_kwargs)
+                # # draw the relevant lines in color
+                # data = df.loc[(group_column == group) &
+                #               np.in1d(df['timepoint'], timepoints) &
+                #               np.in1d(df['condition'], conditions)]
                 # draw the relevant lines in color
-                data = df.loc[(group_column == group) &
-                              np.in1d(df['timepoint'], timepoints) &
-                              np.in1d(df['condition'], conditions)]
+                data = df.loc[(group_column == group)]
                 with sns.color_palette(colors):
                     sns.lineplot(x='time', y='value', data=data, ax=ax,
                                  **plot_kwargs)
