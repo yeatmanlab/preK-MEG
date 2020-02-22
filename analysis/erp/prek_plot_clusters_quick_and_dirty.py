@@ -139,9 +139,9 @@ def get_label_from_cluster(stc, src, hemi, cluster):
         err = ("you seem to have a cluster that spans "
                "hemispheres, this shouldn't happen.")
         raise RuntimeError(err)
-
+    hemi_idx = 0 if hemi == 'lh' else 1
     # select the vertices in the cluster & convert to Label
-    verts = np.unique(stc.vertices[hemi][spatial_idxs])
+    verts = np.unique(stc.vertices[hemi_idx][spatial_idxs])
     label = mne.Label(verts, hemi=hemi, subject='fsaverage')
     label = label.restrict(src)
     return label
