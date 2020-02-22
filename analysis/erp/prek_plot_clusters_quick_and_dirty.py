@@ -62,7 +62,6 @@ title_dict = dict(language='Language Intervention cohort',
 fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
                                   'fsaverage-ico-5-src.fif')
 fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
-hemi_nverts = len(fsaverage_src[0]['vertno'])
 
 
 # helper function: plot the clusters as pseudo-STC
@@ -108,19 +107,33 @@ def get_condition_names(cluster_fname):
 
 # helper function: assemble DataFrame of timeseries for each subj in each
 # condition pertinent to the current cluster result
-def get_label_from_cluster(avg_stc, cluster_fname, cluster_dict, cluster_idx):
-    """Extract the mean (across vertices) time series for each subject."""
-    (groups, timepoints, method, conditions, hemi_str, avg_stc_fname
-     ) = get_condition_names(cluster_fname)
+def get_label_from_cluster(stc, src, hemi, cluster):
+    """Extract the mean (across vertices) time series for each subject.
+
+    Parameters
+    ----------
+
+    stc : instance of SourceEstimate
+
+    src : instance of SourceSpace
+
+    hemi : 'lh' | 'rh' | 'both'
+
+    cluster : tuple
+        length 2 tuple of array-like (temporal_indices, spatial_indices)
+
+    Returns
+    -------
+    label : instance of Label
+    """
+    hemi_nverts = len(src[0]['vertno'])
 
     # make sure we're right about which hemisphere the cluster is in
-    temporal_idxs, spatial_idxs = cluster_dict['clusters'][cluster_idx]
+    temporal_idxs, spatial_idxs = cluster
     if all(spatial_idxs <= hemi_nverts):
-        assert hemi_str == 'lh'
-        hemi = 0
+        assert hemi == 'lh'
     elif all(spatial_idxs >= hemi_nverts):
-        assert hemi_str == 'rh'
-        hemi = 1
+        assert hemi == 'rh'
         spatial_idxs = spatial_idxs - hemi_nverts
     else:
         err = ("you seem to have a cluster that spans "
@@ -128,26 +141,26 @@ def get_label_from_cluster(avg_stc, cluster_fname, cluster_dict, cluster_idx):
         raise RuntimeError(err)
 
     # select the vertices in the cluster & convert to Label
-    verts = np.unique(avg_stc.vertices[hemi][spatial_idxs])
-    label = mne.Label(verts, hemi=hemi_str, subject='fsaverage')
-    label = label.restrict(fsaverage_src)
+    verts = np.unique(stc.vertices[hemi][spatial_idxs])
+    label = mne.Label(verts, hemi=hemi, subject='fsaverage')
+    label = label.restrict(src)
     return label
 
 
 # workhorse function
 def make_cluster_stc(cluster_fname):
-    (groups, timepoints, method, conditions, hemi_str, avg_stc_fname
+    (groups, timepoints, method, conditions, hemi, avg_stc_fname
      ) = get_condition_names(cluster_fname)
     # load the STC
-    stc_fpath = os.path.join(results_dir, 'group_averages', avg_stc_fname)
-    stc = mne.read_source_estimate(stc_fpath)
+    avg_stc_fpath = os.path.join(results_dir, 'group_averages', avg_stc_fname)
+    avg_stc = mne.read_source_estimate(avg_stc_fpath)
     # pick correct hemisphere(s)
-    vertices = stc.vertices
+    vertices = avg_stc.vertices
     if cluster_fname.rstrip('.npz').endswith('_lh'):
         vertices[1] = np.array([])
     elif cluster_fname.rstrip('.npz').endswith('_rh'):
         vertices[0] = np.array([])
-    stc_tstep_ms = 1000 * stc.tstep  # in milliseconds
+    stc_tstep_ms = 1000 * avg_stc.tstep  # in milliseconds
     # load the cluster results
     cluster_fpath = os.path.join(cluster_dir, cluster_fname)
     cluster_dict = np.load(cluster_fpath, allow_pickle=True)
@@ -176,14 +189,15 @@ def make_cluster_stc(cluster_fname):
         # get indices for which clusters are significant
         signif_clu = cluster_dict['good_cluster_idxs'][0]
         # plot the clusters (saves as PNG image)
-        plot_clusters(stc, cluster_stc, signif_clu)
+        plot_clusters(avg_stc, cluster_stc, signif_clu)
         # for each significant cluster, extract the mean (across vertices) time
         # series for each subject, save to a CSV, and plot alongside the
         # cluster location.
         for cluster_idx in signif_clu:
             # get label
-            label = get_label_from_cluster(stc, cluster_fname, cluster_dict,
-                                           cluster_idx)
+            cluster = cluster_dict['clusters'][cluster_idx]
+            label = get_label_from_cluster(avg_stc, fsaverage_src, hemi,
+                                           cluster)
             # triage groups
             all_interventions = ('letter', 'language')
             all_pretest_cohorts = ('lower', 'upper')
@@ -237,8 +251,8 @@ def make_cluster_stc(cluster_fname):
                 # indicate temporal span of cluster signif. difference
                 if group in groups:
                     temporal_idxs, _ = cluster_dict['clusters'][cluster_idx]
-                    xmin = stc.times[temporal_idxs.min()]
-                    xmax = stc.times[temporal_idxs.max()]
+                    xmin = avg_stc.times[temporal_idxs.min()]
+                    xmax = avg_stc.times[temporal_idxs.max()]
                     ax.fill_betweenx((0, 4), xmin, xmax, color='k', alpha=0.1)
                 # garnish
                 ymax = 4 if method == 'dSPM' else 2
