@@ -235,10 +235,11 @@ def make_cluster_stc(cluster_fname):
                     sns.lineplot(x='time', y='value', data=data, ax=ax,
                                  **plot_kwargs)
                 # indicate temporal span of cluster signif. difference
-                temporal_idxs, _ = cluster_dict['clusters'][cluster_idx]
-                xmin = stc.times[temporal_idxs.min()]
-                xmax = stc.times[temporal_idxs.max()]
-                ax.fill_betweenx((0, 4), xmin, xmax, color='k', alpha=0.1)
+                if group in groups:
+                    temporal_idxs, _ = cluster_dict['clusters'][cluster_idx]
+                    xmin = stc.times[temporal_idxs.min()]
+                    xmax = stc.times[temporal_idxs.max()]
+                    ax.fill_betweenx((0, 4), xmin, xmax, color='k', alpha=0.1)
                 # garnish
                 ymax = 4 if method == 'dSPM' else 2
                 ax.set_ylim(0, ymax)
