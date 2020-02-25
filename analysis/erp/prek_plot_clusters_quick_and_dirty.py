@@ -9,22 +9,14 @@ Plot movies with significant cluster regions highlighted.
 import os
 import re
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.image import imread
-import seaborn as sns
 from mayavi import mlab
 import mne
 from aux_functions import (load_paths, load_params, load_cohorts,
-                           get_dataframe_from_label)
+                           get_dataframe_from_label, plot_label_and_timeseries)
 
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
 n_jobs = 10
-
-# plot prep
-sns.set(style='whitegrid', font_scale=0.8)
-grey_vals = ['0.75', '0.55', '0.35']
-color_vals = ['#004488', '#bb5566', '#ddaa33']
 
 # load params
 brain_plot_kwargs, _, subjects = load_params()
@@ -51,12 +43,6 @@ groups_dict = dict(grandavg=subjects,
                    upper=letter_knowledge_group['UpperKnowledge'])
 for group, members in groups_dict.items():
     groups_dict[group] = [f'prek_{n}' for n in members]
-
-title_dict = dict(language='Language Intervention cohort',
-                  letter='Letter Intervention cohort',
-                  grandavg='All participants',
-                  lower='Pre-test lower half of participants',
-                  upper='Pre-test upper half of participants')
 
 # load fsaverage source space
 fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
@@ -87,7 +73,9 @@ def plot_clusters(stc, cluster_stc, signif_clu):
         cluster_idx = signif_clu[time_idx - 1]
         img_fname = re.sub(r'\.npz$', f'_cluster{cluster_idx:05}.png',
                            cluster_fname)
-        brain.save_image(os.path.join(img_dir, img_fname))
+        img_path = os.path.join(img_dir, img_fname)
+        brain.save_image(img_path)
+        return img_path
 
 
 # helper function: extract condition names from filename
@@ -189,7 +177,7 @@ def make_cluster_stc(cluster_fname):
         # get indices for which clusters are significant
         signif_clu = cluster_dict['good_cluster_idxs'][0]
         # plot the clusters (saves as PNG image)
-        plot_clusters(avg_stc, cluster_stc, signif_clu)
+        cluster_img_path = plot_clusters(avg_stc, cluster_stc, signif_clu)
         # for each significant cluster, extract the mean (across vertices) time
         # series for each subject, save to a CSV, and plot alongside the
         # cluster location.
@@ -198,73 +186,19 @@ def make_cluster_stc(cluster_fname):
             cluster = cluster_dict['clusters'][cluster_idx]
             label = get_label_from_cluster(avg_stc, fsaverage_src, hemi,
                                            cluster)
-            # triage groups
-            all_interventions = ('letter', 'language')
-            all_pretest_cohorts = ('lower', 'upper')
-            if groups[0] in all_interventions:
-                all_groups = all_interventions
-            elif groups[0] in all_pretest_cohorts:
-                all_groups = all_pretest_cohorts
-            else:
-                all_groups = ['grandavg']
-            # set up figure
-            gridspec_kw = dict(height_ratios=[4] + [1] * len(all_groups))
-            fig, axs = plt.subplots(len(all_groups) + 1, 1,
-                                    gridspec_kw=gridspec_kw, figsize=(9, 13))
-            # draw the brain/cluster image into first axes
-            img_fname = re.sub(r'\.npz$', f'_cluster{cluster_idx:05}.png',
-                               cluster_fname)
-            cluster_image = imread(os.path.join(img_dir, img_fname))
-            axs[0].imshow(cluster_image)
-            axs[0].set_axis_off()
-            axs[0].set_title(cluster_fname)
-
-            # prepare to plot
+            # get dataframe
             all_conditions = ('words', 'faces', 'cars')
             all_timepoints = ('post', 'pre')
-            plot_kwargs = dict(hue='condition', hue_order=all_conditions,
-                               style='timepoint', style_order=all_timepoints)
             df = get_dataframe_from_label(label, fsaverage_src, [method],
                                           all_timepoints, all_conditions)
             # plot
-            for group, ax in zip(all_groups, axs[1:]):
-                # plot cluster-relevant lines in color, others gray (unless
-                # we're plotting the non-cluster-relevant group → all gray)
-                colors = [color_vals[i]
-                          if c in conditions and group in groups else
-                          grey_vals[i]
-                          for i, c in enumerate(all_conditions)]
-                # get just the data for this group
-                if group in all_interventions:
-                    group_column = df['intervention']
-                elif group in all_pretest_cohorts:
-                    group_column = df['pretest']
-                else:
-                    group_column = np.full(df.shape[:1], 'grandavg')
-                data = df.loc[(group_column == group) &
-                              np.in1d(df['timepoint'], timepoints) &
-                              np.in1d(df['condition'], all_conditions)]
-                # draw
-                with sns.color_palette(colors):
-                    sns.lineplot(x='time', y='value', data=data, ax=ax,
-                                 **plot_kwargs)
-                # indicate temporal span of cluster signif. difference
-                if group in groups:
-                    temporal_idxs, _ = cluster_dict['clusters'][cluster_idx]
-                    xmin = avg_stc.times[temporal_idxs.min()]
-                    xmax = avg_stc.times[temporal_idxs.max()]
-                    ax.fill_betweenx((0, 4), xmin, xmax, color='k', alpha=0.1)
-                # garnish
-                ymax = 4 if method == 'dSPM' else 2
-                ax.set_ylim(0, ymax)
-                ax.set_title(title_dict[group])
-                # suppress x-axis label on upper panel
-                if ax == axs[-2]:
-                    ax.set_xlabel('')
-            # save plot (overwrites the cluster image PNG)
-            sns.despine()
-            fig.savefig(os.path.join(img_dir, img_fname))
-            plt.close(fig)
+            lineplot_kwargs = dict(hue='condition', hue_order=all_conditions,
+                                   style='timepoint',
+                                   style_order=all_timepoints)
+            plot_label_and_timeseries(label, cluster_img_path, df, method,
+                                      groups, timepoints, conditions,
+                                      all_timepoints, all_conditions,
+                                      cluster, lineplot_kwargs)
 
 
 cluster_fnames = sorted([x.name for x in os.scandir(cluster_dir)

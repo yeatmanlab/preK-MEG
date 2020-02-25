@@ -226,3 +226,94 @@ def get_dataframe_from_label(label, src, methods=('dSPM', 'sLORETA'),
     time_courses['intervention'] = time_courses['subj'].map(intervention_map)
     time_courses['pretest'] = time_courses['subj'].map(knowledge_map)
     return time_courses
+
+
+def plot_label(label, img_path, color='r', alpha=1., **kwargs):
+    from surfer import Brain
+    from matplotlib.colors import to_rgba
+    color = to_rgba(color)
+    brain = Brain('fsaverage', surf='inflated', **kwargs)
+    brain.add_label(label, color=color, alpha=alpha)
+    brain.save_image(img_path)
+    return img_path
+
+
+def plot_label_and_timeseries(label, img_path, df, method, groups, timepoints,
+                              conditions, all_timepoints, all_conditions,
+                              cluster=None, lineplot_kwargs=None):
+    import matplotlib.pyplot as plt
+    from matplotlib.image import imread
+    import seaborn as sns
+
+    # defaults
+    lineplot_kwargs = dict() if lineplot_kwargs is None else lineplot_kwargs
+
+    # triage groups
+    all_interventions = ('letter', 'language')
+    all_pretest_cohorts = ('lower', 'upper')
+    if groups[0] in all_interventions:
+        all_groups = all_interventions
+    elif groups[0] in all_pretest_cohorts:
+        all_groups = all_pretest_cohorts
+    else:
+        all_groups = ['grandavg']
+
+    # plot setup
+    sns.set(style='whitegrid', font_scale=0.8)
+    grey_vals = ['0.75', '0.55', '0.35']
+    color_vals = ['#004488', '#bb5566', '#ddaa33']
+    gridspec_kw = dict(height_ratios=[4] + [1] * len(all_groups))
+    fig, axs = plt.subplots(len(all_groups) + 1, 1, figsize=(9, 13),
+                            gridspec_kw=gridspec_kw)
+    title_dict = dict(language='Language Intervention cohort',
+                      letter='Letter Intervention cohort',
+                      grandavg='All participants',
+                      lower='Pre-test lower half of participants',
+                      upper='Pre-test upper half of participants')
+
+    # draw the brain/cluster image into first axes
+    cluster_image = imread(img_path)
+    axs[0].imshow(cluster_image)
+    axs[0].set_axis_off()
+    axs[0].set_title(os.path.split(img_path)[-1])
+
+    # plot
+    for group, ax in zip(all_groups, axs[1:]):
+        # plot cluster-relevant lines in color, others gray (unless
+        # we're plotting the non-cluster-relevant group → all gray)
+        colors = [color_vals[i]
+                  if c in conditions and group in groups else
+                  grey_vals[i]
+                  for i, c in enumerate(all_conditions)]
+        # get just the data for this group
+        if group in all_interventions:
+            group_column = df['intervention']
+        elif group in all_pretest_cohorts:
+            group_column = df['pretest']
+        else:
+            group_column = np.full(df.shape[:1], 'grandavg')
+        data = df.loc[(group_column == group) &
+                      np.in1d(df['timepoint'], timepoints) &
+                      np.in1d(df['condition'], all_conditions)]
+        # draw
+        with sns.color_palette(colors):
+            sns.lineplot(x='time', y='value', data=data, ax=ax,
+                         **lineplot_kwargs)
+        # indicate temporal span of cluster signif. difference
+        if group in groups and cluster is not None:
+            temporal_idxs, _ = cluster
+            times = np.sort(df['time'].unique())
+            xmin = times[temporal_idxs.min()]
+            xmax = times[temporal_idxs.max()]
+            ax.fill_betweenx((0, 4), xmin, xmax, color='k', alpha=0.1)
+        # garnish
+        ymax = 4 if method == 'dSPM' else 2
+        ax.set_ylim(0, ymax)
+        ax.set_title(title_dict[group])
+        # suppress x-axis label on upper panel
+        if ax == axs[-2]:
+            ax.set_xlabel('')
+    # save plot (overwrites the cluster image PNG)
+    sns.despine()
+    fig.savefig(img_path)
+    plt.close(fig)
