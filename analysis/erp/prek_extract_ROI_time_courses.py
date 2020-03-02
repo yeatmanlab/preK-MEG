@@ -14,7 +14,6 @@ from aux_functions import (load_paths, load_params, get_dataframe_from_label,
                            plot_label, plot_label_and_timeseries)
 
 n_jobs = 10
-use_ventral_band_rois = False
 
 # load params
 brain_plot_kwargs, movie_kwargs, subjects = load_params()
@@ -23,14 +22,15 @@ brain_plot_kwargs, movie_kwargs, subjects = load_params()
 data_root, subjects_dir, results_dir = load_paths()
 roi_dir = os.path.join('..', 'ROIs')
 timeseries_dir = os.path.join(results_dir, 'roi', 'time-series')
-image_dir = os.path.join(results_dir, 'roi', 'images')
-for dir in (timeseries_dir, image_dir):
+img_dir = os.path.join(results_dir, 'roi', 'images')
+for dir in (timeseries_dir, img_dir):
     os.makedirs(dir, exist_ok=True)
 
 # load fsaverage source space
 fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
                                   'fsaverage-ico-5-src.fif')
 fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
+fsaverage_src = mne.add_source_space_distances(fsaverage_src, dist_limit=0)
 
 # load the ROI labels
 rois = dict()
@@ -47,6 +47,7 @@ for region_number in range(1, 6):
     label = mne.read_label(fpath)
     label.subject = 'fsaverage'
     label = label.restrict(fsaverage_src)
+    label = label.fill(fsaverage_src)
     rois[region_number] = label
 
 
@@ -67,10 +68,10 @@ for region_number, label in rois.items():
     for method in methods:
         for groups in group_lists:
             # plot label
-            band = '-band' if use_ventral_band_rois else ''
+            band = '-band' if region_number > 0 else ''
             group_str = 'Versus'.join([g.capitalize() for g in groups])
             img_fname = f'roi{band}-{region_number}-{method}-{group_str}.png'
-            img_path = os.path.join(image_dir, img_fname)
+            img_path = os.path.join(img_dir, img_fname)
             plot_label(label, img_path, **brain_plot_kwargs)
             # plot timeseries
             plot_label_and_timeseries(label, img_path, df, method, groups,
@@ -84,6 +85,4 @@ for region_number, label in rois.items():
 
 
 # save master dataframe
-bands = '-bands' if use_ventral_band_rois else ''
-master_df.to_csv(os.path.join(timeseries_dir,
-                              f'roi{bands}-timeseries-long.csv'))
+master_df.to_csv(os.path.join(timeseries_dir, 'roi-timeseries-long.csv'))
