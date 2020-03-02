@@ -56,16 +56,14 @@ all_timepoints = ('post', 'pre')
 methods = ('dSPM', 'sLORETA')
 group_lists = (['grandavg'], ['letter', 'language'], ['upper', 'lower'])
 
-master_df = DataFrame()
-
 for region_number, label in rois.items():
-    # get dataframe
-    df = get_dataframe_from_label(label, fsaverage_src)
     # prepare to plot
     lineplot_kwargs = dict(hue='condition', hue_order=all_conditions,
                            style='timepoint', style_order=all_timepoints)
     # plot
     for method in methods:
+        # get dataframe
+        df = get_dataframe_from_label(label, fsaverage_src, methods=method)
         for groups in group_lists:
             # plot label
             band = '-band' if region_number > 0 else ''
@@ -81,8 +79,6 @@ for region_number, label in rois.items():
                                       all_conditions=all_conditions,
                                       cluster=None,
                                       lineplot_kwargs=lineplot_kwargs)
-    master_df = concat([master_df, df], ignore_index=True)
-
-
-# save master dataframe
-master_df.to_csv(os.path.join(timeseries_dir, 'roi-timeseries-long.csv'))
+    # save dataframe
+    df.to_csv(os.path.join(timeseries_dir,
+                           f'roi{band}-{region_number}-timeseries-long.csv'))
