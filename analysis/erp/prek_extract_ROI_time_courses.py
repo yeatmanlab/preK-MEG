@@ -55,10 +55,11 @@ for region_number, label in rois.items():
     # prepare to plot
     lineplot_kwargs = dict(hue='condition', hue_order=all_conditions,
                            style='timepoint', style_order=all_timepoints)
+    # get dataframe
+    df = get_dataframe_from_label(label, fsaverage_src)
+    df['roi'] = region_number
     # plot
     for method in methods:
-        # get dataframe
-        df = get_dataframe_from_label(label, fsaverage_src, methods=[method])
         for groups in group_lists:
             # plot label
             group_str = 'Versus'.join([g.capitalize() for g in groups])
