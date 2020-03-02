@@ -67,7 +67,8 @@ for region_number, label in rois.items():
             img_path = os.path.join(img_dir, img_fname)
             plot_label(label, img_path, **brain_plot_kwargs)
             # plot timeseries
-            plot_label_and_timeseries(label, img_path, df, method, groups,
+            this_df = df.loc[df['method'] == method]
+            plot_label_and_timeseries(label, img_path, this_df, method, groups,
                                       timepoints=all_timepoints,
                                       conditions=all_conditions,
                                       all_timepoints=all_timepoints,
