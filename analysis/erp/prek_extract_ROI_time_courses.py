@@ -63,7 +63,7 @@ for region_number, label in rois.items():
     # plot
     for method in methods:
         # get dataframe
-        df = get_dataframe_from_label(label, fsaverage_src, methods=method)
+        df = get_dataframe_from_label(label, fsaverage_src, methods=[method])
         for groups in group_lists:
             # plot label
             band = '-band' if region_number > 0 else ''
