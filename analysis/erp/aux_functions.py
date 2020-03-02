@@ -311,6 +311,9 @@ def plot_label_and_timeseries(label, img_path, df, method, groups, timepoints,
         # suppress x-axis label on upper panel
         if ax == axs[-2]:
             ax.set_xlabel('')
+        # force legend to right edge, by removing and re-adding it
+        ax.legend_.remove()
+        ax.legend(loc='right')
     # save plot (overwrites the cluster image PNG)
     sns.despine()
     fig.savefig(img_path)
