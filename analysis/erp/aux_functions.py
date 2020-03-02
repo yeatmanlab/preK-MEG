@@ -228,12 +228,10 @@ def get_dataframe_from_label(label, src, methods=('dSPM', 'sLORETA'),
     return time_courses
 
 
-def plot_label(label, img_path, color='r', alpha=1., **kwargs):
+def plot_label(label, img_path, alpha=1., **kwargs):
     from surfer import Brain
-    from matplotlib.colors import to_rgba
-    color = to_rgba(color)
     brain = Brain('fsaverage', surf='inflated', **kwargs)
-    brain.add_label(label, color=color, alpha=alpha)
+    brain.add_label(label, alpha=alpha)
     brain.save_image(img_path)
     return img_path
 

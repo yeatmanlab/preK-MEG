@@ -10,6 +10,7 @@ and subjects.
 import os
 import mne
 from mayavi import mlab
+from matplotlib.colors import to_rgba
 from aux_functions import (load_paths, load_params, get_dataframe_from_label,
                            plot_label, plot_label_and_timeseries)
 
@@ -37,19 +38,11 @@ fsaverage_src = mne.add_source_space_distances(fsaverage_src, dist_limit=0)
 # load the ROI labels
 rois = dict()
 roi_colors = list('yrgbcm')
-# one big ventral ROI
-fpath = os.path.join(roi_dir, 'ventral_ROI-lh.label')
-label = mne.read_label(fpath)
-label.subject = 'fsaverage'
-label = label.restrict(fsaverage_src)
-rois[0] = label
-# ventral band ROIs
-for region_number in range(1, 6):
-    fpath = os.path.join(roi_dir, f'ventral_band_{region_number}-lh.label')
+for region_number in range(6):
+    fpath = os.path.join(roi_dir, f'ventral_ROI_{region_number}-lh.label')
     label = mne.read_label(fpath)
     label.subject = 'fsaverage'
-    label = label.restrict(fsaverage_src)
-    label = label.fill(fsaverage_src)
+    label.color = to_rgba(roi_colors[region_number])
     rois[region_number] = label
 
 
@@ -68,9 +61,8 @@ for region_number, label in rois.items():
         df = get_dataframe_from_label(label, fsaverage_src, methods=[method])
         for groups in group_lists:
             # plot label
-            band = '-band' if region_number > 0 else ''
             group_str = 'Versus'.join([g.capitalize() for g in groups])
-            img_fname = f'roi{band}-{region_number}-{method}-{group_str}.png'
+            img_fname = f'{method}-{group_str}-roi-{region_number}.png'
             img_path = os.path.join(img_dir, img_fname)
             plot_label(label, img_path, **brain_plot_kwargs)
             # plot timeseries
@@ -83,4 +75,4 @@ for region_number, label in rois.items():
                                       lineplot_kwargs=lineplot_kwargs)
     # save dataframe
     df.to_csv(os.path.join(timeseries_dir,
-                           f'roi{band}-{region_number}-timeseries-long.csv'))
+                           f'roi-{region_number}-timeseries-long.csv'))
