@@ -9,10 +9,12 @@ and subjects.
 
 import os
 import mne
-from pandas import DataFrame, concat
+from mayavi import mlab
 from aux_functions import (load_paths, load_params, get_dataframe_from_label,
                            plot_label, plot_label_and_timeseries)
 
+mlab.options.offscreen = True
+mne.cuda.init_cuda()
 n_jobs = 10
 
 # load params
