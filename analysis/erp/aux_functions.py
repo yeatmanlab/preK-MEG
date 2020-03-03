@@ -113,3 +113,208 @@ def define_labels(region, action, hemi, subjects_dir=None):
     merged_label = sum(labels[1:], labels[0])
     assert len(merged_label.name.split('+')) == n_hemis * len(label_names)
     return merged_label
+
+
+def get_stc_from_conditions(method, timepoint, condition, subject):
+    """Load an STC file for the given experimental conditions.
+
+    Parameters
+    ----------
+
+    method : 'dSPM' | 'sLORETA'
+
+    timepoint : 'pre' | 'post'
+
+    condition : 'words' | 'faces' | 'cars' | 'aliens'
+
+    subject : str
+        Can be a subject identifier ('prek_1103'), a group name ('language',
+        'letter', 'upper', or 'lower'), or `None` (to get grand average of all
+        subjects).
+    """
+    from mne import read_source_estimate
+    data_root, _, results_dir = load_paths()
+    # allow both groups and subjects as the "subject" argument
+    group_map = {None: 'GrandAvg',
+                 'language': 'LanguageInterventionN24',
+                 'letter': 'LetterInterventionN24',
+                 'upper': 'UpperKnowledgeN24',
+                 'lower': 'LowerKnowledgeN24'}
+    # if "subject" is not in group_map, use it as-is
+    subject = group_map.get(subject, subject)
+    # filename pattern
+    fname = f'{subject}FSAverage_{timepoint}Camp_{method}_{condition}'
+    if subject in group_map.values():
+        folder = os.path.join(results_dir, 'group_averages')
+    else:
+        folder = os.path.join(data_root, f'{timepoint}_camp', 'twa_hp', 'erp',
+                              subject, 'stc')
+    stc_path = os.path.join(folder, fname)
+    stc = read_source_estimate(stc_path)
+    return stc
+
+
+def get_dataframe_from_label(label, src, methods=('dSPM', 'sLORETA'),
+                             timepoints=('pre', 'post'),
+                             conditions=('words', 'faces', 'cars', 'aliens'),
+                             subjects=None):
+    """Get average timecourse within label across all subjects."""
+    from pandas import DataFrame, concat, melt
+    from mne import Label, extract_label_time_course
+    # allow looping over single Label
+    if isinstance(label, Label):
+        label = [label]
+    # load subjects list
+    if subjects is None:
+        _, _, subjects = load_params()
+    elif isinstance(subjects, str):
+        subjects = [subjects]
+    # load cohort information
+    intervention_group, letter_knowledge_group = load_cohorts()
+    intervention_map = {subj: group.lower()[:-12]
+                        for group, members in intervention_group.items()
+                        for subj in members}
+    knowledge_map = {subj: group.lower()[:-9]
+                     for group, members in letter_knowledge_group.items()
+                     for subj in members}
+
+    time_courses = dict()
+    # loop over source localization algorithms
+    for method in methods:
+        time_courses[method] = dict()
+        # loop over pre/post measurement time
+        for timept in timepoints:
+            time_courses[method][timept] = dict()
+            # loop over conditions
+            for cond in conditions:
+                time_courses[method][timept][cond] = dict()
+                # loop over subjects
+                for subj in subjects:
+                    # load STC
+                    stc = get_stc_from_conditions(method, timept, cond, subj)
+                    # extract label time course
+                    time_courses[method][timept][cond][subj] = np.squeeze(
+                        extract_label_time_course(stc, label, src=src,
+                                                  mode='pca_flip'))
+                # convert dict of each subj's time series to DataFrame
+                df = DataFrame(time_courses[method][timept][cond],
+                               index=range(len(stc.times)))
+                df['time'] = stc.times
+                time_courses[method][timept][cond] = df
+                # store current "condition" in a column before exiting loop
+                time_courses[method][timept][cond]['condition'] = cond
+            # combine DataFrames across conditions
+            dfs = (time_courses[method][timept][c] for c in conditions)
+            time_courses[method][timept] = concat(dfs)
+            # store current "timepoint" in a column before exiting loop
+            time_courses[method][timept]['timepoint'] = timept
+        # combine DataFrames across timepoints
+        dfs = (time_courses[method][t] for t in timepoints)
+        time_courses[method] = concat(dfs)
+        # store current "method" in a column before exiting loop
+        time_courses[method]['method'] = method
+    # combine DataFrames across methods
+    dfs = (time_courses[m] for m in methods)
+    time_courses = concat(dfs)
+
+    # reshape DataFrame
+    all_cols = time_courses.columns.values
+    subj_cols = time_courses.columns.str.startswith('prek')
+    id_vars = all_cols[np.logical_not(subj_cols)]
+    time_courses = melt(time_courses, id_vars=id_vars, var_name='subj')
+    # add columns for intervention cohort and pretest letter knowledge
+    time_courses['intervention'] = time_courses['subj'].map(intervention_map)
+    time_courses['pretest'] = time_courses['subj'].map(knowledge_map)
+    return time_courses
+
+
+def plot_label(label, img_path, alpha=1., **kwargs):
+    from surfer import Brain
+    brain = Brain('fsaverage', surf='inflated', **kwargs)
+    brain.add_label(label, alpha=alpha)
+    brain.save_image(img_path)
+    return img_path
+
+
+def plot_label_and_timeseries(label, img_path, df, method, groups, timepoints,
+                              conditions, all_timepoints, all_conditions,
+                              cluster=None, lineplot_kwargs=None):
+    import matplotlib.pyplot as plt
+    from matplotlib.image import imread
+    import seaborn as sns
+
+    # defaults
+    lineplot_kwargs = dict() if lineplot_kwargs is None else lineplot_kwargs
+
+    # triage groups
+    all_interventions = ('letter', 'language')
+    all_pretest_cohorts = ('lower', 'upper')
+    if groups[0] in all_interventions:
+        all_groups = all_interventions
+    elif groups[0] in all_pretest_cohorts:
+        all_groups = all_pretest_cohorts
+    else:
+        all_groups = ['grandavg']
+
+    # plot setup
+    sns.set(style='whitegrid', font_scale=0.8)
+    grey_vals = ['0.75', '0.55', '0.35']
+    color_vals = ['#004488', '#bb5566', '#ddaa33']
+    gridspec_kw = dict(height_ratios=[4] + [1] * len(all_groups))
+    fig, axs = plt.subplots(len(all_groups) + 1, 1, figsize=(9, 13),
+                            gridspec_kw=gridspec_kw)
+    title_dict = dict(language='Language Intervention cohort',
+                      letter='Letter Intervention cohort',
+                      grandavg='All participants',
+                      lower='Pre-test lower half of participants',
+                      upper='Pre-test upper half of participants')
+
+    # draw the brain/cluster image into first axes
+    cluster_image = imread(img_path)
+    axs[0].imshow(cluster_image)
+    axs[0].set_axis_off()
+    axs[0].set_title(os.path.split(img_path)[-1])
+
+    # plot
+    for group, ax in zip(all_groups, axs[1:]):
+        # plot cluster-relevant lines in color, others gray (unless
+        # we're plotting the non-cluster-relevant group → all gray)
+        colors = [color_vals[i]
+                  if c in conditions and group in groups else
+                  grey_vals[i]
+                  for i, c in enumerate(all_conditions)]
+        # get just the data for this group
+        if group in all_interventions:
+            group_column = df['intervention']
+        elif group in all_pretest_cohorts:
+            group_column = df['pretest']
+        else:
+            group_column = np.full(df.shape[:1], 'grandavg')
+        data = df.loc[(group_column == group) &
+                      np.in1d(df['timepoint'], timepoints) &
+                      np.in1d(df['condition'], all_conditions)]
+        # draw
+        with sns.color_palette(colors):
+            sns.lineplot(x='time', y='value', data=data, ax=ax,
+                         **lineplot_kwargs)
+        # indicate temporal span of cluster signif. difference
+        if group in groups and cluster is not None:
+            temporal_idxs, _ = cluster
+            times = np.sort(df['time'].unique())
+            xmin = times[temporal_idxs.min()]
+            xmax = times[temporal_idxs.max()]
+            ax.fill_betweenx((0, 4), xmin, xmax, color='k', alpha=0.1)
+        # garnish
+        ymax = 4 if method == 'dSPM' else 2
+        ax.set_ylim(0, ymax)
+        ax.set_title(title_dict[group])
+        # suppress x-axis label on upper panel
+        if ax == axs[-2]:
+            ax.set_xlabel('')
+        # force legend to right edge, by removing and re-adding it
+        ax.legend_.remove()
+        ax.legend(loc='right')
+    # save plot (overwrites the cluster image PNG)
+    sns.despine()
+    fig.savefig(img_path)
+    plt.close(fig)

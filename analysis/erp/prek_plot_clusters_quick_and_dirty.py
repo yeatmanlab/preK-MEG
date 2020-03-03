@@ -9,22 +9,17 @@ Plot movies with significant cluster regions highlighted.
 import os
 import re
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-from matplotlib.image import imread
-import seaborn as sns
 from mayavi import mlab
 import mne
-from aux_functions import load_paths, load_params, load_cohorts
+from aux_functions import (load_paths, load_params, load_cohorts,
+                           get_dataframe_from_label, plot_label_and_timeseries)
 
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
 n_jobs = 10
-sns.set(style='whitegrid', font_scale=0.8)
 
 # load params
-brain_plot_kwargs, movie_kwargs, subjects = load_params()
-
+brain_plot_kwargs, _, subjects = load_params()
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
 cluster_root = os.path.join(results_dir, 'clustering')
@@ -40,33 +35,19 @@ for folder in (img_dir, cluster_stc_dir, timeseries_dir):
 # load cohort info (keys Language/LetterIntervention and Lower/UpperKnowledge)
 intervention_group, letter_knowledge_group = load_cohorts()
 
-# assemble groups to iterate over
-groups_dict = dict(GrandAvg=subjects)
-groups_dict.update(intervention_group)
-groups_dict.update(letter_knowledge_group)
-
-title_dict = dict(language='Language Intervention cohort',
-                  letter='Letter Intervention cohort',
-                  grandavg='All participants',
-                  lower='Pre-test lower half of participants',
-                  upper='Pre-test upper half of participants')
+# assemble groups info
+groups_dict = dict(grandavg=subjects,
+                   language=intervention_group['LanguageIntervention'],
+                   letter=intervention_group['LetterIntervention'],
+                   lower=letter_knowledge_group['LowerKnowledge'],
+                   upper=letter_knowledge_group['UpperKnowledge'])
+for group, members in groups_dict.items():
+    groups_dict[group] = [f'prek_{n}' for n in members]
 
 # load fsaverage source space
 fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
                                   'fsaverage-ico-5-src.fif')
 fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
-hemi_nverts = len(fsaverage_src[0]['vertno'])
-
-
-# helper function: reconstruct group dictionary key from filename
-def build_group_key(group):
-    if group in ('letter', 'language'):
-        key = f'{group.capitalize()}Intervention'
-    elif group in ('upper', 'lower'):
-        key = f'{group.capitalize()}Knowledge'
-    elif group == 'grandavg':
-        key = 'GrandAvg'
-    return key
 
 
 # helper function: plot the clusters as pseudo-STC
@@ -92,20 +73,9 @@ def plot_clusters(stc, cluster_stc, signif_clu):
         cluster_idx = signif_clu[time_idx - 1]
         img_fname = re.sub(r'\.npz$', f'_cluster{cluster_idx:05}.png',
                            cluster_fname)
-        brain.save_image(os.path.join(img_dir, img_fname))
-
-
-# helper function: get timeseries in label for a particular subject
-def get_subj_time_course(subj, timept, method, con, label):
-    this_subj = os.path.join(data_root, f'{timept}_camp', 'twa_hp', 'erp',
-                             subj, 'stc')
-    fname = f'{subj}FSAverage_{timept}Camp_{method}_{con}'
-    stc_path = os.path.join(this_subj, fname)
-    stc = mne.read_source_estimate(stc_path)
-    # extract label time course
-    kwargs = dict(src=fsaverage_src, mode='pca_flip', allow_empty=True)
-    time_course = mne.extract_label_time_course(stc, label, **kwargs)
-    return np.squeeze(time_course)
+        img_path = os.path.join(img_dir, img_fname)
+        brain.save_image(img_path)
+        return img_path
 
 
 # helper function: extract condition names from filename
@@ -125,86 +95,60 @@ def get_condition_names(cluster_fname):
 
 # helper function: assemble DataFrame of timeseries for each subj in each
 # condition pertinent to the current cluster result
-def extract_time_courses(avg_stc, cluster_fname, cluster_dict, cluster_idx):
-    """Extract the mean (across vertices) time series for each subject."""
-    (groups, timepoints, method, conditions, hemi_str, avg_stc_fname
-     ) = get_condition_names(cluster_fname)
+def get_label_from_cluster(stc, src, hemi, cluster):
+    """Extract the mean (across vertices) time series for each subject.
+
+    Parameters
+    ----------
+
+    stc : instance of SourceEstimate
+
+    src : instance of SourceSpace
+
+    hemi : 'lh' | 'rh' | 'both'
+
+    cluster : tuple
+        length 2 tuple of array-like (temporal_indices, spatial_indices)
+
+    Returns
+    -------
+    label : instance of Label
+    """
+    hemi_nverts = len(src[0]['vertno'])
 
     # make sure we're right about which hemisphere the cluster is in
-    temporal_idxs, spatial_idxs = cluster_dict['clusters'][cluster_idx]
+    temporal_idxs, spatial_idxs = cluster
     if all(spatial_idxs <= hemi_nverts):
-        assert hemi_str == 'lh'
-        hemi = 0
+        assert hemi == 'lh'
     elif all(spatial_idxs >= hemi_nverts):
-        assert hemi_str == 'rh'
-        hemi = 1
+        assert hemi == 'rh'
         spatial_idxs = spatial_idxs - hemi_nverts
     else:
         err = ("you seem to have a cluster that spans "
                "hemispheres, this shouldn't happen.")
         raise RuntimeError(err)
-
+    hemi_idx = 0 if hemi == 'lh' else 1
     # select the vertices in the cluster & convert to Label
-    verts = np.unique(avg_stc.vertices[hemi][spatial_idxs])
-    label = mne.Label(verts, hemi=hemi_str, subject='fsaverage')
-    label = label.restrict(fsaverage_src)
-
-    time_courses = dict()
-    # loop over conditions to handle subtractions
-    for timept in timepoints:
-        time_courses[timept] = dict()
-        for con in conditions:
-            time_courses[timept][con] = dict()
-            for grp in groups:
-                time_courses[timept][con][grp] = dict()
-                group_key = build_group_key(grp)
-                group_members = groups_dict[group_key]
-                for s in group_members:
-                    tc = get_subj_time_course(s, timept, method, con, label)
-                    time_courses[timept][con][grp][s] = tc
-                # convert dict of each subj's time series to DataFrame
-                df = pd.DataFrame(time_courses[timept][con][grp],
-                                  index=range(len(avg_stc.times)))
-                df['time'] = avg_stc.times
-                df['group'] = grp
-                time_courses[timept][con][grp] = df
-            # combine DataFrames across groups
-            if len(groups) == 1:
-                time_courses[timept][con] = time_courses[timept][con][grp]
-            else:
-                dfs = (time_courses[timept][con][g] for g in groups)
-                time_courses[timept][con] = pd.concat(dfs)
-            time_courses[timept][con]['condition'] = con
-        # combine DataFrames across conditions
-        if len(conditions) == 1:
-            time_courses[timept] = time_courses[timept][con]
-        else:
-            dfs = (time_courses[timept][c] for c in conditions)
-            time_courses[timept] = pd.concat(dfs)
-        time_courses[timept]['timepoint'] = timept
-    # combine DataFrames across timepoints
-    if len(timepoints) == 1:
-        time_courses = time_courses[timept]
-    else:
-        dfs = (time_courses[t] for t in timepoints)
-        time_courses = pd.concat(dfs)
-    return time_courses
+    verts = np.unique(stc.vertices[hemi_idx][spatial_idxs])
+    label = mne.Label(verts, hemi=hemi, subject='fsaverage')
+    label = label.restrict(src)
+    return label
 
 
 # workhorse function
 def make_cluster_stc(cluster_fname):
-    (groups, timepoints, method, conditions, hemi_str, avg_stc_fname
+    (groups, timepoints, method, conditions, hemi, avg_stc_fname
      ) = get_condition_names(cluster_fname)
     # load the STC
-    stc_fpath = os.path.join(results_dir, 'group_averages', avg_stc_fname)
-    stc = mne.read_source_estimate(stc_fpath)
+    avg_stc_fpath = os.path.join(results_dir, 'group_averages', avg_stc_fname)
+    avg_stc = mne.read_source_estimate(avg_stc_fpath)
     # pick correct hemisphere(s)
-    vertices = stc.vertices
+    vertices = avg_stc.vertices
     if cluster_fname.rstrip('.npz').endswith('_lh'):
         vertices[1] = np.array([])
     elif cluster_fname.rstrip('.npz').endswith('_rh'):
         vertices[0] = np.array([])
-    stc_tstep_ms = 1000 * stc.tstep  # in milliseconds
+    stc_tstep_ms = 1000 * avg_stc.tstep  # in milliseconds
     # load the cluster results
     cluster_fpath = os.path.join(cluster_dir, cluster_fname)
     cluster_dict = np.load(cluster_fpath, allow_pickle=True)
@@ -232,55 +176,29 @@ def make_cluster_stc(cluster_fname):
         cluster_stc.save(os.path.join(cluster_stc_dir, avg_stc_fname))
         # get indices for which clusters are significant
         signif_clu = cluster_dict['good_cluster_idxs'][0]
-        # plot the clusters
-        plot_clusters(stc, cluster_stc, signif_clu)
+        # plot the clusters (saves as PNG image)
+        cluster_img_path = plot_clusters(avg_stc, cluster_stc, signif_clu)
         # for each significant cluster, extract the mean (across vertices) time
         # series for each subject, save to a CSV, and plot alongside the
         # cluster location.
         for cluster_idx in signif_clu:
-            timeseries_dataframe = extract_time_courses(stc, cluster_fname,
-                                                        cluster_dict,
-                                                        cluster_idx)
-            # save to CSV
-            timeseries_fname = f'{avg_stc_fname}_cluster{cluster_idx:05}.csv'
-            timeseries_fpath = os.path.join(timeseries_dir, timeseries_fname)
-            timeseries_dataframe.to_csv(timeseries_fpath, index=False)
-            # plot time series alongside cluster location
-            all_cols = timeseries_dataframe.columns.values
-            subj_cols = timeseries_dataframe.columns.str.startswith('prek')
-            id_vars = all_cols[np.logical_not(subj_cols)]
-            df = pd.melt(timeseries_dataframe, id_vars=id_vars,
-                         var_name='subj')
-            # intitialize figure
-            n_rows = len(groups) + 1
-            gridspec_kw = dict(height_ratios=[4] + [1] * len(groups))
-            fig, axs = plt.subplots(n_rows, 1, gridspec_kw=gridspec_kw,
-                                    figsize=(9, 13))
-            # draw the cluster brain image into first axes
-            img_fname = re.sub(r'\.npz$', f'_cluster{cluster_idx:05}.png',
-                               cluster_fname)
-            cluster_image = imread(os.path.join(img_dir, img_fname))
-            axs[0].imshow(cluster_image)
-            axs[0].set_axis_off()
-            axs[0].set_title(cluster_fname)
-            # draw the timecourses
-            plot_kwargs = dict()
-            if len(conditions) > 1:
-                plot_kwargs.update(hue='condition')
-            if len(timepoints) > 1:
-                plot_kwargs.update(style='timepoint')
-            for group, ax in zip(groups, axs[1:]):
-                data = df.loc[df['group'] == group]
-                sns.lineplot(x='time', y='value', data=data, ax=ax,
-                             **plot_kwargs)
-                ax.set_title(title_dict[group])
-                ax.set_ylim(0, 4)
-                # we only need one legend, suppress on subsequent plots
-                plot_kwargs.update(legend=False)
-            # save plot
-            sns.despine()
-            fig.savefig(os.path.join(img_dir, img_fname))
-            plt.close(fig)
+            # get label
+            cluster = cluster_dict['clusters'][cluster_idx]
+            label = get_label_from_cluster(avg_stc, fsaverage_src, hemi,
+                                           cluster)
+            # get dataframe
+            all_conditions = ('words', 'faces', 'cars')
+            all_timepoints = ('post', 'pre')
+            df = get_dataframe_from_label(label, fsaverage_src, [method],
+                                          all_timepoints, all_conditions)
+            # plot
+            lineplot_kwargs = dict(hue='condition', hue_order=all_conditions,
+                                   style='timepoint',
+                                   style_order=all_timepoints)
+            plot_label_and_timeseries(label, cluster_img_path, df, method,
+                                      groups, timepoints, conditions,
+                                      all_timepoints, all_conditions,
+                                      cluster, lineplot_kwargs)
 
 
 cluster_fnames = sorted([x.name for x in os.scandir(cluster_dir)

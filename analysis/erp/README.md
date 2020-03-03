@@ -42,6 +42,16 @@
     - Movies are made of every STC, and are saved to 
       `/mnt/scratch/prek/results/movies`
 
+5. ROI analysis:
+    - `../ROIs/create_ventral_band_labels.py` will generate the ROI labels
+    - `prek_extract_ROI_time_courses.py` will extract average time course in
+      each ROI label for each subject in each condition.
+
+6. Clustering:
+    - `prek_clustering.py` runs the clustering
+    - `prek_plot_clusters_quick_and_dirty.py` generates cortical images of the 
+      clusters, alongside plots of average time series extracted from the
+      cluster-defined regions.
 
 ## Filename conventions
 
