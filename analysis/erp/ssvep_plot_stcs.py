@@ -34,7 +34,7 @@ for timepoint in timepoints:
     # loop over subjects
     for s in subjects:
         # load this subject's STCs as a generator
-        pattern = f'{s}FSAverage-{timepoint}_camp-pskt-[01][0-9]'
+        pattern = f'{s}FSAverage-{timepoint}_camp-pskt-[01][0-9]-[lr]h.stc'
         fnames = glob(os.path.join(in_dir, f'{timepoint}_camp', s, pattern))
         stcs = (mne.read_source_estimate(f) for f in fnames)
         # compute average PSD STC
