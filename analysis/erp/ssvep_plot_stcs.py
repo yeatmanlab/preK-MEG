@@ -12,6 +12,7 @@ import mne
 from aux_functions import load_paths, load_params
 
 mne.cuda.init_cuda()
+mne.viz.use_3d_backend('mayavi')
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
