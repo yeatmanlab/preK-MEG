@@ -54,3 +54,4 @@ for timepoint in timepoints:
             fname = f'{s}-{timepoint}_camp-pskt-avg-{freq}_Hz.png'
             fpath = os.path.join(fig_dir, fname)
             brain.save_image(fpath)
+        del brain
