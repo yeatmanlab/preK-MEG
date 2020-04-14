@@ -52,5 +52,5 @@ for timepoint in timepoints:
         for freq in (2, 4, 6, 12, 16):
             brain.set_time(freq)
             fname = f'{s}-{timepoint}_camp-pskt-avg-{freq}_Hz.png'
-            fpath = os.path.join(fig_dir, pattern)
+            fpath = os.path.join(fig_dir, fname)
             brain.save_image(fpath)
