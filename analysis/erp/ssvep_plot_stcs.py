@@ -8,11 +8,14 @@ Plot frequency-domain STCs.
 
 import os
 from glob import glob
+from mayavi import mlab
 import mne
 from aux_functions import load_paths, load_params
 
+# flags
+mlab.options.offscreen = True
 mne.cuda.init_cuda()
-mne.viz.use_3d_backend('pyvista')
+backend = 'mayavi'  # mayavi or pyvista
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
@@ -48,10 +51,11 @@ for timepoint in timepoints:
         fname = f'{s}-{timepoint}_camp-pskt-avg'
         stc.save(os.path.join(stc_dir, fname))
         # plot it
-        brain = stc.plot(subject='fsaverage', **brain_plot_kwargs)
-        for freq in (2, 4, 6, 12, 16):
-            brain.set_time(freq)
-            fname = f'{s}-{timepoint}_camp-pskt-avg-{freq}_Hz.png'
-            fpath = os.path.join(fig_dir, fname)
-            brain.save_image(fpath)
+        with mne.viz.use_3d_backend('mayavi'):
+            brain = stc.plot(subject='fsaverage', **brain_plot_kwargs)
+            for freq in (2, 4, 6, 12, 16):
+                brain.set_time(freq)
+                fname = f'{s}-{timepoint}_camp-pskt-avg-{freq}_Hz.png'
+                fpath = os.path.join(fig_dir, fname)
+                brain.save_image(fpath)
         del brain
