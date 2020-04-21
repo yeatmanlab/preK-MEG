@@ -23,8 +23,7 @@ in_dir = os.path.join(results_dir, 'pskt', 'epochs')
 evk_dir = os.path.join(results_dir, 'pskt', 'evoked')
 stc_dir = os.path.join(results_dir, 'pskt', 'stc', 'subject-specific')
 morph_dir = os.path.join(results_dir, 'pskt', 'stc', 'morphed-to-fsaverage')
-fig_dir = os.path.join(results_dir, 'pskt', 'brain', 'fig')
-for _dir in (evk_dir, stc_dir, morph_dir, fig_dir):
+for _dir in (evk_dir, stc_dir, morph_dir):
     os.makedirs(_dir, exist_ok=True)
 
 # # TODO local testing stuff
@@ -63,6 +62,8 @@ for s in subjects:
         epochs = mne.read_epochs(fpath, proj=True)
         # TODO separately for ps vs kt
         evoked = epochs.average()
+        fname = f'{s}-{timepoint}_camp-pskt-ave.fif'
+        evoked.save(os.path.join(evk_dir, fname))
         del epochs
         # do multitaper estimation
         sfreq = evoked.info['sfreq']
