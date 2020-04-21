@@ -7,7 +7,6 @@ Plot frequency-domain STCs.
 """
 
 import os
-from glob import glob
 from mayavi import mlab
 import mne
 from aux_functions import load_paths, load_params
@@ -37,7 +36,8 @@ for timepoint in timepoints:
     for s in subjects:
         # load this subject's STC
         fname = f'{s}FSAverage-{timepoint}_camp-pskt-multitaper-stc.h5'
-        stc = mne.read_source_estimate(fname)
+        fpath = os.path.join(in_dir, f'{timepoint}_camp', s, fname)
+        stc = mne.read_source_estimate(fpath)
         # plot it
         brain = stc.plot(subject='fsaverage', **brain_plot_kwargs)
         for freq in (2, 4, 6, 12, 16):
