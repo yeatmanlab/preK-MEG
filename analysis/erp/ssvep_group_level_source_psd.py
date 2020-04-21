@@ -35,8 +35,6 @@ groups.update(letter_knowledge_group)
 # config other
 timepoints = ('pre', 'post')
 
-# container for group-level average
-
 # loop over timepoints
 for timepoint in timepoints:
     for group, members in groups.items():

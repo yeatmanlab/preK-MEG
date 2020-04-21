@@ -36,8 +36,6 @@ _, _, subjects = load_params()
 timepoints = ('pre', 'post')
 runs = (1, 2)
 trial_dur = 20  # seconds
-# reject_dict = dict(mag=8000e-15,   # 8000 fT
-#                    grad=8000e-13)  # 8000 fT/cm
 
 # loop over subjects
 for s in subjects:

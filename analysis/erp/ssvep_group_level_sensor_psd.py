@@ -3,8 +3,7 @@
 """
 @author: Daniel McCloy
 
-Extract SSVEP epochs, downsample, and save to disk. Optionally generate
-spectrum estimates and plot PSDs / scalp topographies for each subject.
+Compute and plot group-level PSDs and topomaps.
 """
 
 import os
