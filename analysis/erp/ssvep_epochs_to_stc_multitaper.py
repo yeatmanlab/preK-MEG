@@ -73,7 +73,6 @@ for s in subjects:
         # convert to fake epochs object
         info = mne.create_info(evoked.ch_names, sfreq)
         mt_epochs = mne.EpochsArray(np.swapaxes(mt_spectra, 0, 1), info)
-        del evoked
         # go to source space. inverse is only located in the ERP folder tree,
         # not in PSKT (TODO: this may change at some point)
         inv_path = os.path.join(data_root, f'{timepoint}_camp', 'twa_hp',
@@ -81,7 +80,7 @@ for s in subjects:
         inverse = mne.minimum_norm.read_inverse_operator(inv_path)
         stc = mne.minimum_norm.apply_inverse_epochs(
             mt_epochs, inverse, lambda2, pick_ori='vector', nave=evoked.nave)
-        del mt_epochs
+        del evoked, mt_epochs
         # extract the data from STCs
         data = np.array([s.data for s in stc])
         # data.shape will be (n_tapers, n_vertices, n_xyz_components, n_freqs)
