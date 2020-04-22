@@ -26,11 +26,6 @@ psd_dir = os.path.join(results_dir, 'pskt', 'spectra', 'psds')
 for _dir in (epo_dir, fig_dir, psd_dir):
     os.makedirs(_dir, exist_ok=True)
 
-# TODO local testing
-this_subj = '/home/drmccloy/Desktop/prek/ssvep_tmp'
-s = 'prek_1112'
-timepoint = 'pre'
-
 # load params
 _, _, subjects = load_params()
 
