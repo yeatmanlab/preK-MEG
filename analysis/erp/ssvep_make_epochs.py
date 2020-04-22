@@ -7,6 +7,7 @@ Extract SSVEP epochs, downsample, and save to disk.
 """
 
 import os
+import numpy as np
 import mne
 from aux_functions import load_paths, load_params
 
@@ -16,7 +17,6 @@ mne.cuda.init_cuda()
 compute_psds = True
 plot_psds = True
 plot_topomaps = True
-n_jobs = 10
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
@@ -26,6 +26,11 @@ psd_dir = os.path.join(results_dir, 'pskt', 'spectra', 'psds')
 for _dir in (epo_dir, fig_dir, psd_dir):
     os.makedirs(_dir, exist_ok=True)
 
+# TODO local testing
+this_subj = '/home/drmccloy/Desktop/prek/ssvep_tmp'
+s = 'prek_1112'
+timepoint = 'pre'
+
 # load params
 _, _, subjects = load_params()
 
@@ -33,6 +38,9 @@ _, _, subjects = load_params()
 timepoints = ('pre', 'post')
 runs = (1, 2)
 trial_dur = 20  # seconds
+# subdivide_epochs should be False or an integer number of seconds that evenly
+# divides into trial_dur
+subdivide_epochs = 5
 
 # loop over subjects
 for s in subjects:
@@ -63,6 +71,21 @@ for s in subjects:
             raws.append(raw)
         # combine runs
         raw, events = mne.concatenate_raws(raws, events_list=events_list)
+        # subdivide
+        if subdivide_epochs:
+            assert trial_dur % subdivide_epochs == 0
+            n_new_events = trial_dur // subdivide_epochs
+            t_offsets = np.arange(n_new_events, dtype=float) * subdivide_epochs
+            initial_times = (events[:, 0] - raw.first_samp) / raw.info['sfreq']
+            new_times = np.ravel(initial_times[:, np.newaxis] +
+                                 t_offsets[np.newaxis, :])
+            new_indices = (raw.time_as_index(new_times, use_rounding=True) +
+                           raw.first_samp)
+            # make sure the original event sample numbers didn't change
+            assert len(set(events[:, 0]) - set(new_indices)) == 0
+            events = np.column_stack((new_indices,
+                                      np.zeros_like(new_indices),
+                                      np.repeat(events[:, -1], n_new_events)))
         # downsample
         raw, events = raw.resample(sfreq=50, events=events, n_jobs='cuda')
         # clean up
@@ -70,11 +93,9 @@ for s in subjects:
         # epoch
         event_dict = dict(ps=5, kt=7)
         epochs = mne.Epochs(raw, events, event_dict, tmin=0, tmax=trial_dur,
-                            baseline=None, proj=True,  # reject=reject_dict,
+                            baseline=None, proj=True,
                             reject_by_annotation=False, preload=True)
         # save epochs
-        fname = f'{s}-{timepoint}_camp-pskt-epo.fif'
+        subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
+        fname = f'{s}-{timepoint}_camp-pskt{subdiv}-epo.fif'
         epochs.save(os.path.join(epo_dir, fname), fmt='double')
-        # PSD settings
-        psd_kwargs = dict(fmin=0, fmax=20, bandwidth=0.1, adaptive=False,
-                          n_jobs=n_jobs)
