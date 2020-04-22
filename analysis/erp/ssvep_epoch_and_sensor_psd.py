@@ -81,39 +81,3 @@ for s in subjects:
         # PSD settings
         psd_kwargs = dict(fmin=0, fmax=20, bandwidth=0.1, adaptive=False,
                           n_jobs=n_jobs)
-        # compute PSDs
-        if compute_psds:
-            psds, freqs = mne.time_frequency.psd_multitaper(epochs,
-                                                            **psd_kwargs)
-            fname = f"{s}-{timepoint}_camp-pskt-{psd_kwargs['bandwidth']}Hz.npz"  # noqa E501
-            np.savez(os.path.join(psd_dir, fname), psds=psds, freqs=freqs)
-        # plot
-        average = False
-        ave = 'average-' if average else ''
-        if plot_psds:
-            fig = epochs.plot_psd(average=average, **psd_kwargs)
-            fig.axes[0].set_xticks(range(0, 21, 2))
-            fig_name = f"{s}-{timepoint}-bw{psd_kwargs['bandwidth']}-{ave}PSKT.png"  # noqa E501
-            fig.savefig(os.path.join(fig_dir, fig_name))
-            plt.close(fig)
-        if plot_topomaps:
-            # make bands just big enough to get 1 freq bin
-            bin_spacing = np.diff(freqs)[0]
-            bin_width = np.array([0, bin_spacing]) - bin_spacing / 2
-            bands = list()
-            for freq in (2, 4, 6, 12, 16):
-                bin_freq = freqs[np.argmin(np.abs(freqs - freq))]
-                band = tuple(bin_width + bin_freq)
-                bands.append(band + (f'{freq} Hz',))
-            bands.append((7, 9, 'mystery bump\n(7-9 Hz)'))
-            # plot
-            fig, axs = plt.subplots(2, 6, figsize=(15, 5))
-            for row, ch_type in zip(axs, ('mag', 'grad')):
-                epochs.plot_psd_topomap(bands, bandwidth=0.1, ch_type=ch_type,
-                                        normalize=True, axes=row,
-                                        cmap='inferno')
-            fig.suptitle('Power-normalized field maps (0.1 Hz multitaper '
-                         'bandwidth)\ntop: mags; bottom: grads')
-            fig_name = f'{s}-{timepoint}-topomaps.png'
-            fig.savefig(os.path.join(fig_dir, fig_name))
-            plt.close(fig)

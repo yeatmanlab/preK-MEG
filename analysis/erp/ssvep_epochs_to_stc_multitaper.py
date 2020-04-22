@@ -3,8 +3,7 @@
 """
 @author: Daniel McCloy
 
-Extract SSVEP epochs, downsample, and save to disk. Optionally generate
-spectrum estimates and plot PSDs / scalp topographies for each subject.
+Load SSVEP epochs, compute multitaper PSD, apply inverse, & morph to FSAverage.
 """
 
 import os
@@ -17,13 +16,15 @@ from aux_functions import load_paths, load_params
 # flags
 mne.cuda.init_cuda()
 
+
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
 in_dir = os.path.join(results_dir, 'pskt', 'epochs')
 evk_dir = os.path.join(results_dir, 'pskt', 'evoked')
+psd_dir = os.path.join(results_dir, 'pskt', 'psd')
 stc_dir = os.path.join(results_dir, 'pskt', 'stc', 'subject-specific')
 morph_dir = os.path.join(results_dir, 'pskt', 'stc', 'morphed-to-fsaverage')
-for _dir in (evk_dir, stc_dir, morph_dir):
+for _dir in (evk_dir, stc_dir, morph_dir, psd_dir):
     os.makedirs(_dir, exist_ok=True)
 
 # # TODO local testing stuff
@@ -43,6 +44,7 @@ timepoints = ('pre', 'post')
 snr = 3.
 lambda2 = 1. / snr ** 2
 smoothing_steps = 10
+bandwidth = 0.2
 
 # for morph to fsaverage
 fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
@@ -53,24 +55,29 @@ fsaverage_vertices = [s['vertno'] for s in fsaverage_src]
 
 # loop over subjects
 for s in subjects:
-    already_morphed = False
+    has_morph = False
     # loop over timepoints
     for timepoint in timepoints:
-        # load epochs
-        fname = f'{s}-{timepoint}_camp-pskt-epo.fif'
-        fpath = os.path.join(in_dir, fname)
-        epochs = mne.read_epochs(fpath, proj=True)
-        # TODO separately for ps vs kt
+        stub = f'{s}-{timepoint}_camp-pskt'
+        # load epochs (TODO: separately for "ps" and "kt" trials)
+        fname = f'{stub}-epo.fif'
+        epochs = mne.read_epochs(os.path.join(in_dir, fname), proj=True)
+        # create & save evoked
         evoked = epochs.average()
-        fname = f'{s}-{timepoint}_camp-pskt-ave.fif'
+        fname = f'{stub}-ave.fif'
         evoked.save(os.path.join(evk_dir, fname))
         del epochs
         # do multitaper estimation
         sfreq = evoked.info['sfreq']
         mt_kwargs = dict(n_times=len(evoked.times), sfreq=sfreq,
-                         bandwidth=0.2, low_bias=True, adaptive=False)
+                         bandwidth=bandwidth, low_bias=True, adaptive=False)
         dpss, eigvals, adaptive = _compute_mt_params(**mt_kwargs)
         mt_spectra, freqs = _mt_spectra(evoked.data, dpss, sfreq)
+        # compute and save the sensor-space PSD
+        sensor_weights = np.sqrt(eigvals)[np.newaxis, :, np.newaxis]
+        sensor_psd = _psd_from_mt(mt_spectra, sensor_weights)
+        fname = f'{stub}-sensor_psd.npz'
+        np.savez(os.path.join(psd_dir, fname), psd=sensor_psd, freqs=freqs)
         # convert to fake epochs object
         info = mne.create_info(evoked.ch_names, sfreq)
         mt_epochs = mne.EpochsArray(np.swapaxes(mt_spectra, 0, 1), info)
@@ -97,19 +104,17 @@ for s in subjects:
         stc.tstep = np.diff(freqs[:2])
         assert np.all(stc.times == freqs)
         del psd
-        fname = f'{s}-{timepoint}_camp-pskt-multitaper'
+        fname = f'{stub}-multitaper'
         stc.save(os.path.join(stc_dir, fname))
         # compute morph for this subject
-        if not already_morphed:
+        if not has_morph:
             morph = mne.compute_source_morph(stc, subject_from=s.upper(),
                                              subject_to='fsaverage',
                                              subjects_dir=subjects_dir,
                                              spacing=fsaverage_vertices,
                                              smooth=smoothing_steps)
-            already_morphed = True
+            has_morph = True
         # morph and save
         morphed_stc = morph.apply(stc)
         fname = f'{s}FSAverage-{timepoint}_camp-pskt-multitaper'
-        fpath = os.path.join(morph_dir, f'{timepoint}_camp', s)
-        os.makedirs(fpath, exist_ok=True)
-        morphed_stc.save(os.path.join(fpath, fname))
+        morphed_stc.save(os.path.join(morph_dir, fname))
