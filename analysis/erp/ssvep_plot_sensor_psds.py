@@ -46,12 +46,12 @@ for s in subjects:
             fig.savefig(os.path.join(fig_dir, fname))
         # plot topomap
         if plot_topo:
-            bands = [(freq, f'{freq} Hz') for freq in (2, 4, 6, 12, 16)]
+            bands = [(freq, f'{freq} Hz') for freq in (2, 4, 6, 12)]
             fig, axs = plt.subplots(2, 5)
             for row, ch_type in zip(axs, ('mag', 'grad')):
                 epochs.plot_psd_topomap(bands, bandwidth=bandwidth,
                                         ch_type=ch_type, vlim='joint',
-                                        axes=axs)
+                                        axes=row)
             fig.suptitle(f'Power-normalized field maps ({bandwidth} Hz '
                          'multitaper bandwidth)\ntop: mags; bottom: grads')
             fname = f'{stub}-psd_topomap.pdf'
