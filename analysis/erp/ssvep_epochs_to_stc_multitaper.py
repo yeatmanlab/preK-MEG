@@ -27,15 +27,6 @@ morph_dir = os.path.join(results_dir, 'pskt', 'stc', 'morphed-to-fsaverage')
 for _dir in (evk_dir, stc_dir, morph_dir, psd_dir):
     os.makedirs(_dir, exist_ok=True)
 
-# # TODO local testing stuff
-# in_dir = '/home/drmccloy/Desktop/prek/ssvep_tmp/epochs'
-# evk_dir = '/home/drmccloy/Desktop/prek/ssvep_tmp/evoked'
-# stc_dir = '/home/drmccloy/Desktop/prek/ssvep_tmp/'
-# s = 'prek_1964'
-# timepoint = 'pre'
-# subjects_dir = mne.get_config('SUBJECTS_DIR')
-# inv_path = '/home/drmccloy/Desktop/prek/ssvep_tmp/inverse/prek_1964-80-sss-meg-inv.fif'
-
 # load params
 _, _, subjects = load_params()
 

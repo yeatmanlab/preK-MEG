@@ -37,7 +37,7 @@ for timepoint in timepoints:
         stc = mne.read_source_estimate(os.path.join(in_dir, fname))
         # plot it
         brain = stc.plot(subject='fsaverage', **brain_plot_kwargs)
-        for freq in (2, 4, 6, 12, 16):
+        for freq in (2, 4, 6, 12):
             brain.set_time(freq)
             fname = f'{s}-{timepoint}_camp-pskt-multitaper-{freq:02}_Hz.png'
             brain.save_image(os.path.join(fig_dir, fname))

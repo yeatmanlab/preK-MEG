@@ -3,13 +3,10 @@
 """
 @author: Daniel McCloy
 
-Extract SSVEP epochs, downsample, and save to disk. Optionally generate
-spectrum estimates and plot PSDs / scalp topographies for each subject.
+Extract SSVEP epochs, downsample, and save to disk.
 """
 
 import os
-import numpy as np
-import matplotlib.pyplot as plt
 import mne
 from aux_functions import load_paths, load_params
 
