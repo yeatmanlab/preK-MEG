@@ -9,7 +9,7 @@ Extract SSVEP epochs, downsample, and save to disk.
 import os
 import numpy as np
 import mne
-from aux_functions import load_paths, load_params
+from aux_functions import load_paths, load_params, load_psd_params
 
 mne.cuda.init_cuda()
 
@@ -28,14 +28,14 @@ for _dir in (epo_dir, fig_dir, psd_dir):
 
 # load params
 _, _, subjects = load_params()
+psd_params = load_psd_params()
 
 # config other
 timepoints = ('pre', 'post')
 runs = (1, 2)
 trial_dur = 20  # seconds
-# subdivide_epochs should be False or an integer number of seconds that evenly
-# divides into trial_dur
-subdivide_epochs = 5
+subdivide_epochs = psd_params['epoch_dur']
+subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 
 # loop over subjects
 for s in subjects:
@@ -91,6 +91,5 @@ for s in subjects:
                             baseline=None, proj=True,
                             reject_by_annotation=False, preload=True)
         # save epochs
-        subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
         fname = f'{s}-{timepoint}_camp-pskt{subdiv}-epo.fif'
         epochs.save(os.path.join(epo_dir, fname), fmt='double')

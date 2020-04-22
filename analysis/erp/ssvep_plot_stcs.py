@@ -9,7 +9,7 @@ Plot frequency-domain STCs.
 import os
 from mayavi import mlab
 import mne
-from aux_functions import load_paths, load_params
+from aux_functions import load_paths, load_params, load_psd_params
 
 # flags
 mlab.options.offscreen = True
@@ -24,16 +24,19 @@ os.makedirs(fig_dir, exist_ok=True)
 
 # load params
 brain_plot_kwargs, movie_kwargs, subjects = load_params()
+psd_params = load_psd_params()
 
 # config other
 timepoints = ('pre', 'post')
+subdivide_epochs = psd_params['epoch_dur']
+subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 
 # loop over timepoints
 for timepoint in timepoints:
     # loop over subjects
     for s in subjects:
         # load this subject's STC
-        fname = f'{s}FSAverage-{timepoint}_camp-pskt-multitaper-stc.h5'
+        fname = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-multitaper-stc.h5'
         stc = mne.read_source_estimate(os.path.join(in_dir, fname))
         # plot it
         brain = stc.plot(subject='fsaverage', **brain_plot_kwargs)

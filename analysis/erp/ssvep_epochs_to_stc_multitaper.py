@@ -11,7 +11,7 @@ import numpy as np
 import mne
 from mne.time_frequency.multitaper import (_compute_mt_params, _mt_spectra,
                                            _psd_from_mt)
-from aux_functions import load_paths, load_params
+from aux_functions import load_paths, load_params, load_psd_params
 
 # flags
 mne.cuda.init_cuda()
@@ -29,13 +29,16 @@ for _dir in (evk_dir, stc_dir, morph_dir, psd_dir):
 
 # load params
 _, _, subjects = load_params()
+psd_params = load_psd_params()
 
 # config other
 timepoints = ('pre', 'post')
 snr = 3.
 lambda2 = 1. / snr ** 2
 smoothing_steps = 10
-bandwidth = 0.2
+bandwidth = psd_params['bandwidth']
+subdivide_epochs = psd_params['epoch_dur']
+subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 
 # for morph to fsaverage
 fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
@@ -49,7 +52,7 @@ for s in subjects:
     has_morph = False
     # loop over timepoints
     for timepoint in timepoints:
-        stub = f'{s}-{timepoint}_camp-pskt'
+        stub = f'{s}-{timepoint}_camp-pskt{subdiv}'
         # load epochs (TODO: separately for "ps" and "kt" trials)
         fname = f'{stub}-epo.fif'
         epochs = mne.read_epochs(os.path.join(in_dir, fname), proj=True)
@@ -107,5 +110,5 @@ for s in subjects:
             has_morph = True
         # morph and save
         morphed_stc = morph.apply(stc)
-        fname = f'{s}FSAverage-{timepoint}_camp-pskt-multitaper'
+        fname = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-multitaper'
         morphed_stc.save(os.path.join(morph_dir, fname))

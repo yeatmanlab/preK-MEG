@@ -24,6 +24,13 @@ def load_params(skip=True):
     return brain_plot_kwargs, movie_kwargs, subjects
 
 
+def load_psd_params():
+    """Load experiment parameters from YAML files."""
+    with open(os.path.join(paramdir, 'psd_params.yaml'), 'r') as f:
+        psd_params = yamload(f)
+    return psd_params
+
+
 def load_cohorts():
     """load intervention and knowledge groups."""
     with open(os.path.join(paramdir, 'intervention_cohorts.yaml'), 'r') as f:
