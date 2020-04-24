@@ -130,7 +130,7 @@ for subj in subjects:
                 # phase histogram
                 ax = plt.subplot(n_freqs, n_columns, n_columns * ix + 4,
                                  polar=True)
-                vals, ** = ax.hist(these_phases, bins=72)
+                vals, _, _ = ax.hist(these_phases, bins=72)
                 ax.set(ylim=(0, vals.max()))
                 if not ix:
                     ax.set(title='phase histogram (5° bins)\n')
@@ -138,8 +138,8 @@ for subj in subjects:
                 # weighted phase histogram
                 ax = plt.subplot(n_freqs, n_columns, n_columns * ix + 5,
                                  polar=True)
-                vals, ** = ax.hist(these_phases, bins=72,
-                                   weights=these_magnitudes)
+                vals, _, _ = ax.hist(these_phases, bins=72,
+                                     weights=these_magnitudes)
                 ax.set(ylim=(0, vals.max()))
                 if not ix:
                     ax.set(title='weighted phase histogram (5° bins)\n')
