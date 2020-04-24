@@ -21,10 +21,7 @@ plot_topomaps = True
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
 epo_dir = os.path.join(results_dir, 'pskt', 'epochs')
-fig_dir = os.path.join(results_dir, 'pskt', 'spectra', 'figs')
-psd_dir = os.path.join(results_dir, 'pskt', 'spectra', 'psds')
-for _dir in (epo_dir, fig_dir, psd_dir):
-    os.makedirs(_dir, exist_ok=True)
+os.makedirs(epo_dir, exist_ok=True)
 
 # load params
 _, _, subjects = load_params()
