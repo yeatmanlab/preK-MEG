@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import mne
 from mne.time_frequency.multitaper import (_compute_mt_params, _mt_spectra,
                                            _psd_from_mt)
-from aux_functions import load_paths, load_params, load_psd_params
+from aux_functions import load_paths, load_params
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
@@ -25,12 +25,9 @@ os.makedirs(fig_dir, exist_ok=True)
 
 # load params
 _, _, subjects = load_params()
-psd_params = load_psd_params()
 
 # config other
 timepoints = ('pre', 'post')
-subdivide_epochs = psd_params['epoch_dur']
-subdiv = ''  # f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 
 
 # loop over subjects
@@ -61,8 +58,9 @@ for subj in subjects:
 
             # do multitaper estimation
             sfreq = evoked.info['sfreq']
-            mt_kwargs = dict(n_times=n_times, sfreq=sfreq, bandwidth=bandwidth,
-                             low_bias=True, adaptive=False)
+            mt_kwargs = dict(n_times=new_n_times, sfreq=sfreq,
+                             bandwidth=bandwidth, low_bias=True,
+                             adaptive=False)
             dpss, eigvals, adaptive = _compute_mt_params(**mt_kwargs)
             assert dpss.shape[0] == 1  # otherwise plotting will fail
             n_fft = new_n_times  # _mt_spectra defaults to wrong axis
@@ -133,7 +131,7 @@ for subj in subjects:
                 ax = plt.subplot(n_freqs, n_columns, n_columns * ix + 4,
                                  polar=True)
                 ax.hist(these_phases, bins=72)
-                ax.set(ylim=(0, 20))
+                ax.set(ylim=(0, 20), yticks=range(0, 21, 5))
                 if not ix:
                     ax.set(title='phase histogram (5° bins)\n')
 
@@ -141,7 +139,7 @@ for subj in subjects:
                 ax = plt.subplot(n_freqs, n_columns, n_columns * ix + 5,
                                  polar=True)
                 ax.hist(these_phases, bins=72, weights=these_magnitudes)
-                ax.set(ylim=(0, 7.5e-11))
+                ax.set(ylim=(0, 7.5e-11), yticks=np.linspace(1e-11, 7e-11, 4))
                 if not ix:
                     ax.set(title='weighted phase histogram (5° bins)\n')
 
