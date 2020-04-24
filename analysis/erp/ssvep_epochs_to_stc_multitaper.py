@@ -81,19 +81,19 @@ for s in subjects:
                                 'erp', s, 'inverse', f'{s}-80-sss-meg-inv.fif')
         inverse = mne.minimum_norm.read_inverse_operator(inv_path)
         stc = mne.minimum_norm.apply_inverse_epochs(
-            mt_epochs, inverse, lambda2, pick_ori='vector', nave=evoked.nave)
+            mt_epochs, inverse, lambda2, pick_ori='normal', nave=evoked.nave)
         del evoked, mt_epochs
         # extract the data from STCs
         data = np.array([s.data for s in stc])
-        # data.shape will be (n_tapers, n_vertices, n_xyz_components, n_freqs)
+        # data.shape will be (n_taper, n_vertices, [n_xyz_component,] n_freq)
         # but we need the second-to-last axis to be the tapers axis, otherwise
         # _psd_from_mt() won't work right
         data = np.moveaxis(data, 0, -2)
-        weights = np.sqrt(eigvals)[np.newaxis, np.newaxis, :, np.newaxis]
-        # use one STC to hold the aggregated data, delete rest to save memory
-        stc = stc[0]
+        weights = np.sqrt(eigvals)[np.newaxis, :, np.newaxis]
         # combine the multitaper spectral estimates
         psd = _psd_from_mt(data, weights)
+        # use one STC to hold the aggregated data, delete rest to save memory
+        stc = stc[0]
         stc.data = psd
         stc.tstep = np.diff(freqs[:2])
         assert np.all(stc.times == freqs)
