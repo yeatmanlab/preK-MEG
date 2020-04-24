@@ -42,6 +42,6 @@ for timepoint in timepoints:
         brain = stc.plot(subject='fsaverage', **brain_plot_kwargs)
         for freq in (2, 4, 6, 12):
             brain.set_time(freq)
-            fname = f'{s}-{timepoint}_camp-pskt-multitaper-{freq:02}_Hz.png'
+            fname = f'{s}-{timepoint}_camp-pskt{subdiv}-multitaper-{freq:02}_Hz.png'  # noqa E501
             brain.save_image(os.path.join(fig_dir, fname))
         del brain
