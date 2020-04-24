@@ -94,14 +94,14 @@ for subj in subjects:
                 ax = plt.subplot(n_freqs, n_columns, n_columns * ix + 1)
                 ax.plot(freqs, sensor_psd[best_sensor].T, linewidth=1)
                 ax.set(xticks=np.arange(0, 25, 2), xlabel='freq (Hz)',
-                       ylabel=f'{freq} Hz\nPSD', ylim=(0, 1e-21),
+                       ylabel=f'{freq} Hz\nPSD',
                        title=f'best {freq} Hz power:\n{best_sensor_name}')
 
                 # normalized PSD of best sensor
                 ax = plt.subplot(n_freqs, n_columns, n_columns * ix + 2)
                 ax.plot(freqs, snr_psd[best_sensor].T, linewidth=1)
                 ax.set(xticks=np.arange(0, 25, 2), xlabel='freq (Hz)',
-                       ylabel=f'{freq} Hz\n"SNR" (a.u.)', ylim=(0, 40))
+                       ylabel=f'{freq} Hz\n"SNR" (a.u.)')
                 title = f'best {freq} Hz SNR: {best_sensor_name}'
                 if not ix:
                     title = (f'PSD divided by sum of 2 bins on each side\n'
@@ -122,7 +122,7 @@ for subj in subjects:
                 u = u[:, 0] * s[0]
                 u = u[0] + 1j * u[1]
                 ax.plot([0, np.angle(u)], [0, np.abs(u)], color='k', zorder=2)
-                ax.text(0, 0, f'{gof:0.1}%')
+                ax.text(0, 0, f'{gof:0.1}%', style='plain')
                 # title
                 if not ix:
                     ax.set(title='phase vs magnitude\n')
@@ -130,16 +130,17 @@ for subj in subjects:
                 # phase histogram
                 ax = plt.subplot(n_freqs, n_columns, n_columns * ix + 4,
                                  polar=True)
-                ax.hist(these_phases, bins=72)
-                ax.set(ylim=(0, 20), yticks=range(0, 21, 5))
+                vals, ** = ax.hist(these_phases, bins=72)
+                ax.set(ylim=(0, vals.max()))
                 if not ix:
                     ax.set(title='phase histogram (5° bins)\n')
 
                 # weighted phase histogram
                 ax = plt.subplot(n_freqs, n_columns, n_columns * ix + 5,
                                  polar=True)
-                ax.hist(these_phases, bins=72, weights=these_magnitudes)
-                ax.set(ylim=(0, 7.5e-11), yticks=np.linspace(1e-11, 7e-11, 4))
+                vals, ** = ax.hist(these_phases, bins=72,
+                                   weights=these_magnitudes)
+                ax.set(ylim=(0, vals.max()))
                 if not ix:
                     ax.set(title='weighted phase histogram (5° bins)\n')
 
