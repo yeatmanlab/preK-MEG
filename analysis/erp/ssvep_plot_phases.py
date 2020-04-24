@@ -81,7 +81,7 @@ for subj in subjects:
             these_freqs = (2, 3, 4, 5, 6, 11, 12)
             n_freqs = len(these_freqs)
             n_columns = 5
-            fig = plt.figure(figsize=(2.5 * n_columns, 4 * n_freqs))
+            fig = plt.figure(figsize=(4 * n_columns, 4 * n_freqs))
             for ix, freq in enumerate(these_freqs):
                 # focus on the freq bin we care about
                 bin_idx = np.argmin(np.abs(freqs - freq))
