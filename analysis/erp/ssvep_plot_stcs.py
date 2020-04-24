@@ -39,7 +39,7 @@ for timepoint in timepoints:
         fname = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-multitaper-stc.h5'
         stc = mne.read_source_estimate(os.path.join(in_dir, fname))
         # plot it
-        brain = stc.plot(subject='fsaverage', **brain_plot_kwargs)
+        brain = stc.magnitude().plot(subject='fsaverage', **brain_plot_kwargs)
         for freq in (2, 4, 6, 12):
             brain.set_time(freq)
             fname = f'{s}-{timepoint}_camp-pskt{subdiv}-multitaper-{freq:02}_Hz.png'  # noqa E501
