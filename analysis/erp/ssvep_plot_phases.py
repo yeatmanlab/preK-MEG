@@ -143,9 +143,9 @@ for subj in subjects:
                 if not ix:
                     ax.set(title='weighted phase histogram (5° bins)\n')
 
-                fig.suptitle(subj, size=16)
-                fig.tight_layout()
-                fig.subplots_adjust(top=0.95, left=0.05, hspace=0.5)
-                fname = f'{stub}-{20 // div}_sec-phases.pdf'
-                fig.savefig(os.path.join(fig_dir, fname))
-                plt.close('all')
+            fig.suptitle(subj, size=16)
+            fig.tight_layout()
+            fig.subplots_adjust(top=0.95, left=0.05, hspace=0.5)
+            fname = f'{stub}-{20 // div}_sec-phases.pdf'
+            fig.savefig(os.path.join(fig_dir, fname))
+            plt.close('all')
