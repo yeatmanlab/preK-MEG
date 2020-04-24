@@ -122,7 +122,7 @@ for subj in subjects:
                 u = u[:, 0] * s[0]
                 u = u[0] + 1j * u[1]
                 ax.plot([0, np.angle(u)], [0, np.abs(u)], color='k', zorder=2)
-                ax.text(0, 0, f'{gof:0.1}%', style='plain')
+                ax.text(0, 0, f'{round(gof, 1)}%')
                 # title
                 if not ix:
                     ax.set(title='phase vs magnitude\n')
