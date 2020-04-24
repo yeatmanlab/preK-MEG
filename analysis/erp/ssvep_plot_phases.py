@@ -34,11 +34,11 @@ subdiv = ''  # f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 
 
 # loop over subjects
-for s in subjects:
+for subj in subjects:
     # loop over timepoints
     for timepoint in timepoints:
         # load epochs
-        stub = f'{s}-{timepoint}_camp-pskt'
+        stub = f'{subj}-{timepoint}_camp-pskt'
         epochs = mne.read_epochs(os.path.join(in_dir, f'{stub}-epo.fif'),
                                  proj=True)
         # cut off last sample
@@ -145,7 +145,7 @@ for s in subjects:
                 if not ix:
                     ax.set(title='weighted phase histogram (5° bins)\n')
 
-                fig.suptitle(s, size=16)
+                fig.suptitle(subj, size=16)
                 fig.tight_layout()
                 fig.subplots_adjust(top=0.95, left=0.05, hspace=0.5)
                 fname = f'{stub}-{20 // div}_sec-phases.pdf'
