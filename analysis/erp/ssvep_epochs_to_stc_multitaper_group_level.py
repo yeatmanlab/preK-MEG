@@ -61,6 +61,7 @@ for timepoint in timepoints:
             continue
 
         all_spectra = list()
+        all_eigvals = None
         # loop over group members
         for subj in members:
             fname = f'{subj}-{timepoint}_camp-pskt{subdiv}-ave.fif'
@@ -71,6 +72,12 @@ for timepoint in timepoints:
                              bandwidth=bandwidth, low_bias=True,
                              adaptive=False)
             dpss, eigvals, adaptive = _compute_mt_params(**mt_kwargs)
+            # eigvals should only depend on taper params, so it should be
+            # the same for all subjects. Let's make sure:
+            if all_eigvals is None:
+                all_eigvals = eigvals
+            else:
+                assert all_eigvals == eigvals
             mt_spectra, freqs = _mt_spectra(evoked.data, dpss, sfreq)
             # convert to fake epochs object
             info = mne.create_info(evoked.ch_names, sfreq)
@@ -82,7 +89,7 @@ for timepoint in timepoints:
                                     f'{subj}-80-sss-meg-inv.fif')
             inverse = mne.minimum_norm.read_inverse_operator(inv_path)
             stc = mne.minimum_norm.apply_inverse_epochs(
-                mt_epochs, inverse, lambda2, pick_ori='vector',
+                mt_epochs, inverse, lambda2, pick_ori='normal',
                 nave=evoked.nave)
             del evoked, mt_epochs
             # morph to fsaverage
@@ -96,23 +103,27 @@ for timepoint in timepoints:
             # extract the data from the STC
             all_spectra.append(morphed_stc.data)
         # all_spectra.shape will be
-        # (n_subj, n_taper, n_vert, n_xyz_components, n_freq)...
+        # (n_subj, n_taper, n_vert, [n_xyz_components,] n_freq)...
         all_spectra = np.array(all_spectra)
         # ...but we need the second-to-last axis to be the tapers axis,
         # otherwise _psd_from_mt() won't work right
         all_spectra = np.moveaxis(all_spectra, 1, -2)
-        # now it should be (n_subj, n_vert, n_xyz_components, n_taper, n_freq)
+        # now it should be (n_subj, n_vert, [n_xyz_comp,] n_taper, n_freq)
 
-        # since we're in fsaverage space, we can average across subjects...
-        all_spectra = all_spectra.mean(axis=0)
-        # ...and combine the multitaper spectral estimates:
-        # TODO: this uses eigvals from final subject! all others are lost...
-        weights = np.sqrt(eigvals)[np.newaxis, np.newaxis, :, np.newaxis]
-        psd = _psd_from_mt(all_spectra, weights)
-        # shape is now (n_vert, n_xyz_components, n_freq) which is suitable for
-        # a VectorSourceEstimate, so we'll re-use the last one from our loop
-        morphed_stc.data = psd
-        morphed_stc.tstep = np.diff(freqs[:2])
-        assert np.all(morphed_stc.times == freqs)
-        fname = f'{group}-{timepoint}_camp-pskt{subdiv}-multitaper'
-        morphed_stc.save(os.path.join(stc_dir, fname))
+        # baseline: average of magnitudes (no phase cancellation)
+        weights = np.sqrt(all_eigvals)[np.newaxis, np.newaxis, :, np.newaxis]
+        baseline_psd = _psd_from_mt(all_spectra, weights).mean(axis=0)
+
+        # noise reduction (?): magnitude of the average
+        nr_psd = _psd_from_mt(all_spectra.mean(axis=0), weights)
+
+        # shape is now (n_vert, [n_xyz_components,] n_freq) which is suitable
+        # for a [Vector]SourceEstimate, so we'll re-use the last one from our
+        # loop:
+        for kind, psd in dict(baseline=baseline_psd,
+                              phase_cancelled=nr_psd).items():
+            morphed_stc.data = psd
+            morphed_stc.tstep = np.diff(freqs[:2])
+            assert np.all(morphed_stc.times == freqs)
+            fname = f'{group}-{timepoint}_camp-pskt{subdiv}-multitaper-{kind}'
+            morphed_stc.save(os.path.join(stc_dir, fname))
