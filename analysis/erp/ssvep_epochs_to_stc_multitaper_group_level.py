@@ -66,6 +66,8 @@ for timepoint in timepoints:
         for subj in members:
             fname = f'{subj}-{timepoint}_camp-pskt{subdiv}-ave.fif'
             evoked = mne.read_evokeds(os.path.join(in_dir, fname))
+            assert len(evoked) == 1
+            evoked = evoked[0]
             sfreq = evoked.info['sfreq']
             # do multitaper estimation
             mt_kwargs = dict(n_times=len(evoked.times), sfreq=sfreq,
