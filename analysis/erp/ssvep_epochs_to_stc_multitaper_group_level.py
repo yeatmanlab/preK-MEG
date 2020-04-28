@@ -95,12 +95,13 @@ for timepoint in timepoints:
                 nave=evoked.nave)
             del evoked, mt_epochs
             # morph to fsaverage
-            morph = mne.compute_source_morph(stc, subject_from=subj.upper(),
+            # stc is a list (from tapers) so create morph with stc[0]
+            morph = mne.compute_source_morph(stc[0], subject_from=subj.upper(),
                                              subject_to='fsaverage',
                                              subjects_dir=subjects_dir,
                                              spacing=fsaverage_vertices,
                                              smooth=smoothing_steps)
-            morphed_stc = morph.apply(stc)
+            morphed_stcs = [morph.apply(s) for s in stc]
             del stc
             # extract the data from the STC
             all_spectra.append(morphed_stc.data)
