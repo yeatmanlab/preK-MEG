@@ -129,7 +129,7 @@ for timepoint in timepoints:
         baseline_psd = _psd_from_mt(all_spectra, weights).mean(axis=0)
 
         # noise reduction (?): magnitude of the average
-        nr_psd = _psd_from_mt(all_spectra.mean(axis=0), weights)
+        nr_psd = _psd_from_mt(all_spectra.mean(axis=0), weights.mean(axis=0))
 
         # shape is now (n_vert, [n_xyz_components,] n_freq) which is suitable
         # for a [Vector]SourceEstimate, so we'll re-use the last one from our
