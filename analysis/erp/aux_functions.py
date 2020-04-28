@@ -325,3 +325,23 @@ def plot_label_and_timeseries(label, img_path, df, method, groups, timepoints,
     sns.despine()
     fig.savefig(img_path)
     plt.close(fig)
+
+
+def subdivide_epochs(epochs, divisions):
+    """Reshape epochs data to get different numbers of epochs."""
+    from mne import EpochsArray
+    if epochs.times.size != 1000:
+        # cut off last sample
+        epochs.crop(None, epochs.times[-2])
+        assert epochs.times.size == 1000
+    # reshape epochs data to get different numbers of epochs
+    data = epochs.get_data()
+    n_epochs, n_channels, n_times = data.shape
+    assert n_times % divisions == 0
+    new_n_times = n_times // divisions
+    new_shape = (n_epochs, n_channels, divisions, new_n_times)
+    data = np.reshape(data, new_shape)
+    data = data.transpose(0, 2, 1, 3)
+    data = np.reshape(data, (divisions * n_epochs, n_channels, new_n_times))
+    recut_epochs = EpochsArray(data, epochs.info)
+    return recut_epochs
