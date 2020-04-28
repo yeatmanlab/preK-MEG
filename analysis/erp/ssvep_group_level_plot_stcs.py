@@ -54,13 +54,13 @@ for timepoint in timepoints:
         stcs = dict()
         for kind in kinds:
             fname = f'{group}-{timepoint}_camp-pskt{subdiv}-multitaper-{kind}'
-            stcs[kind] = mne.read_source_estimate(os.path.join(in_dir, fname))
+            stcs[fname] = mne.read_source_estimate(os.path.join(in_dir, fname))
 
-        data = np.array([stcs[kind].data for kind in stcs])
+        data = np.array([stc.data for stc in stcs.values()])
         lims = tuple(np.percentile(data, (0.95, 0.99, 0.999)))
         clim = dict(kind='value', lims=lims)
         # plot it
-        for kind, stc in stcs.items():
+        for fname, stc in stcs.items():
             brain = stc.plot(subject='fsaverage', clim=clim,
                              **brain_plot_kwargs)
             for freq in (2, 4, 6, 12):
