@@ -7,6 +7,7 @@ Plot frequency-domain STCs.
 """
 
 import os
+import numpy as np
 from mayavi import mlab
 import mne
 from aux_functions import (load_paths, load_params, load_psd_params,
@@ -49,12 +50,19 @@ for timepoint in timepoints:
         if group.endswith('Intervention') and timepoint == 'pre':
             continue
 
+        # preload both STCs so we are assured of the same colormap
+        stcs = dict()
         for kind in kinds:
-            # load group-average STCs
             fname = f'{group}-{timepoint}_camp-pskt{subdiv}-multitaper-{kind}'
-            stc = mne.read_source_estimate(os.path.join(in_dir, fname))
-            # plot it
-            brain = stc.plot(subject='fsaverage', **brain_plot_kwargs)
+            stcs[kind] = mne.read_source_estimate(os.path.join(in_dir, fname))
+
+        data = np.array([s.data for s in stcs])
+        lims = tuple(np.percentile(data, 0.95, 0.99, 0.999))
+        clim = dict(kind='value', lims=lims)
+        # plot it
+        for kind, stc in stcs.items():
+            brain = stc.plot(subject='fsaverage', clim=clim,
+                             **brain_plot_kwargs)
             for freq in (2, 4, 6, 12):
                 brain.set_time(freq)
                 fpath = os.path.join(fig_dir, f'{fname}-{freq:02}_Hz.png')
