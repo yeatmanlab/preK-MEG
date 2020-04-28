@@ -57,7 +57,7 @@ for timepoint in timepoints:
             stcs[kind] = mne.read_source_estimate(os.path.join(in_dir, fname))
 
         data = np.array([stcs[kind].data for kind in stcs])
-        lims = tuple(np.percentile(data, 0.95, 0.99, 0.999))
+        lims = tuple(np.percentile(data, (0.95, 0.99, 0.999)))
         clim = dict(kind='value', lims=lims)
         # plot it
         for kind, stc in stcs.items():
