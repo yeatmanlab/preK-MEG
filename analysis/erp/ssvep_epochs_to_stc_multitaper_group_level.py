@@ -9,6 +9,7 @@ aggregate across subjs, & compute PSD.
 
 import os
 import numpy as np
+import matplotlib.pyplot as plt
 import mne
 from mne.time_frequency.multitaper import (_compute_mt_params, _mt_spectra,
                                            _psd_from_mt)
@@ -23,7 +24,9 @@ mne.cuda.init_cuda()
 data_root, subjects_dir, results_dir = load_paths()
 in_dir = os.path.join(results_dir, 'pskt', 'epochs')
 stc_dir = os.path.join(results_dir, 'pskt', 'group-level', 'stc')
-os.makedirs(stc_dir, exist_ok=True)
+fig_dir = os.path.join(results_dir, 'pskt', 'group-level', 'fig', 'phase')
+for _dir in (stc_dir, fig_dir):
+    os.makedirs(_dir, exist_ok=True)
 
 # load params
 _, _, subjects = load_params()
@@ -38,8 +41,8 @@ timepoints = ('pre', 'post')
 snr = 3.
 lambda2 = 1. / snr ** 2
 smoothing_steps = 10
-bandwidth = psd_params['bandwidth']
 trial_dur = 20
+bandwidth = psd_params['bandwidth']
 divisions = trial_dur // psd_params['epoch_dur']
 subdiv = f"-{psd_params['epoch_dur']}_sec" if divisions > 1 else ''
 
@@ -57,9 +60,6 @@ for timepoint in timepoints:
         # only do pretest knowledge comparison for pre-camp timepoint
         if group.endswith('Knowledge') and timepoint == 'post':
             continue
-        # only do intervention cohort comparison for post-camp timepoint
-        if group.endswith('Intervention') and timepoint == 'pre':
-            continue
 
         all_spectra = list()
         all_eigvals = None
@@ -71,8 +71,6 @@ for timepoint in timepoints:
                 epochs = subdivide_epochs(epochs, divisions)
             evoked = epochs.average()
             assert evoked.nave == 12 * divisions
-            # assert len(evoked) == 1
-            # evoked = evoked[0]
             sfreq = evoked.info['sfreq']
             del epochs
             # do multitaper estimation
@@ -141,3 +139,16 @@ for timepoint in timepoints:
             assert np.all(morphed_stc.times == freqs)
             fname = f'{group}-{timepoint}_camp-pskt{subdiv}-multitaper-{kind}'
             morphed_stc.save(os.path.join(stc_dir, fname))
+            # spin off a phase plot
+            if kind == 'phase_cancelled':
+                vert, time = morphed_stc.get_peak(
+                    'lh', tmin=5.9, tmax=6.1, mode='pos', vert_as_index=True,
+                    time_as_index=True)
+                # these_spectra will be n_subj × n_taper
+                these_spectra = all_spectra[:, vert, ..., time]
+                magnitudes = np.abs(these_spectra)
+                phases = np.angle(these_spectra)
+                fig, ax = plt.subplots(subplot_kw=dict(polar=True))
+                ax.plot(phases, magnitudes,  '.', alpha=0.5)
+                fname = f'{fname}-phases.png'
+                fig.savefig(os.path.join(fig_dir, fname))

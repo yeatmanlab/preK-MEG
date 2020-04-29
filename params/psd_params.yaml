@@ -1,4 +1,4 @@
 bandwidth: 0.2
 # epoch_dur should be False or an integer number of seconds that evenly
 # divides into trial_dur (which is 20)
-epoch_dur: 5
+epoch_dur: 4

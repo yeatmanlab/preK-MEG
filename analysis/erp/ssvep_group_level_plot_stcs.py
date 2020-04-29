@@ -46,9 +46,6 @@ for timepoint in timepoints:
         # only do pretest knowledge comparison for pre-camp timepoint
         if group.endswith('Knowledge') and timepoint == 'post':
             continue
-        # only do intervention cohort comparison for post-camp timepoint
-        if group.endswith('Intervention') and timepoint == 'pre':
-            continue
 
         # preload both STCs so we are assured of the same colormap
         stcs = dict()
