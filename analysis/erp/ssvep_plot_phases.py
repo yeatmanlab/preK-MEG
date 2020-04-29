@@ -4,8 +4,6 @@
 @author: Daniel McCloy
 
 Load SSVEP epochs and plot PSDs, phases, etc.
-
-data at https://dan.mccloy.info/data/prek_1964-pre_camp-pskt-epo.fif
 """
 
 import os
@@ -15,7 +13,7 @@ import matplotlib.pyplot as plt
 import mne
 from mne.time_frequency.multitaper import (_compute_mt_params, _mt_spectra,
                                            _psd_from_mt)
-from aux_functions import load_paths, load_params
+from aux_functions import load_paths, load_params, subdivide_epochs
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
@@ -38,21 +36,23 @@ for subj in subjects:
         stub = f'{subj}-{timepoint}_camp-pskt'
         epochs = mne.read_epochs(os.path.join(in_dir, f'{stub}-epo.fif'),
                                  proj=True)
-        # cut off last sample
-        epochs.crop(None, epochs.times[-2])
-        assert epochs.times.size == 1000
+        # # cut off last sample
+        # epochs.crop(None, epochs.times[-2])
+        # assert epochs.times.size == 1000
 
         for div, bandwidth in zip((1, 2, 4, 5, 10), (0.1, 0.1, 0.2, 0.5, 1.)):
-            # reshape epochs data to get different numbers of epochs
-            data = epochs.get_data()
-            n_epochs, n_channels, n_times = data.shape
-            assert n_times % div == 0
-            new_n_times = n_times // div
-            new_shape = (n_epochs, n_channels, div, new_n_times)
-            data = np.reshape(data, new_shape)
-            data = data.transpose(0, 2, 1, 3)
-            data = np.reshape(data, (div * n_epochs, n_channels, new_n_times))
-            recut_epochs = mne.EpochsArray(data, epochs.info)
+            recut_epochs = subdivide_epochs(epochs, div)
+            # # reshape epochs data to get different numbers of epochs
+            # data = epochs.get_data()
+            # n_epochs, n_channels, n_times = data.shape
+            # assert n_times % div == 0
+            # new_n_times = n_times // div
+            # new_shape = (n_epochs, n_channels, div, new_n_times)
+            # data = np.reshape(data, new_shape)
+            # data = data.transpose(0, 2, 1, 3)
+            # data = np.reshape(data, (div * n_epochs, n_channels, new_n_times))
+            # recut_epochs = mne.EpochsArray(data, epochs.info)
+            new_n_times = recut_epochs.times.size
             evoked = recut_epochs.average()
             assert len(evoked.times) == new_n_times
 
