@@ -9,7 +9,7 @@ Extract SSVEP epochs, downsample, and save to disk.
 import os
 import numpy as np
 import mne
-from aux_functions import load_paths, load_params, load_psd_params
+from aux_functions import load_paths, load_params
 
 mne.cuda.init_cuda()
 
@@ -25,13 +25,12 @@ os.makedirs(epo_dir, exist_ok=True)
 
 # load params
 _, _, subjects = load_params()
-psd_params = load_psd_params()
 
 # config other
 timepoints = ('pre', 'post')
 runs = (1, 2)
 trial_dur = 20  # seconds
-subdivide_epochs = psd_params['epoch_dur']
+subdivide_epochs = 5
 subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 
 # loop over subjects
@@ -68,13 +67,8 @@ for s in subjects:
             assert trial_dur % subdivide_epochs == 0
             n_new_events = trial_dur // subdivide_epochs
             t_offsets = np.arange(n_new_events, dtype=float) * subdivide_epochs
-            initial_times = (events[:, 0] - raw.first_samp) / raw.info['sfreq']
-            new_times = np.ravel(initial_times[:, np.newaxis] +
-                                 t_offsets[np.newaxis, :])
-            new_indices = (raw.time_as_index(new_times, use_rounding=True) +
-                           raw.first_samp)
-            # make sure the original event sample numbers didn't change
-            assert len(set(events[:, 0]) - set(new_indices)) == 0
+            samp_offsets = np.round(t_offsets * raw.info['sfreq']).astype(int)
+            new_indices = (events[:, [0]] + samp_offsets[np.newaxis]).ravel()
             events = np.column_stack((new_indices,
                                       np.zeros_like(new_indices),
                                       np.repeat(events[:, -1], n_new_events)))
@@ -84,7 +78,8 @@ for s in subjects:
         del raws, first_samps, last_samps, events_list
         # epoch
         event_dict = dict(ps=5, kt=7)
-        epochs = mne.Epochs(raw, events, event_dict, tmin=0, tmax=trial_dur,
+        tmax = subdivide_epochs if subdivide_epochs else trial_dur
+        epochs = mne.Epochs(raw, events, event_dict, tmin=0, tmax=tmax,
                             baseline=None, proj=True,
                             reject_by_annotation=False, preload=True)
         # save epochs
