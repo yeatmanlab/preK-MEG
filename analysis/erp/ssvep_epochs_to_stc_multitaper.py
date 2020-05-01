@@ -3,15 +3,14 @@
 """
 @author: Daniel McCloy
 
-Load SSVEP epochs, compute multitaper PSD, apply inverse, & morph to FSAverage.
+Load SSVEP epochs, compute FFT, apply inverse, & morph to FSAverage.
 """
 
 import os
 import numpy as np
+from scipy.fft import rfft, rfftfreq
 import mne
-from mne.time_frequency.multitaper import (_compute_mt_params, _mt_spectra,
-                                           _psd_from_mt)
-from aux_functions import load_paths, load_params, load_psd_params
+from aux_functions import load_paths, load_params
 
 # flags
 mne.cuda.init_cuda()
@@ -29,15 +28,13 @@ for _dir in (evk_dir, stc_dir, morph_dir, psd_dir):
 
 # load params
 _, _, subjects = load_params()
-psd_params = load_psd_params()
 
 # config other
 timepoints = ('pre', 'post')
 snr = 3.
 lambda2 = 1. / snr ** 2
 smoothing_steps = 10
-bandwidth = psd_params['bandwidth']
-subdivide_epochs = psd_params['epoch_dur']
+subdivide_epochs = 5
 subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 
 # for morph to fsaverage
@@ -61,44 +58,21 @@ for s in subjects:
         fname = f'{stub}-ave.fif'
         evoked.save(os.path.join(evk_dir, fname))
         del epochs
-        # do multitaper estimation
-        sfreq = evoked.info['sfreq']
-        mt_kwargs = dict(n_times=len(evoked.times), sfreq=sfreq,
-                         bandwidth=bandwidth, low_bias=True, adaptive=False)
-        dpss, eigvals, adaptive = _compute_mt_params(**mt_kwargs)
-        mt_spectra, freqs = _mt_spectra(evoked.data, dpss, sfreq)
-        # compute and save the sensor-space PSD
-        sensor_weights = np.sqrt(eigvals)[np.newaxis, :, np.newaxis]
-        sensor_psd = _psd_from_mt(mt_spectra, sensor_weights)
-        fname = f'{stub}-sensor_psd.npz'
-        np.savez(os.path.join(psd_dir, fname), psd=sensor_psd, freqs=freqs)
-        # convert to fake epochs object
-        info = mne.create_info(evoked.ch_names, sfreq)
-        mt_epochs = mne.EpochsArray(np.swapaxes(mt_spectra, 0, 1), info)
+        # FFT
+        spacing = 1. / evoked.info['sfreq']
+        spectrum = rfft(evoked.data, workers=-2)
+        freqs = rfftfreq(evoked.times.size, spacing)
+        fname = f'{stub}-sensor_fft.npz'
+        np.savez(os.path.join(psd_dir, fname), spectrum=spectrum, freqs=freqs)
         # go to source space. inverse is only located in the ERP folder tree,
         # not in PSKT (TODO: this may change at some point)
         inv_path = os.path.join(data_root, f'{timepoint}_camp', 'twa_hp',
                                 'erp', s, 'inverse', f'{s}-80-sss-meg-inv.fif')
         inverse = mne.minimum_norm.read_inverse_operator(inv_path)
-        stc = mne.minimum_norm.apply_inverse_epochs(
-            mt_epochs, inverse, lambda2, pick_ori='normal', nave=evoked.nave)
-        del evoked, mt_epochs
-        # extract the data from STCs
-        data = np.array([s.data for s in stc])
-        # data.shape will be (n_taper, n_vertices, [n_xyz_component,] n_freq)
-        # but we need the second-to-last axis to be the tapers axis, otherwise
-        # _psd_from_mt() won't work right
-        data = np.moveaxis(data, 0, -2)
-        weights = np.sqrt(eigvals)[np.newaxis, :, np.newaxis]
-        # combine the multitaper spectral estimates
-        psd = _psd_from_mt(data, weights)
-        # use one STC to hold the aggregated data, delete rest to save memory
-        stc = stc[0]
-        stc.data = psd
-        stc.tstep = np.diff(freqs[:2])
-        assert np.all(stc.times == freqs)
-        del psd
-        fname = f'{stub}-multitaper'
+        stc = mne.minimum_norm.apply_inverse(
+            spectrum, inverse, lambda2, pick_ori='normal', nave=evoked.nave)
+        del evoked, spectrum
+        fname = f'{stub}-fft'
         stc.save(os.path.join(stc_dir, fname))
         # compute morph for this subject
         if not has_morph:
@@ -110,5 +84,5 @@ for s in subjects:
             has_morph = True
         # morph and save
         morphed_stc = morph.apply(stc)
-        fname = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-multitaper'
+        fname = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-fft'
         morphed_stc.save(os.path.join(morph_dir, fname))
