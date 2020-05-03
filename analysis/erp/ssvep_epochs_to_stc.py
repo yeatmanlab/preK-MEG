@@ -70,7 +70,7 @@ for s in subjects:
                                 'erp', s, 'inverse', f'{s}-80-sss-meg-inv.fif')
         inverse = mne.minimum_norm.read_inverse_operator(inv_path)
         stc = mne.minimum_norm.apply_inverse(
-            spectrum, inverse, lambda2, pick_ori='normal', nave=evoked.nave)
+            spectrum, inverse, lambda2, pick_ori='normal')
         del evoked, spectrum
         fname = f'{stub}-fft'
         stc.save(os.path.join(stc_dir, fname))
