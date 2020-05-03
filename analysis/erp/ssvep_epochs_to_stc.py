@@ -64,14 +64,16 @@ for s in subjects:
         freqs = rfftfreq(evoked.times.size, spacing)
         fname = f'{stub}-sensor_fft.npz'
         np.savez(os.path.join(psd_dir, fname), spectrum=spectrum, freqs=freqs)
+        # convert to fake evoked object
+        evoked_spect = mne.EvokedArray(spectrum, evoked.info, nave=evoked.nave)
+        del evoked, spectrum
         # go to source space. inverse is only located in the ERP folder tree,
         # not in PSKT (TODO: this may change at some point)
         inv_path = os.path.join(data_root, f'{timepoint}_camp', 'twa_hp',
                                 'erp', s, 'inverse', f'{s}-80-sss-meg-inv.fif')
         inverse = mne.minimum_norm.read_inverse_operator(inv_path)
         stc = mne.minimum_norm.apply_inverse(
-            spectrum, inverse, lambda2, pick_ori='normal')
-        del evoked, spectrum
+            evoked_spect, inverse, lambda2, pick_ori='normal')
         fname = f'{stub}-fft'
         stc.save(os.path.join(stc_dir, fname))
         # compute morph for this subject
