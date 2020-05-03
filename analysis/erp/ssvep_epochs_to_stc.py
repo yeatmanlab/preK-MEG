@@ -75,7 +75,7 @@ for s in subjects:
         stc = mne.minimum_norm.apply_inverse(
             evoked_spect, inverse, lambda2, pick_ori='normal')
         fname = f'{stub}-fft'
-        stc.save(os.path.join(stc_dir, fname))
+        stc.save(os.path.join(stc_dir, fname), ftype='h5')
         # compute morph for this subject
         if not has_morph:
             morph = mne.compute_source_morph(stc, subject_from=s.upper(),
@@ -87,4 +87,4 @@ for s in subjects:
         # morph and save
         morphed_stc = morph.apply(stc)
         fname = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-fft'
-        morphed_stc.save(os.path.join(morph_dir, fname))
+        morphed_stc.save(os.path.join(morph_dir, fname), ftype='h5')
