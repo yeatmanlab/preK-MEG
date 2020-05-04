@@ -9,7 +9,7 @@ Plot frequency-domain STCs.
 import os
 from mayavi import mlab
 import mne
-from aux_functions import load_paths, load_params, load_psd_params
+from aux_functions import load_paths, load_params
 
 # flags
 mlab.options.offscreen = True
@@ -24,11 +24,10 @@ os.makedirs(fig_dir, exist_ok=True)
 
 # load params
 brain_plot_kwargs, movie_kwargs, subjects = load_params()
-psd_params = load_psd_params()
 
 # config other
 timepoints = ('pre', 'post')
-subdivide_epochs = psd_params['epoch_dur']
+subdivide_epochs = 5
 subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 
 # loop over timepoints
@@ -36,12 +35,13 @@ for timepoint in timepoints:
     # loop over subjects
     for s in subjects:
         # load this subject's STC
-        fname = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-multitaper-stc.h5'
+        fname = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-fft'
         stc = mne.read_source_estimate(os.path.join(in_dir, fname))
         # plot it
-        brain = stc.magnitude().plot(subject='fsaverage', **brain_plot_kwargs)
+        # TODO: STC data is still complex at this point
+        brain = stc.plot(subject='fsaverage', **brain_plot_kwargs)
         for freq in (2, 4, 6, 12):
             brain.set_time(freq)
-            fname = f'{s}-{timepoint}_camp-pskt{subdiv}-multitaper-{freq:02}_Hz.png'  # noqa E501
+            fname = f'{s}-{timepoint}_camp-pskt{subdiv}-fft-{freq:02}_Hz.png'
             brain.save_image(os.path.join(fig_dir, fname))
         del brain
