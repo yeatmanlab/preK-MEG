@@ -63,7 +63,7 @@ for timepoint in timepoints:
         baseline_stc.data = baseline_data
         phase_cancelled_stc.data = np.abs(phase_cancelled_data)
         # use baseline data to set color scale
-        lims = tuple(np.percentile(baseline_data, (90, 95, 99.5)))
+        lims = tuple(np.percentile(baseline_data, (95, 99, 99.9)))
         clim = dict(kind='value', lims=lims)
         for kind, stc in zip(['baseline', 'phase_cancelled'],
                              [baseline_stc, phase_cancelled_stc]):
