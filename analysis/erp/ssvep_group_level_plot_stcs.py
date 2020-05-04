@@ -49,7 +49,7 @@ for timepoint in timepoints:
 
         # aggregation variables
         baseline_data = 0.
-        phase_cancelled_data = 0.
+        phase_cancelled_data = 0j
         for s in members:
             fname = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-fft'
             stc = mne.read_source_estimate(os.path.join(in_dir, fname),
