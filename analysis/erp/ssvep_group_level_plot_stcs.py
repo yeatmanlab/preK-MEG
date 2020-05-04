@@ -19,9 +19,11 @@ mne.viz.set_3d_backend('mayavi')
 
 # config paths
 _, _, results_dir = load_paths()
-in_dir = os.path.join(results_dir, 'pskt', 'group-level', 'stc')
+in_dir = os.path.join(results_dir, 'pskt', 'stc')
+stc_dir = os.path.join(results_dir, 'pskt', 'group-level', 'stc')
 fig_dir = os.path.join(results_dir, 'pskt', 'group-level', 'fig', 'brain')
-os.makedirs(fig_dir, exist_ok=True)
+for _dir in (stc_dir, fig_dir):
+    os.makedirs(_dir, exist_ok=True)
 
 # load params
 brain_plot_kwargs, movie_kwargs, subjects = load_params()
