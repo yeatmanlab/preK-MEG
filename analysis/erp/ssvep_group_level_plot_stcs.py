@@ -19,7 +19,7 @@ mne.viz.set_3d_backend('mayavi')
 
 # config paths
 _, _, results_dir = load_paths()
-in_dir = os.path.join(results_dir, 'pskt', 'stc')
+in_dir = os.path.join(results_dir, 'pskt', 'stc', 'morphed-to-fsaverage')
 stc_dir = os.path.join(results_dir, 'pskt', 'group-level', 'stc')
 fig_dir = os.path.join(results_dir, 'pskt', 'group-level', 'fig', 'brain')
 for _dir in (stc_dir, fig_dir):
