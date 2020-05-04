@@ -64,12 +64,14 @@ for timepoint in timepoints:
         # use baseline data to set color scale
         lims = tuple(np.percentile(baseline_data, (90, 95, 99.5)))
         clim = dict(kind='value', lims=lims)
-        # plot it
         for kind, stc in zip(['baseline', 'phase_cancelled'],
                              [baseline_stc, phase_cancelled_stc]):
+            # save stc
+            fname = f'{group}-{timepoint}_camp-pskt{subdiv}-fft-{kind}'
+            stc.save(os.path.join(stc_dir, fname), ftype='h5')
+            # plot stc
             brain = stc.plot(subject='fsaverage', clim=clim,
                              **brain_plot_kwargs)
-            fname = f'{group}-{timepoint}_camp-pskt{subdiv}-fft-{kind}'
             for freq in (2, 4, 6, 12):
                 brain.set_time(freq)
                 fpath = os.path.join(fig_dir, f'{fname}-{freq:02}_Hz.png')
