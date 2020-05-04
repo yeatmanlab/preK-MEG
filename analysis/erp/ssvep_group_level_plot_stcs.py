@@ -10,8 +10,7 @@ import os
 import numpy as np
 from mayavi import mlab
 import mne
-from aux_functions import (load_paths, load_params, load_psd_params,
-                           load_cohorts)
+from aux_functions import load_paths, load_params, load_cohorts
 
 # flags
 mlab.options.offscreen = True
@@ -26,7 +25,6 @@ os.makedirs(fig_dir, exist_ok=True)
 
 # load params
 brain_plot_kwargs, movie_kwargs, subjects = load_params()
-psd_params = load_psd_params()
 intervention_group, letter_knowledge_group = load_cohorts()
 groups = dict(GrandAvg=subjects)
 groups.update(intervention_group)
@@ -36,8 +34,8 @@ groups.update(letter_knowledge_group)
 timepoints = ('pre', 'post')
 kinds = ('baseline', 'phase_cancelled')
 trial_dur = 20
-divisions = trial_dur // psd_params['epoch_dur']
-subdiv = f"-{psd_params['epoch_dur']}_sec" if divisions > 1 else ''
+subdivide_epochs = 5
+subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 
 # loop over timepoints
 for timepoint in timepoints:
@@ -47,19 +45,29 @@ for timepoint in timepoints:
         if group.endswith('Knowledge') and timepoint == 'post':
             continue
 
-        # preload both STCs so we are assured of the same colormap
-        stcs = dict()
-        for kind in kinds:
-            fname = f'{group}-{timepoint}_camp-pskt{subdiv}-multitaper-{kind}'
-            stcs[fname] = mne.read_source_estimate(os.path.join(in_dir, fname))
-
-        data = np.array([stc.data for stc in stcs.values()])
-        lims = tuple(np.percentile(data, (90, 95, 99.5)))
+        # aggregation variables
+        baseline_data = 0.
+        phase_cancelled_data = 0.
+        for s in members:
+            fname = f'{s}-{timepoint}_camp-pskt{subdiv}-fft-stc.h5'
+            stc = mne.read_source_estimate(os.path.join(in_dir, fname))
+            phase_cancelled_data += stc.data
+            baseline_data += np.abs(stc.data)
+        # use the last STC as container
+        baseline_stc = stc.copy()
+        phase_cancelled_stc = stc.copy()
+        del stc
+        baseline_stc.data = baseline_data
+        phase_cancelled_stc.data = np.abs(phase_cancelled_data)
+        # use baseline data to set color scale
+        lims = tuple(np.percentile(baseline_data, (90, 95, 99.5)))
         clim = dict(kind='value', lims=lims)
         # plot it
-        for fname, stc in stcs.items():
+        for kind, stc in zip(['baseline', 'phase_cancelled'],
+                             [baseline_stc, phase_cancelled_stc]):
             brain = stc.plot(subject='fsaverage', clim=clim,
                              **brain_plot_kwargs)
+            fname = f'{group}-{timepoint}_camp-pskt{subdiv}-fft-{kind}'
             for freq in (2, 4, 6, 12):
                 brain.set_time(freq)
                 fpath = os.path.join(fig_dir, f'{fname}-{freq:02}_Hz.png')
