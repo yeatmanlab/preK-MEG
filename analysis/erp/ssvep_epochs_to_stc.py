@@ -66,6 +66,7 @@ for s in subjects:
         np.savez(os.path.join(psd_dir, fname), spectrum=spectrum, freqs=freqs)
         # convert to fake evoked object
         evoked_spect = mne.EvokedArray(spectrum, evoked.info, nave=evoked.nave)
+        evoked_spect.times = freqs
         del evoked, spectrum
         # go to source space. inverse is only located in the ERP folder tree,
         # not in PSKT (TODO: this may change at some point)
