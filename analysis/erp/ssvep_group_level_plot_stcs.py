@@ -51,8 +51,9 @@ for timepoint in timepoints:
         baseline_data = 0.
         phase_cancelled_data = 0.
         for s in members:
-            fname = f'{s}-{timepoint}_camp-pskt{subdiv}-fft-stc.h5'
-            stc = mne.read_source_estimate(os.path.join(in_dir, fname))
+            fname = f'{s}-{timepoint}_camp-pskt{subdiv}-fft'
+            stc = mne.read_source_estimate(os.path.join(in_dir, fname),
+                                           subject='fsaverage')
             phase_cancelled_data += stc.data
             baseline_data += np.abs(stc.data)
         # use the last STC as container
