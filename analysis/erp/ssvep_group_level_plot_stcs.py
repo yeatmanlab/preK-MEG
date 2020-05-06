@@ -70,7 +70,7 @@ for s in groups['GrandAvg']:
         all_data.append(stc.data)
 abs_data = np.abs(all_data)
 # separate lims for untransformed data and SNR
-cmap_percentiles = (99, 99.9, 99.99)
+cmap_percentiles = (95, 99, 99.9)
 lims = tuple(np.percentile(abs_data, cmap_percentiles))
 snr_lims = tuple(np.percentile(div_by_adj_bins(abs_data), cmap_percentiles))
 clim = dict(kind='value', lims=lims)
