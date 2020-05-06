@@ -68,12 +68,12 @@ for s in groups['GrandAvg']:
                                        subject='fsaverage')
         all_stcs[f'{s}-{timepoint}'] = stc
         all_data.append(stc.data)
-all_data = np.array(all_data)
-lims = tuple(np.percentile(np.abs(all_data), (99, 99.9, 99.99)))
+abs_data = np.abs(all_data)
+# separate lims for untransformed data and SNR
+cmap_percentiles = (99.9, 99.99, 99.999)
+lims = tuple(np.percentile(abs_data, cmap_percentiles))
+snr_lims = tuple(np.percentile(div_by_adj_bins(abs_data), cmap_percentiles))
 clim = dict(kind='value', lims=lims)
-# separate lims for SNR data
-snr_lims = tuple(np.percentile(div_by_adj_bins(np.abs(all_data)),
-                               (99, 99.9, 99.99)))
 snr_clim = dict(kind='value', lims=snr_lims)
 
 # loop over timepoints
