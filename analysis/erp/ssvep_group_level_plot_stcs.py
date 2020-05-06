@@ -8,6 +8,7 @@ Plot frequency-domain STCs.
 
 import os
 import numpy as np
+from scipy.ndimage import convolve1d
 from mayavi import mlab
 import mne
 from aux_functions import load_paths, load_params, load_cohorts
@@ -39,6 +40,21 @@ trial_dur = 20
 subdivide_epochs = 5
 subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 
+# load in all data first, to get colormap limits. Not memory efficient but
+# shouldn't be too bad
+all_data = list()
+all_stcs = dict()
+for s in groups['GrandAvg']:
+    for timepoint in timepoints:
+        fname = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-fft-stc.h5'
+        stc = mne.read_source_estimate(os.path.join(in_dir, fname),
+                                       subject='fsaverage')
+        all_stcs[f'{s}-{timepoint}'] = stc
+        all_data.append(stc.data)
+all_data = np.array(all_data)
+lims = tuple(np.percentile(np.abs(all_data), (90, 99, 99.9)))
+clim = dict(kind='value', lims=lims)
+
 # loop over timepoints
 for timepoint in timepoints:
     # loop over cohort groups
@@ -47,26 +63,21 @@ for timepoint in timepoints:
         if group.endswith('Knowledge') and timepoint == 'post':
             continue
 
-        # aggregation variables
-        baseline_data = 0.
-        phase_cancelled_data = 0j
+        # aggregate over group members
+        data = 0.
         for s in members:
-            fname = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-fft-stc.h5'
-            stc = mne.read_source_estimate(os.path.join(in_dir, fname),
-                                           subject='fsaverage')
-            phase_cancelled_data += stc.data
-            baseline_data += np.abs(stc.data)
-        # use the last STC as container
-        baseline_stc = stc.copy()
-        phase_cancelled_stc = stc.copy()
-        del stc
-        baseline_stc.data = baseline_data
-        phase_cancelled_stc.data = np.abs(phase_cancelled_data)
-        # use baseline data to set color scale
-        lims = tuple(np.percentile(baseline_data, (95, 97.5, 99.9)))
-        clim = dict(kind='value', lims=lims)
-        for kind, stc in zip(['baseline', 'phase_cancelled'],
-                             [baseline_stc, phase_cancelled_stc]):
+            data += np.abs(all_stcs[f'{s}-{timepoint}'].data)
+        # use a copy of the last STC as container
+        avg_stc = all_stcs[f'{s}-{timepoint}'].copy()
+        avg_stc.data = data
+
+        # divide each bin by its two neighbors on each side to get "SNR"
+        snr_stc = avg_stc.copy()
+        weights = [0.25, 0.25, 0, 0.25, 0.25]
+        snr_stc.data = data / convolve1d(data, mode='constant',
+                                         weights=weights)
+
+        for kind, _stc in zip(['avg', 'snr'], [avg_stc, snr_stc]):
             # save stc
             fname = f'{group}-{timepoint}_camp-pskt{subdiv}-fft-{kind}'
             stc.save(os.path.join(stc_dir, fname), ftype='h5')
