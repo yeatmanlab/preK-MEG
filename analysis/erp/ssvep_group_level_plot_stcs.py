@@ -69,12 +69,11 @@ for s in groups['GrandAvg']:
         all_stcs[f'{s}-{timepoint}'] = stc
         all_data.append(stc.data)
 abs_data = np.abs(all_data)
-# separate lims for untransformed data and SNR
-cmap_percentiles = (91, 95, 99)
-lims = tuple(np.percentile(abs_data, cmap_percentiles))
-snr_lims = tuple(np.percentile(div_by_adj_bins(abs_data), cmap_percentiles))
-clim = dict(kind='value', lims=lims)
-snr_clim = dict(kind='value', lims=snr_lims)
+# separate lims for untransformed data, SNR, and log(SNR)
+cmap_percs = (91, 95, 99)
+lims = tuple(np.percentile(abs_data, cmap_percs))
+snr_lims = tuple(np.percentile(div_by_adj_bins(abs_data), cmap_percs))
+log_lims = tuple(np.percentile(np.log(div_by_adj_bins(abs_data)), cmap_percs))
 
 # loop over timepoints
 for timepoint in timepoints:
@@ -87,14 +86,18 @@ for timepoint in timepoints:
         # aggregate over group members
         avg_data = 0.
         snr_data = 0.
+        log_data = 0.
         for s in members:
             this_data = np.abs(all_stcs[f'{s}-{timepoint}'].data)
             avg_data += this_data
             # divide each bin by its neighbors on each side to get "SNR"
-            snr_data += div_by_adj_bins(this_data)
+            this_snr = div_by_adj_bins(this_data)
+            snr_data += this_snr
+            log_data += np.log(this_snr)
         # save and plot untransformed data & SNR data
-        for kind, _data, _clim in zip(['avg', 'snr'], [avg_data, snr_data],
-                                      [clim, snr_clim]):
+        for kind, _data, _lims in zip(['avg', 'snr', 'log'],
+                                      [avg_data, snr_data, log_data],
+                                      [lims, snr_lims, log_lims]):
             # use a copy of the last STC as container
             stc = all_stcs[f'{s}-{timepoint}'].copy()
             stc.data = _data / len(members)
@@ -102,7 +105,8 @@ for timepoint in timepoints:
             fname = f'{group}-{timepoint}_camp-pskt{subdiv}-fft-{kind}'
             stc.save(os.path.join(stc_dir, fname), ftype='h5')
             # plot stc
-            brain = stc.plot(subject='fsaverage', clim=_clim,
+            clim = dict(kind='value', lims=_lims)
+            brain = stc.plot(subject='fsaverage', clim=clim,
                              **brain_plot_kwargs)
             for freq in (2, 4, 6, 12):
                 brain.set_time(freq)
