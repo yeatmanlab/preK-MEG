@@ -80,10 +80,10 @@ for timepoint in timepoints:
         for kind, _stc in zip(['avg', 'snr'], [avg_stc, snr_stc]):
             # save stc
             fname = f'{group}-{timepoint}_camp-pskt{subdiv}-fft-{kind}'
-            stc.save(os.path.join(stc_dir, fname), ftype='h5')
+            _stc.save(os.path.join(stc_dir, fname), ftype='h5')
             # plot stc
-            brain = stc.plot(subject='fsaverage', clim=clim,
-                             **brain_plot_kwargs)
+            brain = _stc.plot(subject='fsaverage', clim=clim,
+                              **brain_plot_kwargs)
             for freq in (2, 4, 6, 12):
                 brain.set_time(freq)
                 fpath = os.path.join(fig_dir, f'{fname}-{freq:02}_Hz.png')
