@@ -86,15 +86,17 @@ for timepoint in timepoints:
 
         # aggregate over group members
         data = 0.
+        snr_data = 0.
         for s in members:
-            data += np.abs(all_stcs[f'{s}-{timepoint}'].data)
+            this_data = np.abs(all_stcs[f'{s}-{timepoint}'].data)
+            data += this_data
+            # divide each bin by its two neighbors on each side to get "SNR"
+            snr_data += div_by_adj_bins(this_data)
         # use a copy of the last STC as container
         avg_stc = all_stcs[f'{s}-{timepoint}'].copy()
         avg_stc.data = data
-
-        # divide each bin by its two neighbors on each side to get "SNR"
         snr_stc = avg_stc.copy()
-        snr_stc.data = div_by_adj_bins(data, n_bins=2, method='mean')
+        snr_stc.data = snr_data
 
         # save and plot
         for kind, _stc, _clim in zip(['avg', 'snr'], [avg_stc, snr_stc],
