@@ -8,10 +8,27 @@ Plot frequency-domain STCs.
 
 import os
 import numpy as np
-from scipy.ndimage import convolve1d
 from mayavi import mlab
 import mne
 from aux_functions import load_paths, load_params, load_cohorts
+
+
+def div_by_adj_bins(data, n_bins=2, method='mean'):
+    """
+    data : np.ndarray
+        the data to enhance
+    n_bins : int
+        number of bins on either side to include.
+    method : 'mean' | 'sum'
+        whether to divide by the sum or average of adjacent bins.
+    """
+    from scipy.ndimage import convolve1d
+    weights = np.ones(2 * n_bins + 1)  # how many samples in our convolution?
+    weights[n_bins] = 0                # don't divide target kernel by itself
+    if method == 'mean':
+        weights /= 2 * n_bins
+    return data / convolve1d(data, mode='constant', weights=weights)
+
 
 # flags
 mlab.options.offscreen = True
@@ -52,8 +69,12 @@ for s in groups['GrandAvg']:
         all_stcs[f'{s}-{timepoint}'] = stc
         all_data.append(stc.data)
 all_data = np.array(all_data)
-lims = tuple(np.percentile(np.abs(all_data), (90, 99, 99.9)))
+lims = tuple(np.percentile(np.abs(all_data), (99, 99.9, 99.99)))
 clim = dict(kind='value', lims=lims)
+# separate lims for SNR data
+snr_lims = tuple(np.percentile(div_by_adj_bins(np.abs(all_data)),
+                               (99, 99.9, 99.99)))
+snr_clim = dict(kind='value', lims=snr_lims)
 
 # loop over timepoints
 for timepoint in timepoints:
@@ -73,16 +94,16 @@ for timepoint in timepoints:
 
         # divide each bin by its two neighbors on each side to get "SNR"
         snr_stc = avg_stc.copy()
-        weights = [0.25, 0.25, 0, 0.25, 0.25]
-        snr_stc.data = data / convolve1d(data, mode='constant',
-                                         weights=weights)
+        snr_stc.data = div_by_adj_bins(data, n_bins=2, method='mean')
 
-        for kind, _stc in zip(['avg', 'snr'], [avg_stc, snr_stc]):
+        # save and plot
+        for kind, _stc, _clim in zip(['avg', 'snr'], [avg_stc, snr_stc],
+                                      [clim, snr_clim]):
             # save stc
             fname = f'{group}-{timepoint}_camp-pskt{subdiv}-fft-{kind}'
             _stc.save(os.path.join(stc_dir, fname), ftype='h5')
             # plot stc
-            brain = _stc.plot(subject='fsaverage', clim=clim,
+            brain = _stc.plot(subject='fsaverage', clim=_clim,
                               **brain_plot_kwargs)
             for freq in (2, 4, 6, 12):
                 brain.set_time(freq)
