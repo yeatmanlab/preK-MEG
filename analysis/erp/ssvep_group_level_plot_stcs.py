@@ -105,7 +105,9 @@ for timepoint in timepoints:
             fname = f'{group}-{timepoint}_camp-pskt{subdiv}-fft-{kind}'
             stc.save(os.path.join(stc_dir, fname), ftype='h5')
             # plot stc
-            clim = dict(kind='value', lims=_lims)
+            clim = dict(kind='value')
+            pos = dict(pos_lims=_lims) if kind == 'log' else dict(lims=_lims)
+            clim.update(pos)
             brain = stc.plot(subject='fsaverage', clim=clim,
                              **brain_plot_kwargs)
             for freq in (2, 4, 6, 12):
