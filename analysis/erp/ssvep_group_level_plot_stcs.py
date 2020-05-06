@@ -100,7 +100,7 @@ for timepoint in timepoints:
 
         # save and plot
         for kind, _stc, _clim in zip(['avg', 'snr'], [avg_stc, snr_stc],
-                                      [clim, snr_clim]):
+                                     [clim, snr_clim]):
             # save stc
             fname = f'{group}-{timepoint}_camp-pskt{subdiv}-fft-{kind}'
             _stc.save(os.path.join(stc_dir, fname), ftype='h5')
