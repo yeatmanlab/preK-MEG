@@ -23,11 +23,11 @@ def div_by_adj_bins(data, n_bins=2, method='mean'):
         whether to divide by the sum or average of adjacent bins.
     """
     from scipy.ndimage import convolve1d
-    weights = np.ones(2 * n_bins + 1)  # how many samples in our convolution?
-    weights[n_bins] = 0                # don't divide target kernel by itself
+    weights = np.ones(2 * n_bins + 1)
+    weights[n_bins] = 0  # don't divide target bin by itself
     if method == 'mean':
         weights /= 2 * n_bins
-    return data / convolve1d(data, mode='constant', weights=weights)
+    return data / convolve1d(data, mode='constant', weights=weights.tolist())
 
 
 # flags
@@ -70,7 +70,7 @@ for s in groups['GrandAvg']:
         all_data.append(stc.data)
 abs_data = np.abs(all_data)
 # separate lims for untransformed data and SNR
-cmap_percentiles = (99.9, 99.99, 99.999)
+cmap_percentiles = (99, 99.9, 99.99)
 lims = tuple(np.percentile(abs_data, cmap_percentiles))
 snr_lims = tuple(np.percentile(div_by_adj_bins(abs_data), cmap_percentiles))
 clim = dict(kind='value', lims=lims)
@@ -85,28 +85,25 @@ for timepoint in timepoints:
             continue
 
         # aggregate over group members
-        data = 0.
+        avg_data = 0.
         snr_data = 0.
         for s in members:
             this_data = np.abs(all_stcs[f'{s}-{timepoint}'].data)
-            data += this_data
-            # divide each bin by its two neighbors on each side to get "SNR"
+            avg_data += this_data
+            # divide each bin by its neighbors on each side to get "SNR"
             snr_data += div_by_adj_bins(this_data)
-        # use a copy of the last STC as container
-        avg_stc = all_stcs[f'{s}-{timepoint}'].copy()
-        avg_stc.data = data
-        snr_stc = avg_stc.copy()
-        snr_stc.data = snr_data
-
-        # save and plot
-        for kind, _stc, _clim in zip(['avg', 'snr'], [avg_stc, snr_stc],
-                                     [clim, snr_clim]):
+        # save and plot untransformed data & SNR data
+        for kind, _data, _clim in zip(['avg', 'snr'], [avg_data, snr_data],
+                                      [clim, snr_clim]):
+            # use a copy of the last STC as container
+            stc = all_stcs[f'{s}-{timepoint}'].copy()
+            stc.data = _data / len(members)
             # save stc
             fname = f'{group}-{timepoint}_camp-pskt{subdiv}-fft-{kind}'
-            _stc.save(os.path.join(stc_dir, fname), ftype='h5')
+            stc.save(os.path.join(stc_dir, fname), ftype='h5')
             # plot stc
-            brain = _stc.plot(subject='fsaverage', clim=_clim,
-                              **brain_plot_kwargs)
+            brain = stc.plot(subject='fsaverage', clim=_clim,
+                             **brain_plot_kwargs)
             for freq in (2, 4, 6, 12):
                 brain.set_time(freq)
                 fpath = os.path.join(fig_dir, f'{fname}-{freq:02}_Hz.png')
