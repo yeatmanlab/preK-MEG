@@ -69,11 +69,12 @@ for s in groups['GrandAvg']:
         all_stcs[f'{s}-{timepoint}'] = stc
         all_data.append(stc.data)
 abs_data = np.abs(all_data)
+snr_data = div_by_adj_bins(abs_data)
 # separate lims for untransformed data, SNR, and log(SNR)
-cmap_percs = (91, 95, 99)
-lims = tuple(np.percentile(abs_data, cmap_percs))
-snr_lims = tuple(np.percentile(div_by_adj_bins(abs_data), cmap_percs))
-log_lims = tuple(np.percentile(np.log(div_by_adj_bins(abs_data)), cmap_percs))
+cmap_percentiles = (91, 95, 99)
+lims = tuple(np.percentile(abs_data, cmap_percentiles))
+snr_lims = tuple(np.percentile(snr_data, cmap_percentiles))
+log_lims = tuple(np.percentile(np.log(snr_data), cmap_percentiles))
 
 # loop over timepoints
 for timepoint in timepoints:
