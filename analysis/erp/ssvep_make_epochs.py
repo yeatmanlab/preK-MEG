@@ -82,6 +82,8 @@ for s in subjects:
         epochs = mne.Epochs(raw, events, event_dict, tmin=0, tmax=tmax,
                             baseline=None, proj=True,
                             reject_by_annotation=False, preload=True)
+        # trim last sample from epochs so our FFT bins come out nicely spaced
+        epochs.crop(tmax=tmax, include_tmax=False)
         # save epochs
         fname = f'{s}-{timepoint}_camp-pskt{subdiv}-epo.fif'
         epochs.save(os.path.join(epo_dir, fname), fmt='double')
