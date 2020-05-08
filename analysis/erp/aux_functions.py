@@ -345,3 +345,20 @@ def subdivide_epochs(epochs, divisions):
     data = np.reshape(data, (divisions * n_epochs, n_channels, new_n_times))
     recut_epochs = EpochsArray(data, epochs.info)
     return recut_epochs
+
+
+def div_by_adj_bins(data, n_bins=2, method='mean'):
+    """
+    data : np.ndarray
+        the data to enhance
+    n_bins : int
+        number of bins on either side to include.
+    method : 'mean' | 'sum'
+        whether to divide by the sum or average of adjacent bins.
+    """
+    from scipy.ndimage import convolve1d
+    weights = np.ones(2 * n_bins + 1)
+    weights[n_bins] = 0  # don't divide target bin by itself
+    if method == 'mean':
+        weights /= 2 * n_bins
+    return data / convolve1d(data, mode='constant', weights=weights.tolist())

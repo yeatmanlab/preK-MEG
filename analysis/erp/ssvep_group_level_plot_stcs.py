@@ -10,24 +10,8 @@ import os
 import numpy as np
 from mayavi import mlab
 import mne
-from aux_functions import load_paths, load_params, load_cohorts
-
-
-def div_by_adj_bins(data, n_bins=2, method='mean'):
-    """
-    data : np.ndarray
-        the data to enhance
-    n_bins : int
-        number of bins on either side to include.
-    method : 'mean' | 'sum'
-        whether to divide by the sum or average of adjacent bins.
-    """
-    from scipy.ndimage import convolve1d
-    weights = np.ones(2 * n_bins + 1)
-    weights[n_bins] = 0  # don't divide target bin by itself
-    if method == 'mean':
-        weights /= 2 * n_bins
-    return data / convolve1d(data, mode='constant', weights=weights.tolist())
+from aux_functions import (load_paths, load_params, load_cohorts,
+                           div_by_adj_bins)
 
 
 # flags
