@@ -96,8 +96,10 @@ for freq in (2, 4, 6):
 del all_data
 
 for freq, bin_idx in bin_idxs.items():
-    median_split_X = [lower_data[:, bin_idx, :], upper_data[:, bin_idx, :]]
-    intervention_X = [letter_data[:, bin_idx, :], language_data[:, bin_idx, :]]
+    median_split_X = [lower_data[:, [bin_idx], :],
+                      upper_data[:, [bin_idx], :]]
+    intervention_X = [letter_data[:, [bin_idx], :],
+                      language_data[:, [bin_idx], :]]
     median_split_fname = f'LowerVsUpperKnowledge-pre_camp-{freq}_Hz-SNR-{hemi}.npz'  # noqa E501
     intervention_fname = f'LetterVsLanguageIntervention-PostMinusPre_camp-{freq}_Hz-SNR-{hemi}.npz'  # noqa E501
     for fname, X in {median_split_fname: median_split_X,
