@@ -3,7 +3,7 @@
 """
 @author: Daniel McCloy
 
-Plot frequency-domain STCs.
+Run clustering on SSVEP data.
 """
 
 import os
