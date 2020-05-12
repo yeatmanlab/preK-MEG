@@ -7,17 +7,23 @@ Run clustering on SSVEP data.
 """
 
 import os
+from functools import partial
 import numpy as np
 import mne
-from mne.stats import permutation_cluster_test
+from mne.stats import permutation_cluster_test, ttest_ind_no_p
 from aux_functions import (load_paths, load_params, load_cohorts,
                            div_by_adj_bins, prep_cluster_stats)
 
 # config paths
-_, subjects_dir, results_dir = load_paths()
+data_root, subjects_dir, results_dir = load_paths()
 in_dir = os.path.join(results_dir, 'pskt', 'stc', 'morphed-to-fsaverage')
 cluster_dir = os.path.join(results_dir, 'pskt', 'group-level', 'cluster')
 os.makedirs(cluster_dir, exist_ok=True)
+
+# set cache dir
+cache_dir = os.path.join(data_root, 'cache')
+os.makedirs(cache_dir, exist_ok=True)
+mne.set_cache_dir(cache_dir)
 
 # load params
 _, _, subjects = load_params()
@@ -34,6 +40,7 @@ rng = np.random.RandomState(seed=15485863)  # the one millionth prime
 threshold = dict(start=0, step=0.2)  # or None to skip TFCE
 n_jobs = 10
 hemi = 'lh'
+stat_fun = partial(ttest_ind_no_p, equal_var=False)
 
 # load fsaverage source space to get connectivity matrix
 fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
@@ -50,7 +57,8 @@ connectivity = mne.spatial_src_connectivity(fsaverage_src)
 def do_clustering(X, fpath):
     cluster_results = permutation_cluster_test(
         X, connectivity=connectivity, threshold=threshold,
-        n_permutations=1024, n_jobs=n_jobs, seed=rng, buffer_size=1024)
+        n_permutations=1024, n_jobs=n_jobs, seed=rng, buffer_size=1024,
+        stat_fun=stat_fun, step_down_p=0.05)
     stats = prep_cluster_stats(cluster_results)
     np.savez(fpath, **stats)
 
@@ -96,8 +104,8 @@ for freq in (2, 4, 6):
 del all_data
 
 for freq, bin_idx in bin_idxs.items():
-    median_split_X = [lower_data[:, [bin_idx], :],
-                      upper_data[:, [bin_idx], :]]
+    median_split_X = [upper_data[:, [bin_idx], :],
+                      lower_data[:, [bin_idx], :]]
     intervention_X = [letter_data[:, [bin_idx], :],
                       language_data[:, [bin_idx], :]]
     median_split_fname = f'LowerVsUpperKnowledge-pre_camp-{freq}_Hz-SNR-{hemi}.npz'  # noqa E501
@@ -105,3 +113,12 @@ for freq, bin_idx in bin_idxs.items():
     for fname, X in {median_split_fname: median_split_X,
                      intervention_fname: intervention_X}.items():
         do_clustering(X, os.path.join(cluster_dir, fname))
+
+# cluster across all frequencies
+median_split_X = [upper_data, lower_data]
+intervention_X = [letter_data, language_data]
+median_split_fname = f'LowerVsUpperKnowledge-pre_camp-all_freqs-SNR-{hemi}.npz'  # noqa E501
+intervention_fname = f'LetterVsLanguageIntervention-PostMinusPre_camp-all_freqs-SNR-{hemi}.npz'  # noqa E501
+for fname, X in {median_split_fname: median_split_X,
+                 intervention_fname: intervention_X}.items():
+    do_clustering(X, os.path.join(cluster_dir, fname))
