@@ -81,8 +81,8 @@ for freq in freqs:
                     continue
                 brain = cluster_stc.plot(smoothing_steps='nearest',
                                          clim=clim_dict,
-                                         time_unit='Hz',
-                                         time_label='frequency',
+                                         time_unit='s',
+                                         time_label='frequency (Hz)',
                                          initial_time=this_time,
                                          **brain_plot_kwargs)
                 cluster_idx = signif_clu[time_idx - 1]
