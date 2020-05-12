@@ -18,9 +18,8 @@ group_dir = os.path.join(results_dir, 'pskt', 'group-level')
 in_dir = os.path.join(group_dir, 'cluster')
 stc_dir = os.path.join(in_dir, 'stcs')
 img_dir = os.path.join(group_dir, 'fig', 'cluster', 'brain')
-timeseries_dir = os.path.join(group_dir, 'fig', 'cluster', 'time-series')
-for folder in (stc_dir, img_dir, timeseries_dir):
-    os.makedirs(folder, exist_ok=True)
+for _dir in (stc_dir, img_dir):
+    os.makedirs(_dir, exist_ok=True)
 
 # load params
 brain_plot_kwargs, _, subjects = load_params()
