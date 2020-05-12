@@ -9,8 +9,11 @@ Plot clustering results for SSVEP data.
 import os
 import re
 import numpy as np
+from mayavi import mlab
 import mne
 from aux_functions import load_paths, load_params
+
+mlab.options.offscreen = True
 
 # config paths
 _, subjects_dir, results_dir = load_paths()
