@@ -114,11 +114,18 @@ for freq, bin_idx in bin_idxs.items():
                      intervention_fname: intervention_X}.items():
         do_clustering(X, os.path.join(cluster_dir, fname))
 
-# cluster across all frequencies
+# cluster across all frequencies. Don't use regularization or step-down here
+# (need to save memory)
 median_split_X = [upper_data, lower_data]
 intervention_X = [letter_data, language_data]
 median_split_fname = f'LowerVsUpperKnowledge-pre_camp-all_freqs-SNR-{hemi}.npz'  # noqa E501
 intervention_fname = f'LetterVsLanguageIntervention-PostMinusPre_camp-all_freqs-SNR-{hemi}.npz'  # noqa E501
 for fname, X in {median_split_fname: median_split_X,
                  intervention_fname: intervention_X}.items():
-    do_clustering(X, os.path.join(cluster_dir, fname))
+    cluster_results = permutation_cluster_test(
+        X, connectivity=connectivity, threshold=threshold,
+        n_permutations=1024, n_jobs=n_jobs, seed=rng, buffer_size=1024,
+        stat_fun=partial(ttest_ind_no_p, equal_var=False, sigma=0.),
+        step_down_p=0., out_type='indices')
+    stats = prep_cluster_stats(cluster_results)
+    np.savez(os.path.join(cluster_dir, fname), **stats)
