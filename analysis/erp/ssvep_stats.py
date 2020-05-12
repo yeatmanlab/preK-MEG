@@ -58,7 +58,7 @@ def do_clustering(X, fpath):
     cluster_results = permutation_cluster_test(
         X, connectivity=connectivity, threshold=threshold,
         n_permutations=1024, n_jobs=n_jobs, seed=rng, buffer_size=1024,
-        stat_fun=stat_fun, step_down_p=0.05)
+        stat_fun=stat_fun, step_down_p=0.05, out_type='indices')
     stats = prep_cluster_stats(cluster_results)
     np.savez(fpath, **stats)
 
