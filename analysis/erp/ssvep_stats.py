@@ -117,6 +117,7 @@ for freq in (2, 4, 6):
 del data_dict
 
 for freq, bin_idx in bin_idxs.items():
+    grandavg_X = [all_data[:, [bin_idx], :]]
     median_split_X = [upper_data[:, [bin_idx], :],
                       lower_data[:, [bin_idx], :]]
     intervention_X = [letter_data[:, [bin_idx], :],
@@ -124,7 +125,7 @@ for freq, bin_idx in bin_idxs.items():
     grandavg_fname = 'GrandAvg-PreAndPost_camp'
     median_split_fname = 'LowerVsUpperKnowledge-pre_camp'
     intervention_fname = 'LetterVsLanguageIntervention-PostMinusPre_camp'
-    for prefix, X in {grandavg_fname: [all_data],
+    for prefix, X in {grandavg_fname: grandavg_X,
                       median_split_fname: median_split_X,
                       intervention_fname: intervention_X}.items():
         onesamp = prefix == grandavg_fname
