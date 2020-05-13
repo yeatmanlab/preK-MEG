@@ -36,7 +36,7 @@ subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
                                   'fsaverage-ico-5-src.fif')
 fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
-vertices = [fsaverage_src[0]['vertno'], np.array([])]
+vertices = [fsaverage_src[hemi]['vertno'] for hemi in (0, 1)]
 
 grandavg_fname = 'GrandAvg-PreAndPost_camp'
 median_split_fname = 'LowerVsUpperKnowledge-pre_camp'
@@ -46,8 +46,9 @@ for prefix in (grandavg_fname, median_split_fname, intervention_fname):
     for freq in (2, 4, 6):
         fname = f'{prefix}-{freq}_Hz-SNR-{hemi}-tvals.npy'
         tvals = np.load(os.path.join(tval_dir, fname))
-        tvals = tvals.transpose(0, 1)  # (freqs, verts) → (verts, freqs)
-        stc = mne.SourceEstimate(tvals, vertices, tmin=freq, tstep=0.2,
+        tvals = tvals.transpose()  # (freqs, verts) → (verts, freqs)
+        stc = mne.SourceEstimate(np.concatenate([tvals, np.zeros_like(tvals)]),
+                                 vertices, tmin=freq, tstep=0.2,
                                  subject='fsaverage')
         # plot the brain
         brain = stc.plot(smoothing_steps='nearest', time_unit='s',
