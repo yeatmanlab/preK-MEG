@@ -55,7 +55,7 @@ for prefix in (grandavg_fname, median_split_fname, intervention_fname):
         tvals = tvals.transpose()  # (freqs, verts) → (verts, freqs)
         # cram in the data
         bin_idx = np.argmin(np.abs(stc.times - freq))
-        stc.data[:, bin_idx] = tvals
+        stc.data[:, bin_idx] = np.concatenate([tvals, np.zeros_like(tvals)])
         # plot the brain
         brain = stc.plot(smoothing_steps='nearest', time_unit='s',
                          time_label='t-value', initial_time=freq,
