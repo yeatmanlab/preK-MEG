@@ -129,9 +129,10 @@ for freq, bin_idx in bin_idxs.items():
                       intervention_fname: intervention_X}.items():
         onesamp = prefix == grandavg_fname
         # uncorrected t-maps
-        t_func = ttest_1samp_no_p if onesamp else ttest_ind_no_p
+        t_func = (ttest_1samp_no_p if onesamp else
+                  partial(ttest_ind_no_p, equal_var=False))
         fname = f'{prefix}-{freq}_Hz-SNR-{hemi}-tvals.npz'
-        tvals = t_func(*X, equal_var=False, sigma=1e-3)
+        tvals = t_func(*X, sigma=1e-3)
         np.save(os.path.join(tval_dir, fname), tvals)
         # clustering
         if run_clustering:
