@@ -131,7 +131,7 @@ for freq, bin_idx in bin_idxs.items():
         # uncorrected t-maps
         t_func = (ttest_1samp_no_p if onesamp else
                   partial(ttest_ind_no_p, equal_var=False))
-        fname = f'{prefix}-{freq}_Hz-SNR-{hemi}-tvals.npz'
+        fname = f'{prefix}-{freq}_Hz-SNR-{hemi}-tvals.npy'
         tvals = t_func(*X, sigma=1e-3)
         np.save(os.path.join(tval_dir, fname), tvals)
         # clustering
@@ -149,7 +149,7 @@ if all_bins:
     for prefix, X in {median_split_fname: median_split_X,
                       intervention_fname: intervention_X}.items():
         # uncorrected t-maps
-        fname = f'{prefix}-all_freqs-SNR-{hemi}-tvals.npz'
+        fname = f'{prefix}-all_freqs-SNR-{hemi}-tvals.npy'
         tvals = ttest_ind_no_p(*median_split_X, equal_var=False, sigma=1e-3)
         np.save(os.path.join(tval_dir, fname), tvals)
         if run_clustering:
