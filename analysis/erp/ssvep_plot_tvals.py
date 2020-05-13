@@ -20,6 +20,7 @@ hemi = 'lh'
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
+stc_dir = os.path.join(results_dir, 'pskt', 'group-level', 'stc')
 tval_dir = os.path.join(results_dir, 'pskt', 'group-level', 'tvals')
 fig_dir = os.path.join(results_dir, 'pskt', 'group-level', 'fig', 'tvals')
 os.makedirs(fig_dir, exist_ok=True)
@@ -32,11 +33,16 @@ timepoints = ('pre', 'post')
 subdivide_epochs = 5
 subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 
-# load fsaverage source space to get vertices
-fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
-                                  'fsaverage-ico-5-src.fif')
-fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
-vertices = [fsaverage_src[hemi]['vertno'] for hemi in (0, 1)]
+# load an STC as a template
+fname = 'GrandAvg-pre_camp-pskt-5_sec-fft-snr'
+stc = mne.read_source_estimate(os.path.join(stc_dir, fname))
+stc.data = np.zeros_like(stc.data)
+if hemi == 'lh':
+    attr = 'lh_data'
+elif hemi == 'rh':
+    attr = 'rh_data'
+else:
+    attr = 'data'
 
 grandavg_fname = 'GrandAvg-PreAndPost_camp'
 median_split_fname = 'LowerVsUpperKnowledge-pre_camp'
@@ -47,12 +53,12 @@ for prefix in (grandavg_fname, median_split_fname, intervention_fname):
         fname = f'{prefix}-{freq}_Hz-SNR-{hemi}-tvals.npy'
         tvals = np.load(os.path.join(tval_dir, fname))
         tvals = tvals.transpose()  # (freqs, verts) → (verts, freqs)
-        stc = mne.SourceEstimate(np.concatenate([tvals, np.zeros_like(tvals)]),
-                                 vertices, tmin=freq, tstep=0.2,
-                                 subject='fsaverage')
+        # cram in the data
+        bin_idx = np.argmin(np.abs(stc.times - freq))
+        stc.data[:, bin_idx] = tvals
         # plot the brain
         brain = stc.plot(smoothing_steps='nearest', time_unit='s',
-                         time_label='frequency (Hz)', initial_time=freq,
+                         time_label='t-value', initial_time=freq,
                          **brain_plot_kwargs)
         img_fname = re.sub(r'\.npy$', '.png', fname)
         img_path = os.path.join(fig_dir, img_fname)
