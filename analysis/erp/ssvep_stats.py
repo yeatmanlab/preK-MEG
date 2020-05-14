@@ -16,7 +16,7 @@ from aux_functions import (load_paths, load_params, load_cohorts,
                            div_by_adj_bins, prep_cluster_stats)
 
 # flags
-all_bins = False  # whether to run clustering across all bins or just (2, 4, 6)
+all_bins = True  # whether to run clustering across all bins or just (2, 4, 6)
 run_clustering = False
 tfce = True
 n_jobs = 10
@@ -48,7 +48,8 @@ subdivide_epochs = 5
 subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 rng = np.random.RandomState(seed=15485863)  # the one millionth prime
 threshold = dict(start=0, step=0.2) if tfce else None
-stat_fun = partial(ttest_ind_no_p, equal_var=False)
+tval_sigma = 1e-2
+cluster_sigma = 0.
 
 # load fsaverage source space to get connectivity matrix
 fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
@@ -63,12 +64,14 @@ connectivity = mne.spatial_src_connectivity(fsaverage_src)
 
 
 def find_clusters(X, fpath, onesamp=False):
+    stat_fun = partial(ttest_ind_no_p, equal_var=False)
     cluster_func = (permutation_cluster_1samp_test if onesamp else
                     permutation_cluster_test)
     cluster_results = cluster_func(
         X, connectivity=connectivity, threshold=threshold,
         n_permutations=1024, n_jobs=n_jobs, seed=rng, buffer_size=1024,
-        stat_fun=stat_fun, step_down_p=0.05, out_type='indices')
+        stat_fun=stat_fun, step_down_p=0.05, out_type='indices',
+        sigma=cluster_sigma)
     stats = prep_cluster_stats(cluster_results)
     np.savez(fpath, **stats)
 
@@ -133,7 +136,7 @@ for freq, bin_idx in bin_idxs.items():
         t_func = (ttest_1samp_no_p if onesamp else
                   partial(ttest_ind_no_p, equal_var=False))
         fname = f'{prefix}-{freq}_Hz-SNR-{hemi}-tvals.npy'
-        tvals = t_func(*X, sigma=1e-3)
+        tvals = t_func(*X, sigma=tval_sigma)
         np.save(os.path.join(tval_dir, fname), tvals)
         # clustering
         if run_clustering:
@@ -143,22 +146,26 @@ for freq, bin_idx in bin_idxs.items():
 # cluster across all frequencies. Don't use regularization or step-down here
 # (need to save memory)
 if all_bins:
+    grandavg_X = [all_data]
     median_split_X = [upper_data, lower_data]
     intervention_X = [letter_data, language_data]
-    median_split_fname = f'LowerVsUpperKnowledge-pre_camp'
-    intervention_fname = f'LetterVsLanguageIntervention-PostMinusPre_camp'
-    for prefix, X in {median_split_fname: median_split_X,
+    grandavg_fname = 'GrandAvg-PreAndPost_camp'
+    median_split_fname = 'LowerVsUpperKnowledge-pre_camp'
+    intervention_fname = 'LetterVsLanguageIntervention-PostMinusPre_camp'
+    for prefix, X in {grandavg_fname: grandavg_X,
+                      median_split_fname: median_split_X,
                       intervention_fname: intervention_X}.items():
         # uncorrected t-maps
         fname = f'{prefix}-all_freqs-SNR-{hemi}-tvals.npy'
-        tvals = ttest_ind_no_p(*median_split_X, equal_var=False, sigma=1e-3)
+        tvals = ttest_ind_no_p(*X, equal_var=False, sigma=tval_sigma)
         np.save(os.path.join(tval_dir, fname), tvals)
         if run_clustering:
+            stat_fun = partial(ttest_ind_no_p, equal_var=False,
+                               sigma=cluster_sigma)
             cluster_results = permutation_cluster_test(
                 X, connectivity=connectivity, threshold=threshold,
                 n_permutations=1024, n_jobs=n_jobs, seed=rng, buffer_size=1024,
-                stat_fun=partial(ttest_ind_no_p, equal_var=False, sigma=0.),
-                step_down_p=0., out_type='indices')
+                stat_fun=stat_fun, step_down_p=0., out_type='indices')
             stats = prep_cluster_stats(cluster_results)
             fname = f'{prefix}-all_freqs-SNR-{hemi}-clusters.npz'
             np.savez(os.path.join(cluster_dir, fname), **stats)
