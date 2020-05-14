@@ -7,9 +7,10 @@ Plot frequency-domain STCs.
 """
 
 import os
+import numpy as np
 from mayavi import mlab
 import mne
-from aux_functions import load_paths, load_params
+from aux_functions import load_paths, load_params, div_by_adj_bins
 
 # flags
 mlab.options.offscreen = True
@@ -37,11 +38,15 @@ for timepoint in timepoints:
         # load this subject's STC
         fname = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-fft'
         stc = mne.read_source_estimate(os.path.join(in_dir, fname))
-        # plot it
-        # TODO: STC data is still complex at this point
-        brain = stc.plot(subject='fsaverage', **brain_plot_kwargs)
-        for freq in (2, 4, 6, 12):
-            brain.set_time(freq)
-            fname = f'{s}-{timepoint}_camp-pskt{subdiv}-fft-{freq:02}_Hz.png'
-            brain.save_image(os.path.join(fig_dir, fname))
-        del brain
+        # convert complex values to magnitude & normalize to "SNR"
+        magn_data = np.abs(stc.data)
+        snr_data = div_by_adj_bins(magn_data)
+        for kind, _data in dict(magnitude=magn_data, snr=snr_data).items():
+            stc.data = _data
+            # plot it
+            brain = stc.plot(subject='fsaverage', **brain_plot_kwargs)
+            for freq in (2, 4, 6, 12):
+                brain.set_time(freq)
+                fname = f'{s}-{timepoint}_camp-pskt{subdiv}-fft-{kind}-{freq:02}_Hz.png'  # noqa E501
+                brain.save_image(os.path.join(fig_dir, fname))
+            del brain

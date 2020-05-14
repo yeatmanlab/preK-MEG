@@ -36,13 +36,12 @@ groups.update(letter_knowledge_group)
 
 # config other
 timepoints = ('pre', 'post')
-kinds = ('baseline', 'phase_cancelled')
 trial_dur = 20
 subdivide_epochs = 5
 subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 
-# load in all data first, to get colormap limits. Not memory efficient but
-# shouldn't be too bad
+# load in all individual subject data first, to get colormap limits. Not very
+# memory efficient but shouldn't be too bad
 all_data = list()
 all_stcs = dict()
 for s in groups['GrandAvg']:
@@ -59,6 +58,8 @@ cmap_percentiles = (91, 95, 99)
 lims = tuple(np.percentile(abs_data, cmap_percentiles))
 snr_lims = tuple(np.percentile(snr_data, cmap_percentiles))
 log_lims = tuple(np.percentile(np.log(snr_data), cmap_percentiles))
+# clean up
+del all_data, abs_data, snr_data
 
 # loop over timepoints
 for timepoint in timepoints:
@@ -67,28 +68,12 @@ for timepoint in timepoints:
         # only do pretest knowledge comparison for pre-camp timepoint
         if group.endswith('Knowledge') and timepoint == 'post':
             continue
-
-        # aggregate over group members
-        avg_data = 0.
-        snr_data = 0.
-        log_data = 0.
-        for s in members:
-            this_data = np.abs(all_stcs[f'{s}-{timepoint}'].data)
-            avg_data += this_data
-            # divide each bin by its neighbors on each side to get "SNR"
-            this_snr = div_by_adj_bins(this_data)
-            snr_data += this_snr
-            log_data += np.log(this_snr)
-        # save and plot untransformed data & SNR data
-        for kind, _data, _lims in zip(['avg', 'snr', 'log'],
-                                      [avg_data, snr_data, log_data],
-                                      [lims, snr_lims, log_lims]):
-            # use a copy of the last STC as container
-            stc = all_stcs[f'{s}-{timepoint}'].copy()
-            stc.data = _data / len(members)
-            # save stc
+        # load and plot untransformed data & SNR data
+        for kind, _lims in zip(['avg', 'snr', 'log'],
+                               [lims, snr_lims, log_lims]):
+            # load stc
             fname = f'{group}-{timepoint}_camp-pskt{subdiv}-fft-{kind}'
-            stc.save(os.path.join(stc_dir, fname), ftype='h5')
+            stc = mne.read_source_estimate(fname, subject='fsaverage')
             # plot stc
             clim = dict(kind='value')
             pos = dict(pos_lims=_lims) if kind == 'log' else dict(lims=_lims)
