@@ -37,7 +37,7 @@ subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 fname = 'GrandAvg-pre_camp-pskt-5_sec-fft-snr'
 stc = mne.read_source_estimate(os.path.join(stc_dir, fname))
 # make the STC have one "time point" (a.k.a., frequency bin)
-stc.data = np.zeros(stc.data.shape[0], 1)
+stc.data = np.zeros((stc.data.shape[0], 1))
 if hemi == 'lh':
     attr = 'lh_data'
 elif hemi == 'rh':
