@@ -36,7 +36,8 @@ subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 # load an STC as a template
 fname = 'GrandAvg-pre_camp-pskt-5_sec-fft-snr'
 stc = mne.read_source_estimate(os.path.join(stc_dir, fname))
-stc.data = np.zeros_like(stc.data)
+# make the STC have one "time point" (a.k.a., frequency bin)
+stc.data = np.zeros(stc.data.shape[0], 1)
 if hemi == 'lh':
     attr = 'lh_data'
 elif hemi == 'rh':
@@ -56,7 +57,7 @@ for prefix in (grandavg_fname, median_split_fname, intervention_fname):
         # cram in the data
         bin_idx = np.argmin(np.abs(stc.times - freq))
         this_data = np.squeeze(np.concatenate([tvals, np.zeros_like(tvals)]))
-        stc.data[:, bin_idx] = this_data
+        setattr(stc, attr, this_data)
         # plot the brain
         brain = stc.plot(smoothing_steps='nearest', time_unit='s',
                          time_label='t-value', initial_time=freq,
