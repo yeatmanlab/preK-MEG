@@ -38,12 +38,6 @@ fname = 'GrandAvg-pre_camp-pskt-5_sec-fft-snr'
 stc = mne.read_source_estimate(os.path.join(stc_dir, fname))
 # make the STC have one "time point" (a.k.a., frequency bin)
 stc.data = np.zeros((stc.data.shape[0], 1))
-if hemi == 'lh':
-    attr = 'lh_data'
-elif hemi == 'rh':
-    attr = 'rh_data'
-else:
-    attr = 'data'
 
 grandavg_fname = 'GrandAvg-PreAndPost_camp'
 median_split_fname = 'LowerVsUpperKnowledge-pre_camp'
@@ -56,8 +50,7 @@ for prefix in (grandavg_fname, median_split_fname, intervention_fname):
         tvals = tvals.transpose()  # (freqs, verts) → (verts, freqs)
         # cram in the data
         bin_idx = np.argmin(np.abs(stc.times - freq))
-        this_data = np.squeeze(np.concatenate([tvals, np.zeros_like(tvals)]))
-        setattr(stc, attr, this_data)
+        stc.data = np.squeeze(np.concatenate([tvals, np.zeros_like(tvals)]))
         # plot the brain
         brain = stc.plot(smoothing_steps='nearest', time_unit='s',
                          time_label='t-value', initial_time=freq,
