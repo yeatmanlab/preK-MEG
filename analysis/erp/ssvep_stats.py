@@ -155,9 +155,12 @@ if all_bins:
     for prefix, X in {grandavg_fname: grandavg_X,
                       median_split_fname: median_split_X,
                       intervention_fname: intervention_X}.items():
+        onesamp = prefix == grandavg_fname
         # uncorrected t-maps
+        t_func = (ttest_1samp_no_p if onesamp else
+                  partial(ttest_ind_no_p, equal_var=False))
         fname = f'{prefix}-all_freqs-SNR-{hemi}-tvals.npy'
-        tvals = ttest_ind_no_p(*X, equal_var=False, sigma=tval_sigma)
+        tvals = t_func(*X, sigma=tval_sigma)
         np.save(os.path.join(tval_dir, fname), tvals)
         if run_clustering:
             stat_fun = partial(ttest_ind_no_p, equal_var=False,
