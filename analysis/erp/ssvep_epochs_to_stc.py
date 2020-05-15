@@ -67,6 +67,7 @@ for s in subjects:
         # convert to fake evoked object
         evoked_spect = mne.EvokedArray(spectrum, evoked.info, nave=evoked.nave)
         evoked_spect.times = freqs
+        evoked_spect.info['sfreq'] = 1. / np.diff(freqs[:2])[0]
         del evoked, spectrum
         # go to source space. inverse is only located in the ERP folder tree,
         # not in PSKT (TODO: this may change at some point)
@@ -75,7 +76,8 @@ for s in subjects:
         inverse = mne.minimum_norm.read_inverse_operator(inv_path)
         stc = mne.minimum_norm.apply_inverse(
             evoked_spect, inverse, lambda2, pick_ori='normal')
-        stc.tstep = np.diff(freqs[:2])
+        assert stc.tstep == np.diff(freqs[:2])
+        assert np.all(stc.times == freqs)
         fname = f'{stub}-fft'
         stc.save(os.path.join(stc_dir, fname), ftype='h5')
         # compute morph for this subject
