@@ -73,7 +73,8 @@ for timepoint in timepoints:
                                [lims, snr_lims, log_lims]):
             # load stc
             fname = f'{group}-{timepoint}_camp-pskt{subdiv}-fft-{kind}'
-            stc = mne.read_source_estimate(fname, subject='fsaverage')
+            fpath = os.path.join(stc_dir, fname)
+            stc = mne.read_source_estimate(fpath, subject='fsaverage')
             # plot stc
             clim = dict(kind='value')
             pos = dict(pos_lims=_lims) if kind == 'log' else dict(lims=_lims)
