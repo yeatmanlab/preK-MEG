@@ -51,7 +51,7 @@ for s in groups['GrandAvg']:
 for tpt in timepoints:
     data = np.array([data_dict[f'{s}-{tpt}'] for s in groups['GrandAvg']])
     tvals = ttest_1samp_no_p(data)
-    np.save(os.path.join(tval_dir, f'GrandAvg-{tpt}_camp-tvals.npz'), tvals)
+    np.save(os.path.join(tval_dir, f'GrandAvg-{tpt}_camp-tvals.npy'), tvals)
 
 # planned comparison: pre-intervention median split on letter awareness test
 med_spl = [np.array([data_dict[f'{s}-pre'] for s in groups['UpperKnowledge']]),
