@@ -57,7 +57,7 @@
 
 1. `ssvep_make_epochs.py`
     - optional: `ssvep_plot_phases.py`
-    - `ssvep_plot_sensor_psds.py`
+    - optional: `ssvep_plot_sensor_psds.py`
 
 2. `ssvep_epochs_to_stc.py` applies the FFT to the epoch data and then converts
    to source space (keeping the complex values).
