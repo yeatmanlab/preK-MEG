@@ -30,33 +30,27 @@ brain_plot_kwargs, _, subjects = load_params()
 
 # config other
 timepoints = ('pre', 'post')
-subdivide_epochs = 5
-subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 
 # load an STC as a template
 fname = 'GrandAvg-pre_camp-pskt-5_sec-fft-snr'
 stc = mne.read_source_estimate(os.path.join(stc_dir, fname))
-# make the STC have one "time point" (a.k.a., frequency bin)
-stc.data = np.zeros((stc.data.shape[0], 1))
 
-grandavg_fname = 'GrandAvg-PreAndPost_camp'
+precamp_fname = 'GrandAvg-pre_camp'
+postcamp_fname = 'GrandAvg-post_camp'
 median_split_fname = 'LowerVsUpperKnowledge-pre_camp'
 intervention_fname = 'LetterVsLanguageIntervention-PostMinusPre_camp'
 
-for prefix in (grandavg_fname, median_split_fname, intervention_fname):
-    for freq in (2, 4, 6):
-        fname = f'{prefix}-{freq}_Hz-SNR-{hemi}-tvals.npy'
-        tvals = np.load(os.path.join(tval_dir, fname))
-        tvals = tvals.transpose()  # (freqs, verts) → (verts, freqs)
-        # cram in the data
-        bin_idx = np.argmin(np.abs(stc.times - freq))
-        this_data = [tvals, np.zeros_like(tvals)]
-        this_data = this_data[::-1] if hemi == 'rh' else this_data
-        stc.data = np.concatenate(this_data)
-        # plot the brain
-        brain = stc.plot(smoothing_steps='nearest', time_unit='s',
-                         time_label='t-value', initial_time=freq,
-                         **brain_plot_kwargs)
+for prefix in (precamp_fname, postcamp_fname, median_split_fname,
+               intervention_fname):
+    fname = f'{prefix}-tvals.npy'
+    tvals = np.load(os.path.join(tval_dir, fname))
+    stc.data = tvals
+    # plot the brain
+    brain = stc.plot(smoothing_steps='nearest', time_unit='s',
+                     time_label='t-value', **brain_plot_kwargs)
+    for freq in (2, 4, 6, 12):
+        brain.set_time(freq)
         img_fname = re.sub(r'\.npy$', '.png', fname)
         img_path = os.path.join(fig_dir, img_fname)
         brain.save_image(img_path)
+    del brain
