@@ -70,4 +70,4 @@ interv_tvals = ttest_ind_no_p(*interv)
 tval_dict = {'LowerVsUpperKnowledge-pre_camp': med_spl_tvals,
              'LetterVsLanguageIntervention-PostMinusPre_camp': interv_tvals}
 for fname, tvals in tval_dict.items():
-    np.save(os.path.join(tval_dir, fname), tvals)
+    np.save(os.path.join(tval_dir, f'{fname}-tvals.npy'), tvals)
