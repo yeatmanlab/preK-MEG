@@ -37,12 +37,6 @@ timepoints = ('pre', 'post')
 subdivide_epochs = 5
 subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 
-# load an STC as a template
-fname = 'GrandAvg-pre_camp-pskt-5_sec-fft-snr'
-template_stc = mne.read_source_estimate(os.path.join(stc_dir, fname))
-# make the template STC have one "time point" (a.k.a., frequency bin)
-template_stc.data = np.zeros((template_stc.data.shape[0], 1))
-
 # load in all the data
 data_dict = dict()
 for s in groups['GrandAvg']:
@@ -50,31 +44,14 @@ for s in groups['GrandAvg']:
         stub = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-fft'
         stc = mne.read_source_estimate(os.path.join(in_dir, f'{stub}-stc.h5'),
                                        subject='fsaverage')
-        # convert to SNR across bins
-        stc.data = div_by_adj_bins(np.abs(stc.data))
-        # compute t-test within-subject, within-bin, across vertices
-        tvals = ttest_1samp_no_p(stc.data)
-        # plot (using the template STC)
-        for freq in (2, 4, 6, 12):
-            bin_idx = np.argmin(np.abs(stc.times - freq))
-            template_stc.data = tvals[:, bin_idx]
-            # plot the brain
-            brain = template_stc.plot(smoothing_steps='nearest', time_unit='s',
-                                      time_label='t-value', initial_time=freq,
-                                      **brain_plot_kwargs)
-            img_fname = f'{stub}-{freq}_Hz-SNR-tvals.png'
-            img_path = os.path.join(fig_dir, img_fname)
-            brain.save_image(img_path)
-        # save SNR data for later group comparisons
-        data_dict[f'{s}-{timepoint}'] = stc.data
-np.savez(os.path.join(tval_dir, 'indiv-subj-tvals.npz'), **data_dict)
+        # convert to SNR across bins & save for later group comparisons
+        data_dict[f'{s}-{timepoint}'] = div_by_adj_bins(np.abs(stc.data))
 
-# across-subj average 1-sample t-values (within-bin, across vertices)
+# across-subj 1-sample t-values
 for tpt in timepoints:
     data = np.array([data_dict[f'{s}-{tpt}'] for s in groups['GrandAvg']])
-    tvals = ttest_1samp_no_p(data.mean(axis=0))
-    np.save(os.path.join(tval_dir, f'GrandAvg-{tpt}_camp-tvals.npz'),
-            **data_dict)
+    tvals = ttest_1samp_no_p(data)
+    np.save(os.path.join(tval_dir, f'GrandAvg-{tpt}_camp-tvals.npz'), tvals)
 
 # planned comparison: pre-intervention median split on letter awareness test
 med_spl = [np.array([data_dict[f'{s}-pre'] for s in groups['UpperKnowledge']]),
@@ -90,9 +67,7 @@ med_spl_tvals = ttest_ind_no_p(*med_spl)
 interv_tvals = ttest_ind_no_p(*interv)
 
 # save the data
-tval_dict = {
-    'LowerVsUpperKnowledge-pre_camp': med_spl_tvals,
-    'LetterVsLanguageIntervention-PostMinusPre_camp': interv_tvals,
-}
-for fname, tval_data in tval_dict.items():
-    np.save(os.path.join(tval_dir, fname), tval_data)
+tval_dict = {'LowerVsUpperKnowledge-pre_camp': med_spl_tvals,
+             'LetterVsLanguageIntervention-PostMinusPre_camp': interv_tvals}
+for fname, tvals in tval_dict.items():
+    np.save(os.path.join(tval_dir, fname), tvals)
