@@ -361,4 +361,4 @@ def div_by_adj_bins(data, n_bins=2, method='mean'):
     weights[n_bins] = 0  # don't divide target bin by itself
     if method == 'mean':
         weights /= 2 * n_bins
-    return data / convolve1d(data, mode='constant', weights=weights.tolist())
+    return data / convolve1d(data, mode='constant', weights=weights)
