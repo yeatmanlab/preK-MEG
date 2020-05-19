@@ -8,11 +8,10 @@ Plot uncorrected t-maps.
 
 import os
 import numpy as np
-from mayavi import mlab
 import mne
 from aux_functions import load_paths, load_params
 
-mlab.options.offscreen = True
+mne.cuda.init_cuda()
 
 # flags
 save_movie = True
@@ -49,7 +48,7 @@ for prefix in (precamp_fname, postcamp_fname, median_split_fname,
                      time_label='t-value', **brain_plot_kwargs)
     for freq in (2, 4, 6, 12):
         brain.set_time(freq)
-        img_fname = f'{prefix}-{freq}_Hz.png'
+        img_fname = f'{prefix}-{freq:02}_Hz.png'
         img_path = os.path.join(fig_dir, img_fname)
         brain.save_image(img_path)
     if save_movie:
