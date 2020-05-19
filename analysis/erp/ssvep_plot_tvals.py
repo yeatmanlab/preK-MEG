@@ -7,7 +7,6 @@ Plot uncorrected t-maps.
 """
 
 import os
-import re
 import numpy as np
 from mayavi import mlab
 import mne
@@ -16,7 +15,7 @@ from aux_functions import load_paths, load_params
 mlab.options.offscreen = True
 
 # flags
-hemi = 'lh'
+save_movie = False
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
@@ -26,7 +25,7 @@ fig_dir = os.path.join(results_dir, 'pskt', 'group-level', 'fig', 'tvals')
 os.makedirs(fig_dir, exist_ok=True)
 
 # load params
-brain_plot_kwargs, _, subjects = load_params()
+brain_plot_kwargs, movie_kwargs, subjects = load_params()
 
 # config other
 timepoints = ('pre', 'post')
@@ -50,7 +49,10 @@ for prefix in (precamp_fname, postcamp_fname, median_split_fname,
                      time_label='t-value', **brain_plot_kwargs)
     for freq in (2, 4, 6, 12):
         brain.set_time(freq)
-        img_fname = re.sub(r'\.npy$', '.png', fname)
+        img_fname = f'{prefix}-{freq}_Hz.png'
         img_path = os.path.join(fig_dir, img_fname)
         brain.save_image(img_path)
+    if save_movie:
+        movie_fname = f'{prefix}.mov'
+        brain.save_movie(movie_fname, **movie_kwargs)
     del brain
