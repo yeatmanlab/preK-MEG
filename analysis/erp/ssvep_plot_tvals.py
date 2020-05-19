@@ -15,7 +15,7 @@ from aux_functions import load_paths, load_params
 mlab.options.offscreen = True
 
 # flags
-save_movie = False
+save_movie = True
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
@@ -54,5 +54,5 @@ for prefix in (precamp_fname, postcamp_fname, median_split_fname,
         brain.save_image(img_path)
     if save_movie:
         movie_fname = f'{prefix}.mov'
-        brain.save_movie(movie_fname, **movie_kwargs)
+        brain.save_movie(os.path.join(fig_dir, movie_fname), **movie_kwargs)
     del brain
