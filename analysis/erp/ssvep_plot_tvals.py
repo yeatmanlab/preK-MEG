@@ -47,7 +47,7 @@ for prefix in (precamp_fname, postcamp_fname, median_split_fname,
     stc.data = tvals
     # plot the brain
     brain = stc.plot(smoothing_steps='nearest', time_unit='s',
-                     time_label='t-value', **brain_plot_kwargs)
+                     time_label='t-value (%0.2f Hz)', **brain_plot_kwargs)
     for freq in (0, 1, 2, 3, 4, 6, 12):
         brain.set_time(freq)
         img_fname = f'{prefix}-{freq:02}_Hz.png'
@@ -57,8 +57,11 @@ for prefix in (precamp_fname, postcamp_fname, median_split_fname,
         movie_dir = os.path.join(results_dir, 'pskt', 'group-level', 'fig',
                                  'movie_frames', prefix)
         os.makedirs(movie_dir, exist_ok=True)
-        fname_pattern = os.path.join(movie_dir, f'{prefix}_%03d.png')
-        _ = brain.save_image_sequence(time_idx=range(len(stc.times)),
-                                      fname_pattern=fname_pattern,
-                                      montage='current')
+        # don't use brain.save_image_sequence because you can't include actual
+        # time (freq) value in output filename (only a time index)
+        for freq in stc.times:
+            brain.set_time(freq)
+            img_fname = f'{prefix}-{freq:02}_Hz.png'
+            img_path = os.path.join(movie_dir, img_fname)
+            brain.save_image(img_path)
     del brain
