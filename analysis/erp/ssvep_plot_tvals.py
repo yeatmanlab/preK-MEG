@@ -45,8 +45,13 @@ for prefix in (precamp_fname, postcamp_fname, median_split_fname,
     fname = f'{prefix}-tvals.npy'
     tvals = np.load(os.path.join(tval_dir, fname))
     stc.data = tvals
+    # set the colormap lims
+    clim = dict(kind='value')
+    lims = tuple(np.percentile(tvals, (85, 90, 95)))
+    pos = dict(pos_lims=lims) if prefix.startswith('Gran') else dict(lims=lims)
+    clim.update(pos)
     # plot the brain
-    brain = stc.plot(smoothing_steps='nearest', time_unit='s',
+    brain = stc.plot(smoothing_steps='nearest', clim=clim, time_unit='s',
                      time_label='t-value (%0.2f Hz)', **brain_plot_kwargs)
     for freq in (0, 1, 2, 3, 4, 6, 12):
         brain.set_time(freq)
