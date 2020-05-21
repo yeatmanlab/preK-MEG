@@ -8,9 +8,11 @@ Plot uncorrected t-maps.
 
 import os
 import numpy as np
+from mayavi import mlab
 import mne
 from aux_functions import load_paths, load_params
 
+mlab.options.offscreen = True
 mne.cuda.init_cuda()
 
 # flags
