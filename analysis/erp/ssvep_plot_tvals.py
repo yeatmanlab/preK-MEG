@@ -52,9 +52,10 @@ for prefix in (precamp_fname, postcamp_fname, median_split_fname,
         img_path = os.path.join(fig_dir, img_fname)
         brain.save_image(img_path)
     if save_movie:
-        fname_pattern = os.path.join(results_dir, 'pskt', 'group-level', 'fig',
-                                     'movie_frames', prefix,
-                                     f'{prefix}_%03d.png')
+        movie_dir = os.path.join(results_dir, 'pskt', 'group-level', 'fig',
+                                 'movie_frames', prefix)
+        os.makedirs(movie_dir, exist_ok=True)
+        fname_pattern = os.path.join(movie_dir, f'{prefix}_%03d.png')
         _ = brain.save_image_sequence(time_idx=range(len(stc.times)),
                                       fname_pattern=fname_pattern,
                                       montage='current')
