@@ -13,9 +13,6 @@ from mne.stats import ttest_ind_no_p, ttest_1samp_no_p
 from aux_functions import (load_paths, load_params, load_cohorts,
                            div_by_adj_bins)
 
-# flags
-hemi = 'lh'
-
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
 in_dir = os.path.join(results_dir, 'pskt', 'stc', 'morphed-to-fsaverage')
@@ -39,18 +36,23 @@ subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 
 # load in all the data
 data_dict = dict()
+noise_dict = dict()
 for s in groups['GrandAvg']:
     for timepoint in timepoints:
         stub = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-fft'
         stc = mne.read_source_estimate(os.path.join(in_dir, f'{stub}-stc.h5'),
                                        subject='fsaverage')
-        # convert to SNR across bins & save for later group comparisons
-        data_dict[f'{s}-{timepoint}'] = div_by_adj_bins(np.abs(stc.data))
+        # compute magnitude (signal) & avg of adjacent bins on either side
+        # (noise), & save for later group comparisons
+        data_dict[f'{s}-{timepoint}'] = np.abs(stc.data)
+        noise_dict[f'{s}-{timepoint}'] = div_by_adj_bins(np.abs(stc.data),
+                                                         return_noise=True)
 
-# across-subj 1-sample t-values
+# across-subj 1-sample t-values (freq bin versus mean of 4 surrounding bins)
 for tpt in timepoints:
     data = np.array([data_dict[f'{s}-{tpt}'] for s in groups['GrandAvg']])
-    tvals = ttest_1samp_no_p(data)
+    noise = np.array([noise_dict[f'{s}-{tpt}'] for s in groups['GrandAvg']])
+    tvals = ttest_1samp_no_p(data - noise)
     np.save(os.path.join(tval_dir, f'GrandAvg-{tpt}_camp-tvals.npy'), tvals)
 
 # planned comparison: pre-intervention median split on letter awareness test
@@ -67,7 +69,7 @@ med_spl_tvals = ttest_ind_no_p(*med_spl)
 interv_tvals = ttest_ind_no_p(*interv)
 
 # save the data
-tval_dict = {'LowerVsUpperKnowledge-pre_camp': med_spl_tvals,
+tval_dict = {'UpperVsLowerKnowledge-pre_camp': med_spl_tvals,
              'LetterVsLanguageIntervention-PostMinusPre_camp': interv_tvals}
 for fname, tvals in tval_dict.items():
     np.save(os.path.join(tval_dir, f'{fname}-tvals.npy'), tvals)

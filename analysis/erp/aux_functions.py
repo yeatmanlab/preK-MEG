@@ -347,7 +347,7 @@ def subdivide_epochs(epochs, divisions):
     return recut_epochs
 
 
-def div_by_adj_bins(data, n_bins=2, method='mean'):
+def div_by_adj_bins(data, n_bins=2, method='mean', return_noise=False):
     """
     data : np.ndarray
         the data to enhance
@@ -361,4 +361,5 @@ def div_by_adj_bins(data, n_bins=2, method='mean'):
     weights[n_bins] = 0  # don't divide target bin by itself
     if method == 'mean':
         weights /= 2 * n_bins
-    return data / convolve1d(data, mode='constant', weights=weights)
+    noise = convolve1d(data, mode='constant', weights=weights)
+    return noise if return_noise else data / noise
