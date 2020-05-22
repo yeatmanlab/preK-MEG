@@ -66,7 +66,7 @@ for prefix in (precamp_fname, postcamp_fname, median_split_fname,
         # time (freq) value in output filename (only a time index)
         for freq in stc.times:
             brain.set_time(freq)
-            img_fname = f'{prefix}-{freq:02}_Hz.png'
+            img_fname = f'{prefix}-{freq:02.1}_Hz.png'
             img_path = os.path.join(movie_dir, img_fname)
             brain.save_image(img_path)
     del brain
