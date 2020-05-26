@@ -3,7 +3,7 @@
 """
 @author: Daniel McCloy
 
-Make uncorrected t-value maps.
+Compute uncorrected t-value maps.
 """
 
 import os
@@ -56,20 +56,25 @@ for tpt in timepoints:
     np.save(os.path.join(tval_dir, f'GrandAvg-{tpt}_camp-tvals.npy'), tvals)
 
 # planned comparison: pre-intervention median split on letter awareness test
-med_spl = [np.array([data_dict[f'{s}-pre'] for s in groups['UpperKnowledge']]),
-           np.array([data_dict[f'{s}-pre'] for s in groups['LowerKnowledge']])]
+median_split = list()
+for group in ('UpperKnowledge', 'LowerKnowledge'):
+    data = np.array([data_dict[f'{s}-pre'] for s in groups[group]])
+    noise = np.array([noise_dict[f'{s}-pre'] for s in groups[group]])
+    median_split.append(data - noise)
+median_split_tvals = ttest_ind_no_p(*median_split)
 
 # planned comparison: post-minus-pre-intervention, language-vs-letter cohort
-interv = [np.array([data_dict[f'{s}-post'] - data_dict[f'{s}-pre']
-                    for s in groups['LetterIntervention']]),
-          np.array([data_dict[f'{s}-post'] - data_dict[f'{s}-pre']
-                    for s in groups['LanguageIntervention']])]
-
-med_spl_tvals = ttest_ind_no_p(*med_spl)
-interv_tvals = ttest_ind_no_p(*interv)
+intervention = list()
+for group in ('LetterIntervention', 'LanguageIntervention'):
+    data = np.array([data_dict[f'{s}-post'] - data_dict[f'{s}-pre']
+                    for s in groups[group]])
+    noise = np.array([noise_dict[f'{s}-post'] - noise_dict[f'{s}-pre']
+                     for s in groups[group]])
+    intervention.append(data - noise)
+intervention_tvals = ttest_ind_no_p(*intervention)
 
 # save the data
-tval_dict = {'UpperVsLowerKnowledge-pre_camp': med_spl_tvals,
-             'LetterVsLanguageIntervention-PostMinusPre_camp': interv_tvals}
+tval_dict = {'UpperVsLowerKnowledge-pre_camp': median_split_tvals,
+             'LetterVsLanguageIntervention-PostMinusPre_camp': intervention_tvals}  # noqa E501
 for fname, tvals in tval_dict.items():
     np.save(os.path.join(tval_dir, f'{fname}-tvals.npy'), tvals)
