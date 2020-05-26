@@ -3,7 +3,7 @@
 """
 @author: Daniel McCloy
 
-Plot uncorrected t-maps.
+Plot uncorrected t-value maps.
 """
 
 import os
