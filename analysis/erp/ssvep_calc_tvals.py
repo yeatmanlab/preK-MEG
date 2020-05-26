@@ -38,7 +38,7 @@ subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 # load in all the data
 data_dict = dict()
 noise_dict = dict()
-for s in groups['GrandAvg']:
+for s in subjects:
     for timepoint in timepoints:
         stub = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-fft'
         stc = mne.read_source_estimate(os.path.join(in_dir, f'{stub}-stc.h5'),
