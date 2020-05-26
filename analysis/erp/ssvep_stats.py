@@ -114,7 +114,6 @@ lett_data = [data_dict[f'{s}-post'] - data_dict[f'{s}-pre'] for s in groups['Let
 lang_data = [data_dict[f'{s}-post'] - data_dict[f'{s}-pre'] for s in groups['LanguageIntervention']]
 lett_noise = [noise_dict[f'{s}-post'] - noise_dict[f'{s}-pre'] for s in groups['LetterIntervention']]
 lang_noise = [noise_dict[f'{s}-post'] - noise_dict[f'{s}-pre'] for s in groups['LanguageIntervention']]
-
 lett_snr = np.array(lett_data) - np.array(lett_noise)
 lang_snr = np.array(lang_data) - np.array(lang_noise)
 
@@ -125,8 +124,8 @@ these_freqs = (2, 4, 6, 12)
 bin_idxs = {freq: np.argmin(np.abs(all_freqs - freq)) for freq in these_freqs}
 
 for freq, bin_idx in bin_idxs.items():
-    grandavg_pre_X = [pre_snr[:, [bin_idx], :]]
-    grandavg_post_X = [post_snr[:, [bin_idx], :]]
+    grandavg_pre_X = pre_snr[:, [bin_idx], :]
+    grandavg_post_X = post_snr[:, [bin_idx], :]
     median_split_X = [upper_snr[:, [bin_idx], :], lower_snr[:, [bin_idx], :]]
     intervention_X = [lett_snr[:, [bin_idx], :], lang_snr[:, [bin_idx], :]]
     grandavg_pre_fname = 'GrandAvg-pre_camp'
