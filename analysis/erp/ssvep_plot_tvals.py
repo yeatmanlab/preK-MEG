@@ -53,11 +53,6 @@ for prefix in (precamp_fname, postcamp_fname, median_split_fname,
     # plot the brain
     brain = stc.plot(smoothing_steps='nearest', clim=clim, time_unit='s',
                      time_label='t-value (%0.2f Hz)', **brain_plot_kwargs)
-    for freq in (0, 1, 2, 3, 4, 6, 12):
-        brain.set_time(freq)
-        img_fname = f'{prefix}-{freq:02}_Hz.png'
-        img_path = os.path.join(fig_dir, img_fname)
-        brain.save_image(img_path)
     if save_movie:
         movie_dir = os.path.join(results_dir, 'pskt', 'group-level', 'fig',
                                  'movie_frames', prefix)
@@ -68,5 +63,11 @@ for prefix in (precamp_fname, postcamp_fname, median_split_fname,
             brain.set_time(freq)
             img_fname = f'{prefix}-{freq:04.1f}_Hz.png'
             img_path = os.path.join(movie_dir, img_fname)
+            brain.save_image(img_path)
+    else:
+        for freq in (0, 1, 2, 3, 4, 5, 6, 7, 12):
+            brain.set_time(freq)
+            img_fname = f'{prefix}-{freq:02}_Hz.png'
+            img_path = os.path.join(fig_dir, img_fname)
             brain.save_image(img_path)
     del brain
