@@ -90,10 +90,10 @@ for s in subjects:
         data_dict[f'{s}-{tpt}'] = data_dict[f'{s}-{tpt}'].transpose(1, 0)
         noise_dict[f'{s}-{tpt}'] = noise_dict[f'{s}-{tpt}'].transpose(1, 0)
 
-pre_data_dict = {k: v for k, v in data_dict if k.endswith('pre')}
-pre_noise_dict = {k: v for k, v in noise_dict if k.endswith('pre')}
-post_data_dict = {k: v for k, v in data_dict if k.endswith('post')}
-post_noise_dict = {k: v for k, v in noise_dict if k.endswith('post')}
+pre_data_dict = {k: v for k, v in data_dict.items() if k.endswith('pre')}
+pre_noise_dict = {k: v for k, v in noise_dict.items() if k.endswith('pre')}
+post_data_dict = {k: v for k, v in data_dict.items() if k.endswith('post')}
+post_noise_dict = {k: v for k, v in noise_dict.items() if k.endswith('post')}
 
 # confirmatory/reproduction: detectable effect in bins of interest in GrandAvg
 pre_data = np.array(list(pre_data_dict.values()))
