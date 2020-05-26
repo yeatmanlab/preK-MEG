@@ -59,18 +59,14 @@ all_freqs = stc.times
 del stc
 
 
-def find_clusters(X, fpath, onesamp=False):
+def find_clusters(X, fpath, onesamp=False, **kwargs):
     if onesamp:
         stat_fun = ttest_1samp_no_p
         cluster_fun = permutation_cluster_1samp_test
     else:
         stat_fun = ttest_ind_no_p
         cluster_fun = permutation_cluster_test
-    cluster_results = cluster_fun(
-        X, connectivity=connectivity, threshold=threshold,
-        n_permutations=1024, n_jobs=n_jobs, seed=rng, buffer_size=1024,
-        stat_fun=stat_fun, step_down_p=0.05, out_type='indices',
-        sigma=cluster_sigma)
+    cluster_results = cluster_fun(X, stat_fun=stat_fun, **kwargs)
     stats = prep_cluster_stats(cluster_results)
     np.savez(fpath, **stats)
 
@@ -139,9 +135,15 @@ for freq, bin_idx in bin_idxs.items():
                       grandavg_post_fname: grandavg_post_X,
                       median_split_fname: median_split_X,
                       intervention_fname: intervention_X}.items():
-        onesamp = prefix in (grandavg_pre_fname, grandavg_post_fname)
         fname = f'{prefix}-{freq}_Hz-SNR-clusters.npz'
-        find_clusters(X, os.path.join(cluster_dir, fname), onesamp)
+        kwargs = dict(connectivity=connectivity, threshold=threshold,
+                      n_permutations=1024, n_jobs=n_jobs, seed=rng,
+                      buffer_size=1024, step_down_p=0.05, out_type='indices')
+        # different kwargs for 1samp vs independent tests
+        onesamp = prefix in (grandavg_pre_fname, grandavg_post_fname)
+        if onesamp:
+            kwargs.update(sigma=cluster_sigma)
+        find_clusters(X, os.path.join(cluster_dir, fname), onesamp, **kwargs)
 
 # # cluster across all frequencies. Don't use regularization or step-down here
 # # (need to save memory)
