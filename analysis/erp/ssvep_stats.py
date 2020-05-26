@@ -7,6 +7,7 @@ Run stats & clustering on SSVEP data.
 """
 
 import os
+from functools import partial
 import numpy as np
 import mne
 from mne.stats import (permutation_cluster_test, ttest_ind_no_p,
@@ -62,10 +63,11 @@ del stc
 def find_clusters(X, fpath, onesamp=False, **kwargs):
     if onesamp:
         stat_fun = ttest_1samp_no_p
-        cluster_fun = permutation_cluster_1samp_test
+        cluster_fun = partial(permutation_cluster_1samp_test,
+                              sigma=cluster_sigma)
     else:
         stat_fun = ttest_ind_no_p
-        cluster_fun = permutation_cluster_test
+        cluster_fun = partial(permutation_cluster_test, sigma=cluster_sigma)
     cluster_results = cluster_fun(X, stat_fun=stat_fun, **kwargs)
     stats = prep_cluster_stats(cluster_results)
     np.savez(fpath, **stats)
@@ -141,8 +143,6 @@ for freq, bin_idx in bin_idxs.items():
                       buffer_size=1024, step_down_p=0.05, out_type='indices')
         # different kwargs for 1samp vs independent tests
         onesamp = prefix in (grandavg_pre_fname, grandavg_post_fname)
-        if onesamp:
-            kwargs.update(sigma=cluster_sigma)
         find_clusters(X, os.path.join(cluster_dir, fname), onesamp, **kwargs)
 
 # # cluster across all frequencies. Don't use regularization or step-down here
