@@ -48,7 +48,9 @@ for prefix in (precamp_fname, postcamp_fname, median_split_fname,
     # set the colormap lims
     clim = dict(kind='value')
     lims = tuple(np.percentile(tvals, (99, 99.9, 99.99)))
-    pos = dict(lims=lims) if prefix.startswith('Gran') else dict(pos_lims=lims)
+    pos_lims = tuple(np.percentile(tvals, (95, 99, 99.9)))
+    pos = (dict(lims=lims) if prefix.startswith('Gran') else
+           dict(pos_lims=pos_lims))
     clim.update(pos)
     # plot the brain
     brain = stc.plot(smoothing_steps='nearest', clim=clim, time_unit='s',
