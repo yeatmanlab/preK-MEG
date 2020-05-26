@@ -117,8 +117,8 @@ lang_data = [data_dict[f'{s}-post'] - data_dict[f'{s}-pre'] for s in groups['Lan
 lett_noise = [noise_dict[f'{s}-post'] - noise_dict[f'{s}-pre'] for s in groups['LetterIntervention']]
 lang_noise = [noise_dict[f'{s}-post'] - noise_dict[f'{s}-pre'] for s in groups['LanguageIntervention']]
 
-lett_snr = lett_data - lett_noise
-lang_snr = lang_data - lang_noise
+lett_snr = np.array(lett_data) - np.array(lett_noise)
+lang_snr = np.array(lang_data) - np.array(lang_noise)
 
 del data_dict, noise_dict
 
