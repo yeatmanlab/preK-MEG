@@ -63,11 +63,11 @@ del stc
 def find_clusters(X, fpath, onesamp=False, **kwargs):
     if onesamp:
         stat_fun = ttest_1samp_no_p
-        cluster_fun = partial(permutation_cluster_1samp_test,
-                              sigma=cluster_sigma)
+        cluster_fun = permutation_cluster_1samp_test
     else:
         stat_fun = ttest_ind_no_p
-        cluster_fun = partial(permutation_cluster_test, sigma=cluster_sigma)
+        cluster_fun = permutation_cluster_test
+    stat_fun = partial(stat_fun, sigma=cluster_sigma)
     cluster_results = cluster_fun(X, stat_fun=stat_fun, **kwargs)
     stats = prep_cluster_stats(cluster_results)
     np.savez(fpath, **stats)
