@@ -18,8 +18,9 @@ data_root, subjects_dir, results_dir = load_paths()
 in_dir = os.path.join(results_dir, 'pskt', 'stc', 'morphed-to-fsaverage')
 stc_dir = os.path.join(results_dir, 'pskt', 'group-level', 'stc')
 fig_dir = os.path.join(results_dir, 'pskt', 'fig', 'tvals')
+npz_dir = os.path.join(results_dir, 'pskt', 'group-level', 'npz')
 tval_dir = os.path.join(results_dir, 'pskt', 'group-level', 'tvals')
-for _dir in (tval_dir, fig_dir):
+for _dir in (tval_dir, fig_dir, npz_dir):
     os.makedirs(_dir, exist_ok=True)
 
 # load params
@@ -47,6 +48,8 @@ for s in groups['GrandAvg']:
         data_dict[f'{s}-{timepoint}'] = np.abs(stc.data)
         noise_dict[f'{s}-{timepoint}'] = div_by_adj_bins(np.abs(stc.data),
                                                          return_noise=True)
+np.savez(os.path.join(npz_dir, 'data.npz'), **data_dict)
+np.savez(os.path.join(npz_dir, 'noise.npz'), **noise_dict)
 
 # across-subj 1-sample t-values (freq bin versus mean of 4 surrounding bins)
 for tpt in timepoints:
