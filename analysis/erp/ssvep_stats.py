@@ -78,6 +78,9 @@ def find_clusters(X, fpath, onesamp=False):
 # load in all the data
 data_dict = np.load(os.path.join(in_dir, 'data.npz'))
 noise_dict = np.load(os.path.join(in_dir, 'noise.npz'))
+# make mutable (NpzFile is not)
+data_dict = {k: data_dict[k] for k in data_dict.keys()}
+noise_dict = {k: noise_dict[k] for k in noise_dict.keys()}
 
 # transpose because for clustering we need (subj, freq, space)
 for s in subjects:
