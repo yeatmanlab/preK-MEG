@@ -102,20 +102,14 @@ pre_snr = pre_data - pre_noise
 post_snr = post_data - post_noise
 
 # planned comparison: pre-intervention median split on letter awareness test
-upper_data = [data_dict[f'{s}-pre'] for s in groups['UpperKnowledge']]
-lower_data = [data_dict[f'{s}-pre'] for s in groups['LowerKnowledge']]
-upper_noise = [noise_dict[f'{s}-pre'] for s in groups['UpperKnowledge']]
-lower_noise = [noise_dict[f'{s}-pre'] for s in groups['LowerKnowledge']]
-upper_snr = np.array(upper_data) - np.array(upper_noise)
-lower_snr = np.array(lower_data) - np.array(lower_noise)
+upper_data = np.array([data_dict[f'{s}-pre'] for s in groups['UpperKnowledge']])
+lower_data = np.array([data_dict[f'{s}-pre'] for s in groups['LowerKnowledge']])
 
 # planned comparison: post-minus-pre-intervention, language-vs-letter cohort
-lett_data = [data_dict[f'{s}-post'] - data_dict[f'{s}-pre'] for s in groups['LetterIntervention']]
-lang_data = [data_dict[f'{s}-post'] - data_dict[f'{s}-pre'] for s in groups['LanguageIntervention']]
-lett_noise = [noise_dict[f'{s}-post'] - noise_dict[f'{s}-pre'] for s in groups['LetterIntervention']]
-lang_noise = [noise_dict[f'{s}-post'] - noise_dict[f'{s}-pre'] for s in groups['LanguageIntervention']]
-lett_snr = np.array(lett_data) - np.array(lett_noise)
-lang_snr = np.array(lang_data) - np.array(lang_noise)
+lett_data = np.array([data_dict[f'{s}-post'] - data_dict[f'{s}-pre']
+                      for s in groups['LetterIntervention']])
+lang_data = np.array([data_dict[f'{s}-post'] - data_dict[f'{s}-pre']
+                      for s in groups['LanguageIntervention']])
 
 del data_dict, noise_dict
 
@@ -126,8 +120,10 @@ bin_idxs = {freq: np.argmin(np.abs(all_freqs - freq)) for freq in these_freqs}
 for freq, bin_idx in bin_idxs.items():
     grandavg_pre_X = pre_snr[:, [bin_idx], :]
     grandavg_post_X = post_snr[:, [bin_idx], :]
-    median_split_X = [upper_snr[:, [bin_idx], :], lower_snr[:, [bin_idx], :]]
-    intervention_X = [lett_snr[:, [bin_idx], :], lang_snr[:, [bin_idx], :]]
+    median_split_X = [upper_data[:, [bin_idx], :],
+                      lower_data[:, [bin_idx], :]]
+    intervention_X = [lett_data[:, [bin_idx], :],
+                      lang_data[:, [bin_idx], :]]
     grandavg_pre_fname = 'GrandAvg-pre_camp'
     grandavg_post_fname = 'GrandAvg-post_camp'
     median_split_fname = 'UpperVsLowerKnowledge-pre_camp'
@@ -137,31 +133,9 @@ for freq, bin_idx in bin_idxs.items():
                       median_split_fname: median_split_X,
                       intervention_fname: intervention_X}.items():
         fname = f'{prefix}-{freq}_Hz-SNR-clusters.npz'
+        # kwargs for clustering function
         kwargs = dict(connectivity=connectivity, threshold=threshold,
                       n_permutations=1024, n_jobs=n_jobs, seed=rng,
                       buffer_size=1024, step_down_p=0.05, out_type='indices')
-        # different kwargs for 1samp vs independent tests
         onesamp = prefix in (grandavg_pre_fname, grandavg_post_fname)
         find_clusters(X, os.path.join(cluster_dir, fname), onesamp, **kwargs)
-
-# # cluster across all frequencies. Don't use regularization or step-down here
-# # (need to save memory)
-# if all_bins:
-#     grandavg_X = [all_data]
-#     median_split_X = [upper_data, lower_data]
-#     intervention_X = [letter_data, language_data]
-#     grandavg_fname = 'GrandAvg-PreAndPost_camp'
-#     median_split_fname = 'LowerVsUpperKnowledge-pre_camp'
-#     intervention_fname = 'LetterVsLanguageIntervention-PostMinusPre_camp'
-#     for prefix, X in {grandavg_fname: grandavg_X,
-#                       median_split_fname: median_split_X,
-#                       intervention_fname: intervention_X}.items():
-#         onesamp = prefix == grandavg_fname
-#         stat_fun = partial(ttest_ind_no_p, sigma=cluster_sigma)
-#         cluster_results = permutation_cluster_test(
-#             X, connectivity=connectivity, threshold=threshold,
-#             n_permutations=1024, n_jobs=n_jobs, seed=rng, buffer_size=1024,
-#             stat_fun=stat_fun, step_down_p=0., out_type='indices')
-#         stats = prep_cluster_stats(cluster_results)
-#         fname = f'{prefix}-all_freqs-SNR-{hemi}-clusters.npz'
-#         np.savez(os.path.join(cluster_dir, fname), **stats)
