@@ -16,39 +16,39 @@ from aux_functions import load_paths, load_params
 mlab.options.offscreen = True
 
 # config paths
-_, subjects_dir, results_dir = load_paths()
-group_dir = os.path.join(results_dir, 'pskt', 'group-level')
-in_dir = os.path.join(group_dir, 'cluster')
+data_root, subjects_dir, results_dir = load_paths()
+in_dir = os.path.join(results_dir, 'pskt', 'group-level', 'cluster')
 stc_dir = os.path.join(in_dir, 'stcs')
-img_dir = os.path.join(group_dir, 'fig', 'cluster', 'brain')
+img_dir = os.path.join(results_dir, 'pskt', 'group-level', 'fig', 'cluster')
 for _dir in (stc_dir, img_dir):
     os.makedirs(_dir, exist_ok=True)
+
+precamp_fname = 'GrandAvg-pre_camp'
+postcamp_fname = 'GrandAvg-post_camp'
+median_split_fname = 'UpperVsLowerKnowledge-pre_camp'
+intervention_fname = 'LetterVsLanguageIntervention-PostMinusPre_camp'
 
 # load params
 brain_plot_kwargs, _, subjects = load_params()
 
 # config other
-freqs = (2, 4, 6)
-hemi = 'lh'
+freqs = (2, 4, 6, 12)
 
 # get some params from group-level STC
-fname = f'GrandAvg-pre_camp-pskt-5_sec-fft-snr'
-stc = mne.read_source_estimate(os.path.join(group_dir, 'stc', fname))
-# pick correct hemisphere(s)
+stc_fname = 'GrandAvg-pre_camp-pskt-5_sec-fft-snr'
+stc = mne.read_source_estimate(os.path.join(results_dir, 'pskt', 'group-level',
+                                            'stc', stc_fname))
+all_freqs = stc.times
 vertices = stc.vertices
-if hemi == 'lh':
-    vertices[1] = np.array([])
-elif hemi == 'rh':
-    vertices[0] = np.array([])
 stc_tstep_hz = stc.tstep  # in hertz
 stc_dur = stc.times[-1] - stc.times[0]
 del stc
 
 for freq in freqs:
-    median_split_fname = f'LowerVsUpperKnowledge-pre_camp-{freq}_Hz-SNR-{hemi}.npz'  # noqa E501
-    intervention_fname = f'LetterVsLanguageIntervention-PostMinusPre_camp-{freq}_Hz-SNR-{hemi}.npz'  # noqa E501
-    for fname in (median_split_fname, intervention_fname):
+    for prefix in (precamp_fname, postcamp_fname, median_split_fname,
+                   intervention_fname):
         # load the cluster results
+        fname = f'{prefix}-{freq}_Hz-SNR-clusters.npz'
         fpath = os.path.join(in_dir, fname)
         cluster_dict = np.load(fpath, allow_pickle=True)
         # KEYS: clusters tvals pvals hzero good_cluster_idxs n_clusters
@@ -88,7 +88,6 @@ for freq in freqs:
                                          initial_time=this_time,
                                          **brain_plot_kwargs)
                 cluster_idx = signif_clu[time_idx - 1]
-                img_fname = re.sub(r'\.npz$', f'_cluster{cluster_idx:05}.png',
-                                   fname)
+                img_fname = re.sub(r's\.npz$', f'_{cluster_idx:05}.png', fname)
                 img_path = os.path.join(img_dir, img_fname)
                 brain.save_image(img_path)
