@@ -59,7 +59,7 @@ for freq in freqs:
         # mne.stats.summarize_clusters_stc, just stick the p-values into the
         # existing STC.
         stc.data = (1 - cluster_dict['pvals'])[:, np.newaxis]
-        lims = (0.95, 0.99, 0.999)
+        lims = (0.99, 0.999, 0.9999)
         clim_dict = dict(kind='value', lims=lims)
         # save the STC
         stc.save(os.path.join(stc_dir, fname.replace('.npz', '')))
