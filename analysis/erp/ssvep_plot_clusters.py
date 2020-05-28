@@ -58,7 +58,7 @@ for freq in freqs:
         # since this is TFCE clustering, don't bother with
         # mne.stats.summarize_clusters_stc, just stick the p-values into the
         # existing STC.
-        stc.data = 1 - cluster_dict['pvals']
+        stc.data = (1 - cluster_dict['pvals'])[:, np.newaxis]
         lims = (0.95, 0.99, 0.999)
         clim_dict = dict(kind='value', lims=lims)
         # save the STC
