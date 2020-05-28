@@ -66,7 +66,7 @@ for freq in freqs:
         brain = stc.plot(smoothing_steps='nearest',
                          clim=clim_dict,
                          time_unit='s',
-                         time_label=f'{freq} Hz',
+                         time_label=f'1 minus pvalue ({freq} Hz)',
                          initial_time=0,
                          **brain_plot_kwargs)
         img_fname = re.sub(r'\.npz$', '.png', fname)
