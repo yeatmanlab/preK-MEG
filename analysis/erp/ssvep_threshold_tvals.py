@@ -33,6 +33,7 @@ fname = 'GrandAvg-pre_camp-pskt-5_sec-fft-avg'
 stc = mne.read_source_estimate(os.path.join(stc_dir, fname))
 all_freqs = stc.times
 vertices = stc.vertices
+hemi_n_verts = vertices[0].size
 
 # config other
 timepoints = ('pre',)
@@ -52,9 +53,11 @@ for prefix in (precamp_fname,):
                      time_label='t-value (%0.2f Hz)', initial_time=freq,
                      **brain_plot_kwargs)
     for threshold in range(3, 8):
-        verts = np.where(tvals[:, bin_idx] >= threshold)[0]
-        label = mne.Label(verts, hemi='both', subject=stc.subject)
-        brain.add_label(label, borders=True, color='m')
+        for hemi in ('lh', 'rh'):
+            tv = tvals[:hemi_n_verts] if hemi == 'lh' else tvals[hemi_n_verts:]
+            verts = np.where(tv[:, bin_idx] >= threshold)[0]
+            label = mne.Label(verts, hemi=hemi, subject=stc.subject)
+            brain.add_label(label, borders=True, color='m')
         img_fname = f'{prefix}-{freq:02}_Hz-threshold_{threshold:02}.png'
         img_path = os.path.join(fig_dir, img_fname)
         brain.save_image(img_path)
