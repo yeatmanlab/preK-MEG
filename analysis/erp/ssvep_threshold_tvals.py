@@ -35,6 +35,11 @@ all_freqs = stc.times
 vertices = stc.vertices
 hemi_n_verts = vertices[0].size
 
+# load fsaverage source space
+fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
+                                  'fsaverage-ico-5-src.fif')
+fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
+
 # config other
 timepoints = ('pre',)
 precamp_fname = 'GrandAvg-pre_camp'
@@ -57,6 +62,8 @@ for prefix in (precamp_fname,):
             tv = tvals[:hemi_n_verts] if hemi == 'lh' else tvals[hemi_n_verts:]
             verts = np.where(tv[:, bin_idx] >= threshold)[0]
             label = mne.Label(verts, hemi=hemi, subject=stc.subject)
+            # fill in verts that are surrounded by cluster verts
+            label = label.fill(fsaverage_src)
             brain.add_label(label, borders=True, color='m')
         img_fname = f'{prefix}-{freq:02}_Hz-threshold_{threshold:02}.png'
         img_path = os.path.join(fig_dir, img_fname)
