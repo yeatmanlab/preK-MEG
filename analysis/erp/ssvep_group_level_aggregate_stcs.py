@@ -3,7 +3,7 @@
 """
 @author: Daniel McCloy
 
-Plot frequency-domain STCs.
+Aggregate frequency-domain STCs across subjects.
 """
 
 import os
