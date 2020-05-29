@@ -49,7 +49,7 @@ bin_idx = np.argmin(np.abs(all_freqs - freq))
 for prefix in (precamp_fname,):
     fname = f'{prefix}-tvals.npy'
     tvals = np.load(os.path.join(tval_dir, fname))
-    stc.data = tvals
+    stc.data = tvals[:, [bin_idx]]
     # set the colormap lims
     lims = tuple(np.percentile(tvals, (95, 99, 99.9)))
     clim = dict(kind='value', lims=lims)
@@ -57,10 +57,22 @@ for prefix in (precamp_fname,):
     brain = stc.plot(smoothing_steps='nearest', clim=clim, time_unit='s',
                      time_label='t-value (%0.2f Hz)', initial_time=freq,
                      **brain_plot_kwargs)
+    # plot the centroid
+    for hemi in ('lh', 'rh'):
+        h = 0 if hemi == 'lh' else 1
+        vertex, *_ = stc.center_of_mass(subject=stc.subject, hemi=h,
+                                        restrict_vertices=True,
+                                        subjects_dir=subjects_dir)
+        brain.add_foci(vertex, coords_as_verts=True, color='c')
+    img_fname = f'{prefix}-{freq:02}_Hz-center_of_mass.png'
+    img_path = os.path.join(fig_dir, img_fname)
+    brain.save_image(img_path)
+    brain.remove_foci()
+    # plot the threshold masks
     for threshold in np.arange(4, 6.6, 0.5):
         for hemi in ('lh', 'rh'):
             tv = tvals[:hemi_n_verts] if hemi == 'lh' else tvals[hemi_n_verts:]
-            verts = np.where(tv[:, bin_idx] >= threshold)[0]
+            verts = np.where(tv >= threshold)[0]
             label = mne.Label(verts, hemi=hemi, subject=stc.subject)
             # fill in verts that are surrounded by cluster verts
             label = label.fill(fsaverage_src)
