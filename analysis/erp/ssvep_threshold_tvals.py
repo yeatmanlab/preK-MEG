@@ -52,7 +52,7 @@ for prefix in (precamp_fname,):
                      time_label='t-value (%0.2f Hz)', initial_time=freq,
                      **brain_plot_kwargs)
     for threshold in range(3, 8):
-        verts = np.array(vertices)[np.where(tvals[:, bin_idx] >= threshold)]
+        verts = np.where(tvals[:, bin_idx] >= threshold)[0]
         label = mne.Label(verts, hemi='both', subject=stc.subject)
         brain.add_label(label, borders=True, color='m')
         img_fname = f'{prefix}-{freq:02}_Hz-threshold_{threshold:02}.png'
