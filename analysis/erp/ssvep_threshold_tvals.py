@@ -64,7 +64,7 @@ for prefix in (precamp_fname,):
             label = mne.Label(verts, hemi=hemi, subject=stc.subject)
             # fill in verts that are surrounded by cluster verts
             label = label.fill(fsaverage_src)
-            brain.add_label(label, borders=True, color='m')
+            brain.add_label(label, borders=False, color='c')
         img_fname = f'{prefix}-{freq:02}_Hz-threshold_{threshold:3.1}.png'
         img_path = os.path.join(fig_dir, img_fname)
         brain.save_image(img_path)
