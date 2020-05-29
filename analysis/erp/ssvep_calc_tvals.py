@@ -62,8 +62,7 @@ for tpt in timepoints:
 median_split = list()
 for group in ('UpperKnowledge', 'LowerKnowledge'):
     data = np.array([data_dict[f'{s}-pre'] for s in groups[group]])
-    noise = np.array([noise_dict[f'{s}-pre'] for s in groups[group]])
-    median_split.append(data - noise)
+    median_split.append(data)
 median_split_tvals = ttest_ind_no_p(*median_split)
 
 # planned comparison: post-minus-pre-intervention, language-vs-letter cohort
@@ -71,9 +70,7 @@ intervention = list()
 for group in ('LetterIntervention', 'LanguageIntervention'):
     data = np.array([data_dict[f'{s}-post'] - data_dict[f'{s}-pre']
                     for s in groups[group]])
-    noise = np.array([noise_dict[f'{s}-post'] - noise_dict[f'{s}-pre']
-                     for s in groups[group]])
-    intervention.append(data - noise)
+    intervention.append(data)
 intervention_tvals = ttest_ind_no_p(*intervention)
 
 # save the data
