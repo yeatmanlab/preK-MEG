@@ -28,13 +28,13 @@ os.makedirs(fig_dir, exist_ok=True)
 # load params
 brain_plot_kwargs, movie_kwargs, subjects = load_params()
 
-# config other
-timepoints = ('pre', 'post')
-
 # load an STC as a template
-fname = 'GrandAvg-pre_camp-pskt-5_sec-fft-snr'
+fname = 'GrandAvg-pre_camp-pskt-5_sec-fft-avg'
 stc = mne.read_source_estimate(os.path.join(stc_dir, fname))
 
+# config other
+timepoints = ('pre', 'post')
+freqs_of_interest = (0, 1, 2, 3, 4, 5, 6, 7, 12)
 precamp_fname = 'GrandAvg-pre_camp'
 postcamp_fname = 'GrandAvg-post_camp'
 median_split_fname = 'UpperVsLowerKnowledge-pre_camp'
@@ -66,8 +66,13 @@ for prefix in (precamp_fname, postcamp_fname, median_split_fname,
             img_fname = f'{prefix}-{freq:04.1f}_Hz.png'
             img_path = os.path.join(movie_dir, img_fname)
             brain.save_image(img_path)
+            # also save to main directory
+            if freq in freqs_of_interest:
+                img_fname = f'{prefix}-{freq:02}_Hz.png'
+                img_path = os.path.join(fig_dir, img_fname)
+                brain.save_image(img_path)
     else:
-        for freq in (0, 1, 2, 3, 4, 5, 6, 7, 12):
+        for freq in freqs_of_interest:
             brain.set_time(freq)
             img_fname = f'{prefix}-{freq:02}_Hz.png'
             img_path = os.path.join(fig_dir, img_fname)
