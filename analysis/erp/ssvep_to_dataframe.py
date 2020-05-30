@@ -49,4 +49,4 @@ for timepoint in timepoints:
         df = pd.concat((df, this_df), axis=0)
 
 fname = 'all_subjects-fsaverage-freq_domain-stc.csv'
-df.to_csv(os.path.join(out_dir, fname))
+df.to_csv(os.path.join(out_dir, fname), index=False)
