@@ -42,7 +42,7 @@ for timepoint in timepoints:
         stc.data = np.abs(stc.data)
         # convert to dataframe
         this_df = stc.to_data_frame(time_format=None, long_format=True)
-        this_df.rename(dict(time='freq'), inplace=True)
+        this_df.rename(columns=dict(time='freq'), inplace=True)
         this_df['subject'] = s
         this_df['timepoint'] = timepoint
         # aggregate
