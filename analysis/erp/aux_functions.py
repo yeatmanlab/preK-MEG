@@ -24,6 +24,13 @@ def load_params(skip=True):
     return brain_plot_kwargs, movie_kwargs, subjects
 
 
+def load_psd_params():
+    """Load experiment parameters from YAML files."""
+    with open(os.path.join(paramdir, 'psd_params.yaml'), 'r') as f:
+        psd_params = yamload(f)
+    return psd_params
+
+
 def load_cohorts():
     """load intervention and knowledge groups."""
     with open(os.path.join(paramdir, 'intervention_cohorts.yaml'), 'r') as f:
@@ -318,3 +325,41 @@ def plot_label_and_timeseries(label, img_path, df, method, groups, timepoints,
     sns.despine()
     fig.savefig(img_path)
     plt.close(fig)
+
+
+def subdivide_epochs(epochs, divisions):
+    """Reshape epochs data to get different numbers of epochs."""
+    from mne import EpochsArray
+    if epochs.times.size != 1000:
+        # cut off last sample
+        epochs.crop(None, epochs.times[-2])
+        assert epochs.times.size == 1000
+    # reshape epochs data to get different numbers of epochs
+    data = epochs.get_data()
+    n_epochs, n_channels, n_times = data.shape
+    assert n_times % divisions == 0
+    new_n_times = n_times // divisions
+    new_shape = (n_epochs, n_channels, divisions, new_n_times)
+    data = np.reshape(data, new_shape)
+    data = data.transpose(0, 2, 1, 3)
+    data = np.reshape(data, (divisions * n_epochs, n_channels, new_n_times))
+    recut_epochs = EpochsArray(data, epochs.info)
+    return recut_epochs
+
+
+def div_by_adj_bins(data, n_bins=2, method='mean', return_noise=False):
+    """
+    data : np.ndarray
+        the data to enhance
+    n_bins : int
+        number of bins on either side to include.
+    method : 'mean' | 'sum'
+        whether to divide by the sum or average of adjacent bins.
+    """
+    from scipy.ndimage import convolve1d
+    weights = np.ones(2 * n_bins + 1)
+    weights[n_bins] = 0  # don't divide target bin by itself
+    if method == 'mean':
+        weights /= 2 * n_bins
+    noise = convolve1d(data, mode='constant', weights=weights)
+    return noise if return_noise else data / noise
