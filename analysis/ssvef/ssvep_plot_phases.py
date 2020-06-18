@@ -12,7 +12,7 @@ from scipy.ndimage import convolve1d
 from scipy.fft import rfft, rfftfreq
 import matplotlib.pyplot as plt
 import mne
-from aux_functions import load_paths, load_params
+from analysis.aux_functions import load_paths, load_params
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()

@@ -11,7 +11,7 @@ import re
 import numpy as np
 from mayavi import mlab
 import mne
-from aux_functions import (load_paths, load_params, load_cohorts,
+from analysis.aux_functions import (load_paths, load_params, load_cohorts,
                            get_dataframe_from_label, plot_label_and_timeseries)
 
 mlab.options.offscreen = True

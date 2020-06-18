@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(name='sswef',
       version='0.1',
-      description='The funniest joke in the world',
+      description='Not a real package, just need relative imports to work',
       url='https://github.com/yeatman-lab/SSWEF',
       author='Daniel McCloy',
       author_email='dan@mccloy.info',

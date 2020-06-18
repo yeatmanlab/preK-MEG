@@ -10,7 +10,7 @@ import os
 import numpy as np
 import pandas as pd
 import mne
-from aux_functions import load_paths, load_params
+from analysis.aux_functions import load_paths, load_params
 
 # config paths
 _, _, results_dir = load_paths()

@@ -11,7 +11,7 @@ import os
 import mne
 from mayavi import mlab
 from matplotlib.colors import to_rgba
-from aux_functions import (load_paths, load_params, get_dataframe_from_label,
+from analysis.aux_functions import (load_paths, load_params, get_dataframe_from_label,
                            plot_label, plot_label_and_timeseries)
 
 mlab.options.offscreen = True
