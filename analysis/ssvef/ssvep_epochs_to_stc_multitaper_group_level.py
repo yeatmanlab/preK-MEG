@@ -14,7 +14,7 @@ import mne
 from mne.time_frequency.multitaper import (_compute_mt_params, _mt_spectra,
                                            _psd_from_mt)
 from analysis.aux_functions import (load_paths, load_params, load_psd_params,
-                           load_cohorts, subdivide_epochs)
+                                    load_cohorts, subdivide_epochs)
 
 # flags
 mne.cuda.init_cuda()
