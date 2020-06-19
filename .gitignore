@@ -1,3 +1,7 @@
 *.log
 *.tab
 **/__pycache__
+
+**/.vscode
+**/.ipynb_checkpoints
+sswef.egg-info

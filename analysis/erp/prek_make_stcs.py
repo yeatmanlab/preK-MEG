@@ -9,7 +9,7 @@ Make original and morphed Source Time Course files
 import os
 import mne
 from mne.minimum_norm import apply_inverse, read_inverse_operator
-from aux_functions import load_paths, load_params
+from analysis.aux_functions import load_paths, load_params
 
 # config paths
 data_root, subjects_dir, _ = load_paths()

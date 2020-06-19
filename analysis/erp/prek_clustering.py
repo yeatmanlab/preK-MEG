@@ -16,8 +16,8 @@ import numpy as np
 import mne
 from mne.stats import (spatio_temporal_cluster_1samp_test,
                        spatio_temporal_cluster_test)
-from aux_functions import (load_paths, load_params, load_cohorts,
-                           prep_cluster_stats, define_labels)
+from analysis.aux_functions import (load_paths, load_params, load_cohorts,
+                                    prep_cluster_stats, define_labels)
 
 mne.cuda.init_cuda()
 rng = np.random.RandomState(seed=15485863)  # the one millionth prime

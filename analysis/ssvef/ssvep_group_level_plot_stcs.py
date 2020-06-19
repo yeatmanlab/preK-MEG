@@ -10,8 +10,8 @@ import os
 import numpy as np
 from mayavi import mlab
 import mne
-from aux_functions import (load_paths, load_params, load_cohorts,
-                           div_by_adj_bins)
+from analysis.aux_functions import (load_paths, load_params, load_cohorts,
+                                    div_by_adj_bins)
 
 
 # flags

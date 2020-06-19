@@ -12,8 +12,8 @@ import numpy as np
 import mne
 from mne.stats import (permutation_cluster_test, ttest_ind_no_p,
                        permutation_cluster_1samp_test, ttest_1samp_no_p)
-from aux_functions import (load_paths, load_params, load_cohorts,
-                           prep_cluster_stats)
+from analysis.aux_functions import (load_paths, load_params, load_cohorts,
+                                    prep_cluster_stats)
 
 # flags
 tfce = True

@@ -10,7 +10,7 @@ import os
 import numpy as np
 from mayavi import mlab
 import mne
-from aux_functions import load_paths, load_params
+from analysis.aux_functions import load_paths, load_params
 
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
