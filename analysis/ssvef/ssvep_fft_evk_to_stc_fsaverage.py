@@ -65,6 +65,8 @@ for s in subjects:
             inverse = mne.minimum_norm.read_inverse_operator(inv_path)
             # loop over estimate types
             for estim_type in estim_types:
+                if constr == '-fixed' and estim_type == 'normal':
+                    continue  # not implemented
                 # make the output dirs
                 estim_dir = 'magnitude' if estim_type is None else estim_type
                 out_dir = f'{constr_dir}-{estim_dir}'

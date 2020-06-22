@@ -44,6 +44,8 @@ for timepoint in timepoints:
         for constr in constraints:
             # loop over estimate types
             for estim_type in estim_types:
+                if constr == 'fixed' and estim_type == 'normal':
+                    continue  # not implemented
                 # load this subject's STC
                 fname = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-fft'
                 fpath = os.path.join(in_dir, f'{constr}-{estim_type}', fname)
