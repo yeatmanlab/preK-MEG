@@ -67,15 +67,15 @@ for s in subjects:
             for estim_type in estim_types:
                 # make the output dirs
                 estim_dir = 'magnitude' if estim_type is None else estim_type
+                out_dir = f'{constr_dir}-{estim_dir}'
                 for _dir in (stc_dir, morph_dir):
-                    os.mkdirs(os.path.join(_dir, constr_dir, estim_dir),
-                              exist_ok=True)
+                    os.mkdirs(os.path.join(_dir, out_dir), exist_ok=True)
                 # apply inverse & save
                 stc = mne.minimum_norm.apply_inverse(
                     evoked_spect, inverse, lambda2, pick_ori=estim_type)
                 assert stc.tstep == np.diff(evoked_spect.times[:2])
                 fname = f'{stub}-fft'
-                fpath = os.path.join(stc_dir, constr_dir, estim_dir, fname)
+                fpath = os.path.join(stc_dir, out_dir, fname)
                 stc.save(fpath, ftype='h5')
                 # compute morph for this subject
                 if not has_morph:
@@ -87,5 +87,5 @@ for s in subjects:
                 # morph to fsaverage & save
                 morphed_stc = morph.apply(stc)
                 fname = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-fft'
-                fpath = os.path.join(morph_dir, constr_dir, estim_dir, fname)
+                fpath = os.path.join(morph_dir, out_dir, fname)
                 morphed_stc.save(fpath, ftype='h5')

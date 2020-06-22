@@ -4,10 +4,16 @@
     - optional: `ssvep_plot_phases.py`
     - optional: `ssvep_plot_sensor_psds.py`
 
-2. `ssvep_epochs_to_stc.py` applies the FFT to the epoch data and then converts
-   to source space (keeping the complex values).
-    - `ssvep_plot_stcs.py` plots each subject at 2, 4, 6, 12 Hz, both
-      "magnitude" and "SNR" versions.
+2. `ssvep_epochs_to_evoked_fft.py` averages the epoched data and applies FFT.
+
+
+3. `ssvep_fft_evk_to_stc_fsaverage.py` converts the frequency-domain evokeds
+   into source estimates (STCs), optionally looping over different inverse
+   constraints (fixed/loose/free orientation; and vector/magnitude-only/
+   normal-component-only retention).
+    - optional: `ssvep_plot_stcs.py` plots each morphed subject at
+      2, 4, 6, 12 Hz, both "amplitude" and "SNR" versions, at each combination
+      of inverse constraints.
 
 3. `ssvep_group_level_aggregate_stcs.py` aggregates individual subject STCs
    into group-level averages, in "magnitude", "SNR", and "log(SNR)" versions.
