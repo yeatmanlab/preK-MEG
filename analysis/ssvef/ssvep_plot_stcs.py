@@ -51,9 +51,9 @@ for timepoint in timepoints:
                 fpath = os.path.join(in_dir, f'{constr}-{estim_type}', fname)
                 stc = mne.read_source_estimate(fpath)
                 # convert complex values to magnitude & normalize to "SNR"
-                magn_data = np.abs(stc.data)
-                snr_data = div_by_adj_bins(magn_data)
-                data_dict = dict(magnitude=magn_data, snr=snr_data)
+                abs_data = np.abs(stc.data)
+                snr_data = div_by_adj_bins(abs_data)
+                data_dict = dict(amp=abs_data, snr=snr_data)
                 # prepare output folder
                 out_dir = os.path.join(fig_dir, f'{constr}-{estim_type}')
                 os.makedirs(out_dir, exist_ok=True)

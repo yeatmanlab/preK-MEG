@@ -36,7 +36,6 @@ trial_dur = 20
 subdivide_epochs = 5
 subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 
-
 # loop over cortical estimate orientation constraints
 for constr in constraints:
     # loop over estimate types
