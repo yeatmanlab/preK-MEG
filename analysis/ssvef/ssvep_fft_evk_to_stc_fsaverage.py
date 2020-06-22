@@ -69,7 +69,7 @@ for s in subjects:
                 estim_dir = 'magnitude' if estim_type is None else estim_type
                 out_dir = f'{constr_dir}-{estim_dir}'
                 for _dir in (stc_dir, morph_dir):
-                    os.mkdirs(os.path.join(_dir, out_dir), exist_ok=True)
+                    os.makedirs(os.path.join(_dir, out_dir), exist_ok=True)
                 # apply inverse & save
                 stc = mne.minimum_norm.apply_inverse(
                     evoked_spect, inverse, lambda2, pick_ori=estim_type)
