@@ -26,40 +26,50 @@ groups = dict(GrandAvg=subjects)
 groups.update(intervention_group)
 groups.update(letter_knowledge_group)
 
+# inverse params
+constraints = ('free', 'loose', 'fixed')
+estim_types = ('vector', 'magnitude', 'normal')
+
 # config other
 timepoints = ('pre', 'post')
 trial_dur = 20
 subdivide_epochs = 5
 subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 
-# loop over timepoints
-for timepoint in timepoints:
-    # loop over cohort groups
-    for group, members in groups.items():
-        # only do pretest knowledge comparison for pre-camp timepoint
-        if group.endswith('Knowledge') and timepoint == 'post':
-            continue
-        # aggregate over group members
-        avg_data = 0.
-        snr_data = 0.
-        log_data = 0.
-        for s in members:
-            fname = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-fft-stc.h5'
-            stc = mne.read_source_estimate(os.path.join(in_dir, fname),
-                                           subject='fsaverage')
-            # convert complex values to magnitude
-            this_data = np.abs(stc.data)
-            avg_data += this_data
-            # divide each bin by its neighbors on each side to get "SNR"
-            this_snr = div_by_adj_bins(this_data)
-            snr_data += this_snr
-            log_data += np.log(this_snr)
-        # save untransformed data & SNR data
-        for kind, _data in zip(['avg', 'snr', 'log'],
-                               [avg_data, snr_data, log_data]):
-            # use a copy of the last STC as container
-            this_stc = stc.copy()
-            this_stc.data = _data / len(members)
-            # save stc
-            fname = f'{group}-{timepoint}_camp-pskt{subdiv}-fft-{kind}'
-            this_stc.save(os.path.join(stc_dir, fname), ftype='h5')
+
+# loop over cortical estimate orientation constraints
+for constr in constraints:
+    # loop over estimate types
+    for estim_type in estim_types:
+        if constr == 'fixed' and estim_type == 'normal':
+            continue  # not implemented
+        # make the output directory if needed
+        out_dir = f'{constr}-{estim_type}'
+        os.makedirs(os.path.join(stc_dir, out_dir), exist_ok=True)
+        # loop over timepoints
+        for timepoint in timepoints:
+            # loop over cohort groups
+            for group, members in groups.items():
+                # only do pretest knowledge comparison for pre-camp timepoint
+                if group.endswith('Knowledge') and timepoint == 'post':
+                    continue
+                # aggregate over group members
+                avg_data = 0.
+                snr_data = 0.
+                for s in members:
+                    fname = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-fft-stc.h5'  # noqa E501
+                    fpath = os.path.join(in_dir, out_dir, fname)
+                    stc = mne.read_source_estimate(fpath, subject='fsaverage')
+                    # convert complex values to magnitude
+                    avg_data += np.abs(stc.data)
+                    # divide each bin by neighbors on each side to get "SNR"
+                    snr_data += div_by_adj_bins(np.abs(stc.data))
+                # save untransformed data & SNR data
+                for kind, _data in zip(['avg', 'snr'], [avg_data, snr_data]):
+                    # use a copy of the last STC as container
+                    this_stc = stc.copy()
+                    this_stc.data = _data / len(members)
+                    # save stc
+                    fname = f'{group}-{timepoint}_camp-pskt{subdiv}-fft-{kind}'
+                    fpath = os.path.join(stc_dir, out_dir, fname)
+                    this_stc.save(fpath, ftype='h5')

@@ -15,12 +15,13 @@
       2, 4, 6, 12 Hz, both "amplitude" and "SNR" versions, at each combination
       of inverse constraints.
 
-3. `ssvep_group_level_aggregate_stcs.py` aggregates individual subject STCs
-   into group-level averages, in "magnitude", "SNR", and "log(SNR)" versions.
+4. `ssvep_group_level_aggregate_stcs.py` aggregates individual subject STCs
+   into group-level averages, in "amplitude" and "SNR" versions, at each
+   combination of inverse constraints.
     - `ssvep_group_level_plot_stcs.py` plots group-average STCs at 2, 4, 6,
-      and 12 Hz.
+      and 12 Hz, at each combination of inverse constraints.
 
-4. `ssvep_stats.py` computes uncorrected t-value maps and optionally runs
+5. `ssvep_stats.py` computes uncorrected t-value maps and optionally runs
    clustering / TFCE.
     - `ssvep_plot_tvals.py` plots the t-value maps
     - `ssvep_plot_clusters.py` plots the clusters
