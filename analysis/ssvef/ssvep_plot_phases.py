@@ -8,15 +8,13 @@ Load SSVEP epochs and plot PSDs, phases, etc.
 
 import os
 import numpy as np
-from scipy.ndimage import convolve1d
-from scipy.fft import rfft, rfftfreq
 import matplotlib.pyplot as plt
 import mne
-from analysis.aux_functions import load_paths, load_params
+from analysis.aux_functions import load_paths, load_params, div_by_adj_bins
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
-in_dir = os.path.join(results_dir, 'pskt', 'epochs')
+fft_dir = os.path.join(results_dir, 'pskt', 'fft-evoked')
 fig_dir = os.path.join(results_dir, 'pskt', 'fig', 'phase')
 os.makedirs(fig_dir, exist_ok=True)
 
@@ -33,24 +31,18 @@ subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 for subj in subjects:
     # loop over timepoints
     for timepoint in timepoints:
-        # load epochs
+        # TODO: separately for PS and KT trials?
         stub = f'{subj}-{timepoint}_camp-pskt{subdiv}'
-        epochs = mne.read_epochs(os.path.join(in_dir, f'{stub}-epo.fif'),
-                                 proj=True)
-        # TODO: separately for PS and KT trials
-        evoked = epochs.average()
-        spacing = 1. / evoked.info['sfreq']
+        fname = f'{stub}-fft-ave.fif'
+        evoked_spect = mne.read_evokeds(os.path.join(fft_dir, fname))
+        assert len(evoked_spect) == 1
+        evoked = evoked_spect[0]
         # FFT
-        spectrum = rfft(evoked.data, workers=-2)
-        freqs = rfftfreq(evoked.times.size, spacing)
-        magnitudes = np.abs(spectrum)
-        phases = np.angle(spectrum)
-        # compute the sensor-space PSD
-        sensor_psd = np.abs(spectrum)
-        # divide each bin by its two neighbors on each side
-        weights = [0.25, 0.25, 0, 0.25, 0.25]
-        snr_psd = sensor_psd / convolve1d(sensor_psd, mode='constant',
-                                          weights=weights)
+        freqs = evoked.times
+        magnitudes = np.abs(evoked.data)
+        phases = np.angle(evoked.data)
+        # compute the sensor-space SNR
+        snr = div_by_adj_bins(magnitudes)
         # prep figure
         these_freqs = (2, 3, 4, 5, 6, 11, 12)
         n_freqs = len(these_freqs)
@@ -63,25 +55,25 @@ for subj in subjects:
             these_magnitudes = magnitudes[..., bin_idx]
 
             # find the sensor that best captures {freq} Hz activity
-            best_sensor = np.argmax(snr_psd[..., bin_idx], axis=0)
+            best_sensor = np.argmax(snr[..., bin_idx], axis=0)
             best_sensor_name = evoked.ch_names[bin_idx]
 
-            # PSD of best sensor
+            # spectrum at best sensor
             ax = plt.subplot(n_freqs, n_columns, n_columns * ix + 1)
-            ax.plot(freqs, sensor_psd[best_sensor].T, linewidth=1)
+            ax.plot(freqs, magnitudes[best_sensor].T, linewidth=1)
             ax.set(xticks=np.arange(0, 25, 2), xlabel='freq (Hz)',
-                   ylabel=f'{freq} Hz\nPSD',
-                   title=f'best {freq} Hz power:\n{best_sensor_name}')
+                   ylabel='amplitude',
+                   title=f'best {freq} Hz amplitude:\n{best_sensor_name}')
 
-            # normalized PSD of best sensor
+            # "SNR" spectrum at best sensor
             ax = plt.subplot(n_freqs, n_columns, n_columns * ix + 2)
-            ax.plot(freqs, snr_psd[best_sensor].T, linewidth=1)
+            ax.plot(freqs, snr[best_sensor].T, linewidth=1)
             ax.set(xticks=np.arange(0, 25, 2), xlabel='freq (Hz)',
-                   ylabel=f'{freq} Hz\n"SNR" (a.u.)')
+                   ylabel='SNR')
             title = f'best {freq} Hz SNR: {best_sensor_name}'
             if not ix:
-                title = (f'PSD divided by sum of 2 bins on each side\n'
-                         f'(channel w/ {title})\n')
+                title = (f'Spectrum amplitude divided by sum of 2 bins on each'
+                         f' side\n(channel w/ {title})\n')
             ax.set(title=title)
 
             # phase vs magnitude (polar)
@@ -90,7 +82,7 @@ for subj in subjects:
             ax.plot(these_phases, these_magnitudes,  '.', alpha=0.5)
             ax.set(ylim=(0, magnitudes.max()))
             # goodness of fit
-            estimates = spectrum[:, bin_idx]
+            estimates = evoked.data[:, bin_idx]
             estimates = np.array((estimates.real, estimates.imag))
             u, s, v = np.linalg.svd(estimates, full_matrices=False)
             gof = 100 * s[0] / s.sum()
