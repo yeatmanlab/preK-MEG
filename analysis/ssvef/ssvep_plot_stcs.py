@@ -57,11 +57,13 @@ for timepoint in timepoints:
                 # prepare output folder
                 out_dir = os.path.join(fig_dir, f'{constr}-{estim_type}')
                 os.makedirs(out_dir, exist_ok=True)
-                # loop over data kinds
+                # loop over data kinds & plot
+                kwargs = (dict(surface='white') if estim_type != 'vector' else
+                          dict(brain_alpha=1, overlay_alpha=0, vector_alpha=1))
                 for kind, _data in data_dict.items():
                     stc.data = _data
-                    # plot it
-                    brain = stc.plot(subject='fsaverage', **brain_plot_kwargs)
+                    brain = stc.plot(subject='fsaverage', **brain_plot_kwargs,
+                                     **kwargs)
                     for freq in (2, 4, 6, 12):
                         brain.set_time(freq)
                         fname = f'{s}-{timepoint}_camp-pskt{subdiv}-fft-{kind}-{freq:02}_Hz.png'  # noqa E501
