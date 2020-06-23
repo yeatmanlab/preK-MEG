@@ -24,10 +24,7 @@
 5. tval-based ROI creation:
     - `ssvep_prep_data_for_stats.py` aggregates signal & noise data
     - `ssvep_calc_tvals.py` computes uncorrected t-value maps
-    - `ssvep_stats.py` runs clustering on signal/noise data
-
-5. `ssvep_stats.py` computes uncorrected t-value maps and optionally runs
-   clustering / TFCE.
+    - `ssvep_clustering.py` runs clustering on signal/noise data
     - `ssvep_plot_tvals.py` plots the t-value maps
     - `ssvep_plot_clusters.py` plots the clusters
 
