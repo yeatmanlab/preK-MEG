@@ -75,6 +75,9 @@ for constr in constraints:
         # clean up
         del all_data, abs_data, snr_data
 
+        # unify appearance of surface/vector plots
+        kwargs = (dict(surface='white') if estim_type != 'vector' else
+                  dict(brain_alpha=1, overlay_alpha=0, vector_alpha=1))
         # loop over timepoints
         for timepoint in timepoints:
             # loop over cohort groups
@@ -91,7 +94,7 @@ for constr in constraints:
                     # plot stc
                     clim = dict(kind='value', lims=lims)
                     brain = stc.plot(subject='fsaverage', clim=clim,
-                                     **brain_plot_kwargs)
+                                     **brain_plot_kwargs, **kwargs)
                     for freq in (2, 4, 6, 12):
                         brain.set_time(freq)
                         fpath = os.path.join(fig_dir, out_dir,
