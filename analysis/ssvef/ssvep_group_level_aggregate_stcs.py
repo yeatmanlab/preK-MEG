@@ -53,18 +53,18 @@ for constr in constraints:
                 if group.endswith('Knowledge') and timepoint == 'post':
                     continue
                 # aggregate over group members
-                avg_data = 0.
+                abs_data = 0.
                 snr_data = 0.
                 for s in members:
                     fname = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-fft-stc.h5'  # noqa E501
                     fpath = os.path.join(in_dir, out_dir, fname)
                     stc = mne.read_source_estimate(fpath, subject='fsaverage')
                     # convert complex values to magnitude
-                    avg_data += np.abs(stc.data)
+                    abs_data += np.abs(stc.data)
                     # divide each bin by neighbors on each side to get "SNR"
                     snr_data += div_by_adj_bins(np.abs(stc.data))
                 # save untransformed data & SNR data
-                for kind, _data in zip(['avg', 'snr'], [avg_data, snr_data]):
+                for kind, _data in zip(['amp', 'snr'], [abs_data, snr_data]):
                     # use a copy of the last STC as container
                     this_stc = stc.copy()
                     this_stc.data = _data / len(members)
