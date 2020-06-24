@@ -16,7 +16,7 @@ mlab.options.offscreen = True
 mne.cuda.init_cuda()
 
 # flags
-save_movie = True
+save_movie = False
 
 # load params
 brain_plot_kwargs, movie_kwargs, subjects = load_params()
