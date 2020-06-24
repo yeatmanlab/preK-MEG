@@ -21,8 +21,12 @@ n_jobs = 10
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
-in_dir = os.path.join(results_dir, 'pskt', 'group-level', 'npz')
-cluster_dir = os.path.join(results_dir, 'pskt', 'group-level', 'cluster')
+chosen_constraints = 'loose-normal'  # fixed/loose/free-vector/magnitude/normal
+
+npz_dir = os.path.join(results_dir, 'pskt', 'group-level', 'npz',
+                       chosen_constraints)
+cluster_dir = os.path.join(results_dir, 'pskt', 'group-level', 'cluster',
+                           chosen_constraints)
 for _dir in (cluster_dir,):
     os.makedirs(_dir, exist_ok=True)
 
@@ -54,6 +58,7 @@ connectivity = mne.spatial_src_connectivity(fsaverage_src)
 
 # load one STC to get bin centers
 stc_path = os.path.join(results_dir, 'pskt', 'group-level', 'stc',
+                        chosen_constraints,
                         'GrandAvg-post_camp-pskt-5_sec-fft-avg-stc.h5')
 stc = mne.read_source_estimate(stc_path)
 all_freqs = stc.times
@@ -74,19 +79,14 @@ def find_clusters(X, fpath, onesamp=False, **kwargs):
 
 
 # load in all the data
-data_npz = np.load(os.path.join(in_dir, 'data.npz'))
-noise_npz = np.load(os.path.join(in_dir, 'noise.npz'))
-# make mutable (NpzFile is not)
-data_dict = {k: v for k, v in data_npz.items()}
-noise_dict = {k: v for k, v in noise_npz.items()}
+data_npz = np.load(os.path.join(npz_dir, 'data.npz'))
+noise_npz = np.load(os.path.join(npz_dir, 'noise.npz'))
+# make mutable (NpzFile is not) and transpose because for clustering we need
+# (subj, freq, space)
+data_dict = {k: v.transpose(1, 0) for k, v in data_npz.items()}
+noise_dict = {k: v.transpose(1, 0) for k, v in noise_npz.items()}
 data_npz.close()
 noise_npz.close()
-
-# transpose because for clustering we need (subj, freq, space)
-for s in subjects:
-    for tpt in timepoints:
-        data_dict[f'{s}-{tpt}'] = data_dict[f'{s}-{tpt}'].transpose(1, 0)
-        noise_dict[f'{s}-{tpt}'] = noise_dict[f'{s}-{tpt}'].transpose(1, 0)
 
 pre_data_dict = {k: v for k, v in data_dict.items() if k.endswith('pre')}
 pre_noise_dict = {k: v for k, v in noise_dict.items() if k.endswith('pre')}

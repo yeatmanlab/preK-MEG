@@ -20,10 +20,16 @@ save_movie = True
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
-stc_dir = os.path.join(results_dir, 'pskt', 'group-level', 'stc')
-tval_dir = os.path.join(results_dir, 'pskt', 'group-level', 'tvals')
-fig_dir = os.path.join(results_dir, 'pskt', 'group-level', 'fig', 'tvals')
-os.makedirs(fig_dir, exist_ok=True)
+chosen_constraints = 'loose-normal'  # fixed/loose/free-vector/magnitude/normal
+
+stc_dir = os.path.join(results_dir, 'pskt', 'group-level', 'stc',
+                       chosen_constraints)
+tval_dir = os.path.join(results_dir, 'pskt', 'group-level', 'tvals',
+                        chosen_constraints)
+fig_dir = os.path.join(results_dir, 'pskt', 'group-level', 'fig', 'tvals',
+                       chosen_constraints)
+for _dir in (fig_dir,):
+    os.makedirs(_dir, exist_ok=True)
 
 # load params
 brain_plot_kwargs, movie_kwargs, subjects = load_params()

@@ -1,8 +1,34 @@
 # Analysis pipeline for steady-state responses
 
-- `SSVEF.py` (the current version in active development; a keeper)
-- `prek_mnefun_ssvep.py` (mnefun processing script for PreK SSVEP; a keeper)
-- `tcirc_pilot.py` (prototype superseded by SSVEF, to be discarded)
-- `ASSR.py` (prototype for applying SS tcirc to auditory response; to be discarded)
-- `xdawn_assr.py` (prototype to combine xdawn and tcirc for auditory response; to be relocated)
+1. `ssvep_make_epochs.py`
+    - optional: `ssvep_plot_phases.py`
+    - optional: `ssvep_plot_sensor_psds.py`
 
+2. `ssvep_epochs_to_evoked_fft.py` averages the epoched data and applies FFT.
+
+
+3. `ssvep_fft_evk_to_stc_fsaverage.py` converts the frequency-domain evokeds
+   into source estimates (STCs), optionally looping over different inverse
+   constraints (fixed/loose/free orientation; and vector/magnitude-only/
+   normal-component-only retention).
+    - optional: `ssvep_plot_stcs.py` plots each morphed subject at
+      2, 4, 6, 12 Hz, both "amplitude" and "SNR" versions, at each combination
+      of inverse constraints.
+
+4. `ssvep_group_level_aggregate_stcs.py` aggregates individual subject STCs
+   into group-level averages, in "amplitude" and "SNR" versions, at each
+   combination of inverse constraints.
+    - optional: `ssvep_group_level_plot_stcs.py` plots group-average STCs at
+      2, 4, 6, and 12 Hz, at each combination of inverse constraints.
+
+5. stats:
+    - `ssvep_prep_data_for_stats.py` aggregates signal & noise data
+    - `ssvep_calc_tvals.py` computes uncorrected t-value maps
+    - `ssvep_clustering.py` runs clustering on signal/noise data
+    - `ssvep_plot_tvals.py` plots the t-value maps
+    - `ssvep_plot_clusters.py` plots the clusters
+
+6. ROI creation (work in progress):
+    - `ssvep_threshold_tvals.py`
+    - `ssvep_to_dataframe.py`
+    - `ssvep_make_roi.py`

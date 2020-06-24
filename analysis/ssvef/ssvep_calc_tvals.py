@@ -8,19 +8,18 @@ Compute uncorrected t-value maps.
 
 import os
 import numpy as np
-import mne
 from mne.stats import ttest_ind_no_p, ttest_1samp_no_p
-from analysis.aux_functions import (load_paths, load_params, load_cohorts,
-                                    div_by_adj_bins)
+from analysis.aux_functions import load_paths, load_params, load_cohorts
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
-in_dir = os.path.join(results_dir, 'pskt', 'stc', 'morphed-to-fsaverage')
-stc_dir = os.path.join(results_dir, 'pskt', 'group-level', 'stc')
-fig_dir = os.path.join(results_dir, 'pskt', 'fig', 'tvals')
-npz_dir = os.path.join(results_dir, 'pskt', 'group-level', 'npz')
-tval_dir = os.path.join(results_dir, 'pskt', 'group-level', 'tvals')
-for _dir in (tval_dir, fig_dir, npz_dir):
+chosen_constraints = 'loose-normal'  # fixed/loose/free-vector/magnitude/normal
+
+npz_dir = os.path.join(results_dir, 'pskt', 'group-level', 'npz',
+                       chosen_constraints)
+tval_dir = os.path.join(results_dir, 'pskt', 'group-level', 'tvals',
+                        chosen_constraints)
+for _dir in (tval_dir,):
     os.makedirs(_dir, exist_ok=True)
 
 # load params
@@ -32,24 +31,15 @@ groups.update(letter_knowledge_group)
 
 # config other
 timepoints = ('pre', 'post')
-subdivide_epochs = 5
-subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 
 # load in all the data
-data_dict = dict()
-noise_dict = dict()
-for s in subjects:
-    for timepoint in timepoints:
-        stub = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-fft'
-        stc = mne.read_source_estimate(os.path.join(in_dir, f'{stub}-stc.h5'),
-                                       subject='fsaverage')
-        # compute magnitude (signal) & avg of adjacent bins on either side
-        # (noise), & save for later group comparisons
-        data_dict[f'{s}-{timepoint}'] = np.abs(stc.data)
-        noise_dict[f'{s}-{timepoint}'] = div_by_adj_bins(np.abs(stc.data),
-                                                         return_noise=True)
-np.savez(os.path.join(npz_dir, 'data.npz'), **data_dict)
-np.savez(os.path.join(npz_dir, 'noise.npz'), **noise_dict)
+data_npz = np.load(os.path.join(npz_dir, 'data.npz'))
+noise_npz = np.load(os.path.join(npz_dir, 'noise.npz'))
+# make mutable (NpzFile is not)
+data_dict = {k: v for k, v in data_npz.items()}
+noise_dict = {k: v for k, v in noise_npz.items()}
+data_npz.close()
+noise_npz.close()
 
 # across-subj 1-sample t-values (freq bin versus mean of 4 surrounding bins)
 for tpt in timepoints:
