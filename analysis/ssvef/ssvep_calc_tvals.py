@@ -9,11 +9,21 @@ Compute uncorrected t-value maps.
 import os
 import numpy as np
 from mne.stats import ttest_ind_no_p, ttest_1samp_no_p
-from analysis.aux_functions import load_paths, load_params, load_cohorts
+from analysis.aux_functions import (load_paths, load_params, load_cohorts,
+                                    load_inverse_params)
+
+# load params
+brain_plot_kwargs, _, subjects = load_params()
+inverse_params = load_inverse_params()
+intervention_group, letter_knowledge_group = load_cohorts()
+groups = dict(GrandAvg=subjects)
+groups.update(intervention_group)
+groups.update(letter_knowledge_group)
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
-chosen_constraints = 'loose-normal'  # fixed/loose/free-vector/magnitude/normal
+chosen_constraints = ('{orientation_constraint}-{estimate_type}'
+                      ).format_map(inverse_params)
 
 npz_dir = os.path.join(results_dir, 'pskt', 'group-level', 'npz',
                        chosen_constraints)
@@ -21,13 +31,6 @@ tval_dir = os.path.join(results_dir, 'pskt', 'group-level', 'tvals',
                         chosen_constraints)
 for _dir in (tval_dir,):
     os.makedirs(_dir, exist_ok=True)
-
-# load params
-brain_plot_kwargs, _, subjects = load_params()
-intervention_group, letter_knowledge_group = load_cohorts()
-groups = dict(GrandAvg=subjects)
-groups.update(intervention_group)
-groups.update(letter_knowledge_group)
 
 # config other
 timepoints = ('pre', 'post')

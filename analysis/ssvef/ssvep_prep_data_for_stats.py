@@ -9,11 +9,17 @@ aggregate signal and noise data into .npz files.
 import os
 import numpy as np
 import mne
-from analysis.aux_functions import load_paths, load_params, div_by_adj_bins
+from analysis.aux_functions import (load_paths, load_params, div_by_adj_bins,
+                                    load_inverse_params)
+
+# load params
+brain_plot_kwargs, _, subjects = load_params()
+inverse_params = load_inverse_params()
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
-chosen_constraints = 'loose-normal'  # fixed/loose/free-vector/magnitude/normal
+chosen_constraints = ('{orientation_constraint}-{estimate_type}'
+                      ).format_map(inverse_params)
 
 in_dir = os.path.join(results_dir, 'pskt', 'stc', 'morphed-to-fsaverage',
                       chosen_constraints)
@@ -21,9 +27,6 @@ npz_dir = os.path.join(results_dir, 'pskt', 'group-level', 'npz',
                        chosen_constraints)
 for _dir in (npz_dir,):
     os.makedirs(_dir, exist_ok=True)
-
-# load params
-brain_plot_kwargs, _, subjects = load_params()
 
 # config other
 timepoints = ('pre', 'post')

@@ -11,13 +11,18 @@ import re
 import numpy as np
 from mayavi import mlab
 import mne
-from analysis.aux_functions import load_paths, load_params
+from analysis.aux_functions import load_paths, load_params, load_inverse_params
 
 mlab.options.offscreen = True
 
+# load params
+brain_plot_kwargs, _, subjects = load_params()
+inverse_params = load_inverse_params()
+
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
-chosen_constraints = 'loose-normal'  # fixed/loose/free-vector/magnitude/normal
+chosen_constraints = ('{orientation_constraint}-{estimate_type}'
+                      ).format_map(inverse_params)
 
 cluster_dir = os.path.join(results_dir, 'pskt', 'group-level', 'cluster',
                            chosen_constraints)
@@ -31,9 +36,6 @@ precamp_fname = 'GrandAvg-pre_camp'
 postcamp_fname = 'GrandAvg-post_camp'
 median_split_fname = 'UpperVsLowerKnowledge-pre_camp'
 intervention_fname = 'LetterVsLanguageIntervention-PostMinusPre_camp'
-
-# load params
-brain_plot_kwargs, _, subjects = load_params()
 
 # config other
 freqs = (2, 4, 6, 12)
