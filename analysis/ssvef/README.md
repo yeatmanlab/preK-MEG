@@ -21,11 +21,14 @@
     - optional: `ssvep_group_level_plot_stcs.py` plots group-average STCs at
       2, 4, 6, and 12 Hz, at each combination of inverse constraints.
 
-5. tval-based ROI creation:
+5. stats:
     - `ssvep_prep_data_for_stats.py` aggregates signal & noise data
     - `ssvep_calc_tvals.py` computes uncorrected t-value maps
     - `ssvep_clustering.py` runs clustering on signal/noise data
     - `ssvep_plot_tvals.py` plots the t-value maps
     - `ssvep_plot_clusters.py` plots the clusters
 
-6. 
+6. ROI creation (work in progress):
+    - `ssvep_threshold_tvals.py`
+    - `ssvep_to_dataframe.py`
+    - `ssvep_make_roi.py`
