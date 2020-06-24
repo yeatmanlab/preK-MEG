@@ -76,13 +76,13 @@ for prefix in (precamp_fname, postcamp_fname, median_split_fname,
             brain.save_image(img_path)
             # also save to main directory
             if freq in freqs_of_interest:
-                img_fname = f'{prefix}-{freq:02}_Hz.png'
+                img_fname = f'{prefix}-{freq:04.1f}_Hz.png'
                 img_path = os.path.join(fig_dir, img_fname)
                 brain.save_image(img_path)
     else:
         for freq in freqs_of_interest:
             brain.set_time(freq)
-            img_fname = f'{prefix}-{freq:02}_Hz.png'
+            img_fname = f'{prefix}-{freq:04.1f}_Hz.png'
             img_path = os.path.join(fig_dir, img_fname)
             brain.save_image(img_path)
     del brain
