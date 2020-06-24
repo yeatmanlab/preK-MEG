@@ -65,7 +65,7 @@ for prefix in (precamp_fname, postcamp_fname, median_split_fname,
                      time_label='t-value (%0.2f Hz)', **brain_plot_kwargs)
     if save_movie:
         movie_dir = os.path.join(results_dir, 'pskt', 'group-level', 'fig',
-                                 'movie_frames', prefix)
+                                 'movie_frames', chosen_constraints, prefix)
         os.makedirs(movie_dir, exist_ok=True)
         # don't use brain.save_image_sequence because you can't include actual
         # time (freq) value in output filename (only a time index)
