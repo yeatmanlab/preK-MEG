@@ -45,7 +45,7 @@ median_split_fname = 'UpperVsLowerKnowledge-pre_camp'
 intervention_fname = 'LetterVsLanguageIntervention-PostMinusPre_camp'
 
 # load an STC as a template
-fname = 'GrandAvg-pre_camp-pskt-5_sec-fft-avg'
+fname = 'GrandAvg-pre_camp-pskt-5_sec-fft-amp'
 stc = mne.read_source_estimate(os.path.join(stc_dir, fname))
 
 for prefix in (precamp_fname, postcamp_fname, median_split_fname,
