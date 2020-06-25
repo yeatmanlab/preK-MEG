@@ -32,8 +32,7 @@ chosen_constraints = ('{orientation_constraint}-{estimate_type}'
 stc_dir = os.path.join(results_dir, 'pskt', 'group-level', 'stc',
                        chosen_constraints)
 roi_dir = os.path.join('..', 'ROIs')
-fig_dir = os.path.join(results_dir, 'pskt', 'group-level', 'fig', 'brain',
-                       'roi')
+fig_dir = os.path.join(results_dir, 'pskt', 'group-level', 'fig', 'roi')
 for _dir in (fig_dir,):
     os.makedirs(_dir, exist_ok=True)
 
@@ -73,7 +72,7 @@ for threshold in np.linspace(2, 3, 6):
         verts = np.where(data[:, bin_idx] >= threshold)[0]
         label = mne.Label(verts, hemi=hemi, subject=avg_stc.subject)
         labels[hemi] = label.fill(fsaverage_src)
-        fname = f'{hz}-SNR_{threshold:3.1f}-{hemi}'
+        fname = f'{chosen_constraints}-{hz}-SNR_{threshold:3.1f}-{hemi}'
         labels[hemi].save(os.path.join(roi_dir, fname))
     # save label verts also as YAML for easy dataframe filtering
     label_verts = {key: val.vertices.tolist() for key, val in labels.items()}
