@@ -10,17 +10,22 @@ import os
 import numpy as np
 from mayavi import mlab
 import mne
-from analysis.aux_functions import load_paths, load_params
+from analysis.aux_functions import load_paths, load_params, load_inverse_params
 
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
 
 # flags
-save_movie = True
+save_movie = False
+
+# load params
+brain_plot_kwargs, movie_kwargs, subjects = load_params()
+inverse_params = load_inverse_params()
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
-chosen_constraints = 'loose-normal'  # fixed/loose/free-vector/magnitude/normal
+chosen_constraints = ('{orientation_constraint}-{estimate_type}'
+                      ).format_map(inverse_params)
 
 stc_dir = os.path.join(results_dir, 'pskt', 'group-level', 'stc',
                        chosen_constraints)
@@ -31,13 +36,6 @@ fig_dir = os.path.join(results_dir, 'pskt', 'group-level', 'fig', 'tvals',
 for _dir in (fig_dir,):
     os.makedirs(_dir, exist_ok=True)
 
-# load params
-brain_plot_kwargs, movie_kwargs, subjects = load_params()
-
-# load an STC as a template
-fname = 'GrandAvg-pre_camp-pskt-5_sec-fft-avg'
-stc = mne.read_source_estimate(os.path.join(stc_dir, fname))
-
 # config other
 timepoints = ('pre', 'post')
 freqs_of_interest = (0, 1, 2, 3, 4, 5, 6, 7, 12)
@@ -45,6 +43,10 @@ precamp_fname = 'GrandAvg-pre_camp'
 postcamp_fname = 'GrandAvg-post_camp'
 median_split_fname = 'UpperVsLowerKnowledge-pre_camp'
 intervention_fname = 'LetterVsLanguageIntervention-PostMinusPre_camp'
+
+# load an STC as a template
+fname = 'GrandAvg-pre_camp-pskt-5_sec-fft-amp'
+stc = mne.read_source_estimate(os.path.join(stc_dir, fname))
 
 for prefix in (precamp_fname, postcamp_fname, median_split_fname,
                intervention_fname):
@@ -63,7 +65,7 @@ for prefix in (precamp_fname, postcamp_fname, median_split_fname,
                      time_label='t-value (%0.2f Hz)', **brain_plot_kwargs)
     if save_movie:
         movie_dir = os.path.join(results_dir, 'pskt', 'group-level', 'fig',
-                                 'movie_frames', prefix)
+                                 'movie_frames', chosen_constraints, prefix)
         os.makedirs(movie_dir, exist_ok=True)
         # don't use brain.save_image_sequence because you can't include actual
         # time (freq) value in output filename (only a time index)
@@ -74,13 +76,13 @@ for prefix in (precamp_fname, postcamp_fname, median_split_fname,
             brain.save_image(img_path)
             # also save to main directory
             if freq in freqs_of_interest:
-                img_fname = f'{prefix}-{freq:02}_Hz.png'
+                img_fname = f'{prefix}-{freq:04.1f}_Hz.png'
                 img_path = os.path.join(fig_dir, img_fname)
                 brain.save_image(img_path)
     else:
         for freq in freqs_of_interest:
             brain.set_time(freq)
-            img_fname = f'{prefix}-{freq:02}_Hz.png'
+            img_fname = f'{prefix}-{freq:04.1f}_Hz.png'
             img_path = os.path.join(fig_dir, img_fname)
             brain.save_image(img_path)
     del brain

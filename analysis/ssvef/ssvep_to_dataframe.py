@@ -10,17 +10,23 @@ import os
 import numpy as np
 import pandas as pd
 import mne
-from analysis.aux_functions import load_paths, load_params
-
-# config paths
-_, _, results_dir = load_paths()
-in_dir = os.path.join(results_dir, 'pskt', 'stc', 'morphed-to-fsaverage')
-out_dir = os.path.join(results_dir, 'pskt', 'group-level', 'dataframe')
-for _dir in (out_dir,):
-    os.makedirs(_dir, exist_ok=True)
+from analysis.aux_functions import load_paths, load_params, load_inverse_params
 
 # load params
 _, _, subjects = load_params()
+inverse_params = load_inverse_params()
+
+# config paths
+_, _, results_dir = load_paths()
+chosen_constraints = ('{orientation_constraint}-{estimate_type}'
+                      ).format_map(inverse_params)
+
+in_dir = os.path.join(results_dir, 'pskt', 'stc', 'morphed-to-fsaverage',
+                      chosen_constraints)
+out_dir = os.path.join(results_dir, 'pskt', 'group-level', 'dataframe',
+                       chosen_constraints)
+for _dir in (out_dir,):
+    os.makedirs(_dir, exist_ok=True)
 
 # config other
 timepoints = ('pre', 'post')

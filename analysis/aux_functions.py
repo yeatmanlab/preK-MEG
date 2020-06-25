@@ -31,6 +31,13 @@ def load_psd_params():
     return psd_params
 
 
+def load_inverse_params():
+    """Load inverse parameters from YAML file."""
+    with open(os.path.join(paramdir, 'inverse_params.yaml'), 'r') as f:
+        inverse_params = yamload(f)
+    return inverse_params
+
+
 def load_cohorts():
     """load intervention and knowledge groups."""
     with open(os.path.join(paramdir, 'intervention_cohorts.yaml'), 'r') as f:

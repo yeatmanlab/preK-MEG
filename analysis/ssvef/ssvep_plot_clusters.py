@@ -11,13 +11,18 @@ import re
 import numpy as np
 from mayavi import mlab
 import mne
-from analysis.aux_functions import load_paths, load_params
+from analysis.aux_functions import load_paths, load_params, load_inverse_params
 
 mlab.options.offscreen = True
 
+# load params
+brain_plot_kwargs, _, subjects = load_params()
+inverse_params = load_inverse_params()
+
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
-chosen_constraints = 'loose-normal'  # fixed/loose/free-vector/magnitude/normal
+chosen_constraints = ('{orientation_constraint}-{estimate_type}'
+                      ).format_map(inverse_params)
 
 cluster_dir = os.path.join(results_dir, 'pskt', 'group-level', 'cluster',
                            chosen_constraints)
@@ -32,16 +37,14 @@ postcamp_fname = 'GrandAvg-post_camp'
 median_split_fname = 'UpperVsLowerKnowledge-pre_camp'
 intervention_fname = 'LetterVsLanguageIntervention-PostMinusPre_camp'
 
-# load params
-brain_plot_kwargs, _, subjects = load_params()
-
 # config other
 freqs = (2, 4, 6, 12)
 
 # get some params from group-level STC
 stc_fname = 'GrandAvg-pre_camp-pskt-5_sec-fft-snr'
-stc = mne.read_source_estimate(os.path.join(results_dir, 'pskt', 'group-level',
-                                            'stc', stc_fname))
+stc_fpath = os.path.join(results_dir, 'pskt', 'group-level', 'stc',
+                         chosen_constraints, stc_fname)
+stc = mne.read_source_estimate(stc_fpath)
 all_freqs = stc.times
 vertices = stc.vertices
 stc_tstep_hz = stc.tstep  # in hertz

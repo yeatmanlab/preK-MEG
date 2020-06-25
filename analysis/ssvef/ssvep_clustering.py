@@ -13,15 +13,24 @@ import mne
 from mne.stats import (permutation_cluster_test, ttest_ind_no_p,
                        permutation_cluster_1samp_test, ttest_1samp_no_p)
 from analysis.aux_functions import (load_paths, load_params, load_cohorts,
-                                    prep_cluster_stats)
+                                    prep_cluster_stats, load_inverse_params)
 
 # flags
 tfce = True
 n_jobs = 10
 
+# load params
+_, _, subjects = load_params()
+inverse_params = load_inverse_params()
+intervention_group, letter_knowledge_group = load_cohorts()
+groups = dict(GrandAvg=subjects)
+groups.update(intervention_group)
+groups.update(letter_knowledge_group)
+
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
-chosen_constraints = 'loose-normal'  # fixed/loose/free-vector/magnitude/normal
+chosen_constraints = ('{orientation_constraint}-{estimate_type}'
+                      ).format_map(inverse_params)
 
 npz_dir = os.path.join(results_dir, 'pskt', 'group-level', 'npz',
                        chosen_constraints)
@@ -34,13 +43,6 @@ for _dir in (cluster_dir,):
 cache_dir = os.path.join(data_root, 'cache')
 os.makedirs(cache_dir, exist_ok=True)
 mne.set_cache_dir(cache_dir)
-
-# load params
-_, _, subjects = load_params()
-intervention_group, letter_knowledge_group = load_cohorts()
-groups = dict(GrandAvg=subjects)
-groups.update(intervention_group)
-groups.update(letter_knowledge_group)
 
 # config other
 timepoints = ('pre', 'post')
@@ -59,7 +61,7 @@ connectivity = mne.spatial_src_connectivity(fsaverage_src)
 # load one STC to get bin centers
 stc_path = os.path.join(results_dir, 'pskt', 'group-level', 'stc',
                         chosen_constraints,
-                        'GrandAvg-post_camp-pskt-5_sec-fft-avg-stc.h5')
+                        'GrandAvg-post_camp-pskt-5_sec-fft-amp-stc.h5')
 stc = mne.read_source_estimate(stc_path)
 all_freqs = stc.times
 del stc
