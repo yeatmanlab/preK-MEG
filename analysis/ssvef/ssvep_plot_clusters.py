@@ -42,8 +42,9 @@ freqs = (2, 4, 6, 12)
 
 # get some params from group-level STC
 stc_fname = 'GrandAvg-pre_camp-pskt-5_sec-fft-snr'
-stc = mne.read_source_estimate(os.path.join(results_dir, 'pskt', 'group-level',
-                                            'stc', stc_fname))
+stc_fpath = os.path.join(results_dir, 'pskt', 'group-level', 'stc',
+                         chosen_constraints, stc_fname)
+stc = mne.read_source_estimate(stc_fpath)
 all_freqs = stc.times
 vertices = stc.vertices
 stc_tstep_hz = stc.tstep  # in hertz
