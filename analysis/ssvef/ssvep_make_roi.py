@@ -18,7 +18,7 @@ from analysis.aux_functions import load_paths, load_params, load_inverse_params
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
 mne.viz.set_3d_backend('mayavi')
-roi_freq = 2
+roi_freq = 4
 
 # load params
 brain_plot_kwargs, *_ = load_params()
