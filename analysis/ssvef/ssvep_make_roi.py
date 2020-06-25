@@ -63,6 +63,10 @@ bin_idx = avg_stc.time_as_index(roi_freq)
 hemi_n_verts = avg_stc.vertices[0].size
 hz = f'{roi_freq}_Hz'
 
+# plot stc
+clim = dict(kind='percent', lims=(95, 99, 99.9))
+brain = avg_stc.plot(subject='fsaverage', clim=clim, initial_time=roi_freq,
+                     **brain_plot_kwargs)
 # define ROI labels
 for threshold in np.linspace(2, 3, 6):
     labels = dict()
@@ -79,15 +83,11 @@ for threshold in np.linspace(2, 3, 6):
     fname = f'{hz}-SNR_{threshold:3.1f}.yaml'
     with open(os.path.join(roi_dir, fname), 'w') as outfile:
         yaml.dump(label_verts, outfile)
-
-    # plot stc
-    clim = dict(kind='percent', lims=(95, 99, 99.9))
-    brain = avg_stc.plot(subject='fsaverage', clim=clim, initial_time=2,
-                         **brain_plot_kwargs)
+    # add labels to brain
     for hemi in ('lh', 'rh'):
         brain.add_label(labels[hemi], borders=False, color='c')
     fname = (f'GrandAvg-pre_and_post_camp-pskt{subdiv}-fft-snr-'
              f'{chosen_constraints}-{hz}-thresh_{threshold:3.1f}.png')
     fpath = os.path.join(fig_dir, fname)
     brain.save_image(fpath)
-    del brain
+    brain.remove_labels()
