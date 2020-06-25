@@ -61,7 +61,7 @@ connectivity = mne.spatial_src_connectivity(fsaverage_src)
 # load one STC to get bin centers
 stc_path = os.path.join(results_dir, 'pskt', 'group-level', 'stc',
                         chosen_constraints,
-                        'GrandAvg-post_camp-pskt-5_sec-fft-avg-stc.h5')
+                        'GrandAvg-post_camp-pskt-5_sec-fft-amp-stc.h5')
 stc = mne.read_source_estimate(stc_path)
 all_freqs = stc.times
 del stc
