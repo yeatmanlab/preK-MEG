@@ -18,7 +18,7 @@ from analysis.aux_functions import load_paths, load_params, load_inverse_params
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
 mne.viz.set_3d_backend('mayavi')
-roi_freq = 4
+roi_freq = 2
 
 # load params
 brain_plot_kwargs, *_ = load_params()
@@ -68,7 +68,7 @@ clim = dict(kind='percent', lims=(95, 99, 99.9))
 brain = avg_stc.plot(subject='fsaverage', clim=clim, initial_time=roi_freq,
                      **brain_plot_kwargs)
 # define ROI labels
-for threshold in np.linspace(2, 3, 6):
+for threshold in np.linspace(1.5, 2.5, 11):
     labels = dict()
     for hemi in ('lh', 'rh'):
         data = (avg_stc.data[:hemi_n_verts] if hemi == 'lh' else
