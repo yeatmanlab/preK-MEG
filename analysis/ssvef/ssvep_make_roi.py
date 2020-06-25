@@ -29,12 +29,6 @@ _, subjects_dir, results_dir = load_paths()
 chosen_constraints = ('{orientation_constraint}-{estimate_type}'
                       ).format_map(inverse_params)
 
-# TODO local testing
-subjects_dir = '/data/prek/anat'
-results_dir = '/data/prek/results'
-brain_plot_kwargs.update(subjects_dir=subjects_dir)
-# TODO end local testing
-
 stc_dir = os.path.join(results_dir, 'pskt', 'group-level', 'stc',
                        chosen_constraints)
 roi_dir = os.path.join('..', 'ROIs')
@@ -53,10 +47,8 @@ fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
                                   'fsaverage-ico-5-src.fif')
 fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
 
-# container
-avg_stc = None
-
 # average the SNR data across pre/post timepoints
+avg_stc = None
 for timepoint in timepoints:
     fname = f'GrandAvg-{timepoint}_camp-pskt{subdiv}-fft-snr'
     fpath = os.path.join(stc_dir, fname)
