@@ -23,8 +23,7 @@ chosen_constraints = ('{orientation_constraint}-{estimate_type}'
 
 in_dir = os.path.join(results_dir, 'pskt', 'stc', 'morphed-to-fsaverage',
                       chosen_constraints)
-out_dir = os.path.join(results_dir, 'pskt', 'group-level', 'dataframe',
-                       chosen_constraints)
+out_dir = os.path.join(results_dir, 'pskt', 'group-level', 'dataframe')
 for _dir in (out_dir,):
     os.makedirs(_dir, exist_ok=True)
 
@@ -54,5 +53,5 @@ for timepoint in timepoints:
         # aggregate
         df = pd.concat((df, this_df), axis=0)
 
-fname = 'all_subjects-fsaverage-freq_domain-stc.csv'
+fname = f'all_subjects-fsaverage-{chosen_constraints}-freq_domain-stc.csv'
 df.to_csv(os.path.join(out_dir, fname), index=False)
