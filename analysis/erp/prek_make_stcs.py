@@ -9,24 +9,31 @@ Make original and morphed Source Time Course files
 import os
 import mne
 from mne.minimum_norm import apply_inverse, read_inverse_operator
-from analysis.aux_functions import load_paths, load_params
+from analysis.aux_functions import load_paths, load_params, load_inverse_params
+
+# load params
+*_, subjects = load_params()
+
+# inverse params
+inverse_params = load_inverse_params()
+constr = inverse_params['orientation_constraint']
+constr = f'-{constr}' if constr in ('free', 'fixed') else ''  # '' == loose
+ori = inverse_params['estimate_type']
+ori = ori if ori in ('vector', 'normal') else None  # None == 'magnitude'
 
 # config paths
 data_root, subjects_dir, _ = load_paths()
-fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
-                                  'fsaverage-ico-5-src.fif')
+
 # config other
 conditions = ['words', 'faces', 'cars', 'aliens']
-methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
+methods = ('dSPM',)  # dSPM, sLORETA, eLORETA
 snr = 3.
 lambda2 = 1. / snr ** 2
 smoothing_steps = 10
 
-# load params
-brain_plot_kwargs, movie_kwargs, subjects = load_params()
-del brain_plot_kwargs, movie_kwargs
-
 # for morph to fsaverage
+fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
+                                  'fsaverage-ico-5-src.fif')
 fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
 fsaverage_vertices = [s['vertno'] for s in fsaverage_src]
 
@@ -40,7 +47,7 @@ for s in subjects:
         this_subj = os.path.join(data_root,
                                  f'{prepost}_camp', 'twa_hp', 'erp', s)
         inv_path = os.path.join(this_subj, 'inverse',
-                                f'{s}-80-sss-meg-inv.fif')
+                                f'{s}-80-sss-meg{constr}-inv.fif')
         evk_path = os.path.join(this_subj, 'inverse',
                                 f'Conditions_80-sss_eq_{s}-ave.fif')
         stc_path = os.path.join(this_subj, 'stc')
@@ -53,7 +60,7 @@ for s in subjects:
         # make STCs with each method
         for method in methods:
             stcs = [apply_inverse(evk, inv, lambda2, method=method,
-                                  pick_ori=None) for evk in evokeds]
+                                  pick_ori=ori) for evk in evokeds]
             # save STCs
             for idx, stc in enumerate(stcs):
                 out_fname = (f'{s}_{prepost}Camp_{method}_'

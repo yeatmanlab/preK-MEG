@@ -27,7 +27,7 @@ mov_path = os.path.join(results_dir, 'movies')
 brain_plot_kwargs, movie_kwargs, subjects = load_params()
 
 # variables to loop over; subtractions between conditions are (lists of) tuples
-methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
+methods = ('dSPM',)  # dSPM, sLORETA, eLORETA
 timepoints = ('preCamp', 'postCamp')
 conditions = ['words', 'faces', 'cars', 'aliens']
 contrasts = {f'{contr[0].capitalize()}Minus{contr[1].capitalize()}': contr
