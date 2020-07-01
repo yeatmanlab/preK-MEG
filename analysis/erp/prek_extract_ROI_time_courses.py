@@ -86,7 +86,7 @@ for region, label in rois.items():
         for groups in group_lists:
             # plot label
             group_str = 'Versus'.join([g.capitalize() for g in groups])
-            img_fname = f'{method}-{group_str}-roi-{region_number}.png'
+            img_fname = f'{method}-{group_str}-roi-{region}.png'
             img_path = os.path.join(img_dir, img_fname)
             plot_label(label, img_path, **brain_plot_kwargs)
             # plot timeseries
@@ -100,4 +100,4 @@ for region, label in rois.items():
                                       lineplot_kwargs=lineplot_kwargs)
     # save dataframe
     df.to_csv(os.path.join(timeseries_dir,
-                           f'roi-{region_number}-timeseries-long.csv'))
+                           f'roi-{region}-timeseries-long.csv'))
