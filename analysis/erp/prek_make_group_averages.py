@@ -25,7 +25,7 @@ for _dir in (groupavg_path, mov_path):
 
 # config other
 conditions = ('words', 'faces', 'cars', 'aliens')
-methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
+methods = ('dSPM',)  # dSPM, sLORETA, eLORETA
 
 # load params
 brain_plot_kwargs, movie_kwargs, subjects = load_params()

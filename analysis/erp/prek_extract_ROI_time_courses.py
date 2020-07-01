@@ -8,19 +8,26 @@ and subjects.
 """
 
 import os
+import numpy as np
 import mne
 from mayavi import mlab
+from matplotlib import rcParams
 from matplotlib.colors import to_rgba
 from analysis.aux_functions import (load_paths, load_params,
+                                    load_inverse_params,
                                     get_dataframe_from_label, plot_label,
                                     plot_label_and_timeseries)
 
+# flags
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
 n_jobs = 10
 
 # load params
 brain_plot_kwargs, movie_kwargs, subjects = load_params()
+inverse_params = load_inverse_params()
+chosen_constraints = ('{orientation_constraint}-{estimate_type}'
+                      ).format_map(inverse_params)
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
@@ -36,35 +43,50 @@ fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
 fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
 fsaverage_src = mne.add_source_space_distances(fsaverage_src, dist_limit=0)
 
-# load the ROI labels
+
 rois = dict()
-roi_colors = list('yrgbcm')
+roi_colors = rcParams['axes.prop_cycle'].by_key()['color']
+snr_thresholds = np.linspace(1.5, 2.5, 11)
+
+# load anatomical ROI labels
 for region_number in range(6):
     fpath = os.path.join(roi_dir, f'ventral_ROI_{region_number}-lh.label')
     label = mne.read_label(fpath)
     label.subject = 'fsaverage'
     label.color = to_rgba(roi_colors[region_number])
-    rois[region_number] = label
+    rois[f'ventral_{region_number}'] = label
+# load SNR-based labels
+for freq in (2, 4):
+    for ix, snr in enumerate(snr_thresholds):
+        slug = f'{freq}_Hz-SNR_{snr:.1f}'
+        fname = f'{chosen_constraints}-{slug}-lh.label'
+        fpath = os.path.join(roi_dir, fname)
+        label = mne.read_label(fpath)
+        # skip empty labels
+        if len(label.values):
+            label.subject = 'fsaverage'
+            label.color = to_rgba(roi_colors[ix % len(roi_colors)])
+            rois[slug] = label
 
 
 all_conditions = ('words', 'faces', 'cars')
 all_timepoints = ('post', 'pre')
-methods = ('dSPM', 'sLORETA')
+methods = ('dSPM',)
 group_lists = (['grandavg'], ['letter', 'language'], ['upper', 'lower'])
 
-for region_number, label in rois.items():
+for region, label in rois.items():
     # prepare to plot
     lineplot_kwargs = dict(hue='condition', hue_order=all_conditions,
                            style='timepoint', style_order=all_timepoints)
     # get dataframe
     df = get_dataframe_from_label(label, fsaverage_src)
-    df['roi'] = region_number
+    df['roi'] = region
     # plot
     for method in methods:
         for groups in group_lists:
             # plot label
             group_str = 'Versus'.join([g.capitalize() for g in groups])
-            img_fname = f'{method}-{group_str}-roi-{region_number}.png'
+            img_fname = f'{method}-{group_str}-roi-{region}.png'
             img_path = os.path.join(img_dir, img_fname)
             plot_label(label, img_path, **brain_plot_kwargs)
             # plot timeseries
@@ -78,4 +100,4 @@ for region_number, label in rois.items():
                                       lineplot_kwargs=lineplot_kwargs)
     # save dataframe
     df.to_csv(os.path.join(timeseries_dir,
-                           f'roi-{region_number}-timeseries-long.csv'))
+                           f'roi-{region}-timeseries-long.csv'))

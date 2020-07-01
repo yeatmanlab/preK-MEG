@@ -52,29 +52,3 @@
     - `prek_plot_clusters_quick_and_dirty.py` generates cortical images of the 
       clusters, alongside plots of average time series extracted from the
       cluster-defined regions.
-
-
-## Filename conventions
-
-Source-space files and movies follow the convention:
-
-```python
-f'{subject}_{timepoint}_{method}_{condition}.fileExtension'
-```
-
-- for group averages in source space, activity is morphed to a template brain
-  and hence `subject` will always include `FSAverage` (referring to the
-  FreeSurfer average template brain). File names for group averages also
-  include the number of participants averaged, so an average based on all 48
-  participants will be called `GrandAvgN48FSAverage`. Averages of more
-  restricted subsets of the participant population will not say "GrandAvg" but
-  instead use some descriptor of the group selection criteria (e.g.,
-  `LanguageInterventionN24FSAverage`)
-- `timepoint` takes values `preCamp`, `postCamp`, or `PostCampMinusPreCamp`,
-  and indicates whether the data were acquired before or after the
-  intervention.
-- `method` refers to the source localization method (e.g., `dSPM`, `sLORETA`,
-  etc)
-- `condition` refers to the experimental conditions, e.g., `faces`, `words`,
-  `cars`, and `aliens`. Files showing differences between conditions use the
-  convention `ConditionOneMinusConditionTwo`, e.g., `FacesMinusCars`.
