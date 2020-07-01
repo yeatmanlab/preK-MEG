@@ -8,6 +8,7 @@ and subjects.
 """
 
 import os
+import numpy as np
 import mne
 from mayavi import mlab
 from matplotlib import rcParams
