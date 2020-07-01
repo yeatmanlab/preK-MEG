@@ -62,9 +62,11 @@ for freq in (2, 4):
         fname = f'{chosen_constraints}-{slug}-lh.label'
         fpath = os.path.join(roi_dir, fname)
         label = mne.read_label(fpath)
-        label.subject = 'fsaverage'
-        label.color = to_rgba(roi_colors[ix % len(roi_colors)])
-        rois[slug] = label
+        # skip empty labels
+        if len(label.values):
+            label.subject = 'fsaverage'
+            label.color = to_rgba(roi_colors[ix % len(roi_colors)])
+            rois[slug] = label
 
 
 all_conditions = ('words', 'faces', 'cars')
