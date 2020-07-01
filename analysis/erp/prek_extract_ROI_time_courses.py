@@ -63,7 +63,7 @@ for freq in (2, 4):
         fpath = os.path.join(roi_dir, fname)
         label = mne.read_label(fpath)
         label.subject = 'fsaverage'
-        label.color = to_rgba(roi_colors[ix])
+        label.color = to_rgba(roi_colors[ix % len(roi_colors)])
         rois[slug] = label
 
 
