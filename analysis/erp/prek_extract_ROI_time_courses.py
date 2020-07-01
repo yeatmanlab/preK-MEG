@@ -58,7 +58,7 @@ for region_number in range(6):
 # load SNR-based labels
 for freq in (2, 4):
     for ix, snr in enumerate(snr_thresholds):
-        slug = f'{freq}_Hz-SNR{snr:.1f}'
+        slug = f'{freq}_Hz-SNR_{snr:.1f}'
         fname = f'{chosen_constraints}-{slug}-lh.label'
         fpath = os.path.join(roi_dir, fname)
         label = mne.read_label(fpath)
