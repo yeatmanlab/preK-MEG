@@ -1,8 +1,10 @@
 %% Divide sample into high and low letter knowledge
 
-d = readtable('RDRPRepository-PREK_DATA_LABELS_2019-07-31_1139.csv');
-d = d(strcmp(d.EventName,'Visit 2'),:)
-cutpointZ = -0.1;% This was the trough in the bimodal distribution
+d = readtable('RDRPRepository-PREK_DATA_LABELS_2020-08-23_1500.csv');
+d = d(strcmp(d.WhatStudyIsTheSubjectBeingEnrolledIn_ThisResponseWillBeUsedToSe,'prek_pre_language' ) |...
+    strcmp(d.WhatStudyIsTheSubjectBeingEnrolledIn_ThisResponseWillBeUsedToSe,'prek_pre_letter' ),:);
+d = d(~isnan(d.Pre_ReaderLetterKnowledge_OfLetters),:);
+cutpointZ = 0;% This was the trough in the bimodal distribution
 t = table(d.RecordID, d.Pre_ReaderLetterKnowledge_OfLetters, d.Pre_ReaderLetterKnowledge_OfLetters_Lowercase_,...
     d.Pre_ReaderLetterKnowledge_OfSounds,d.Pre_ReaderLetterKnowledge_OfSounds_Lowercase_,'VariableNames',...
     {'subID' 'UpperName' 'LowerName' 'UpperSound' 'LowerSound'});
