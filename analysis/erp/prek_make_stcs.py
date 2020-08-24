@@ -12,7 +12,9 @@ from mne.minimum_norm import apply_inverse, read_inverse_operator
 from analysis.aux_functions import load_paths, load_params, load_inverse_params
 
 # load params
-*_, subjects = load_params()
+*_, subjects = load_params(r_cohort=True)
+subjects.remove('prek_2171')
+subjects.remove('prek_2259')
 
 # inverse params
 inverse_params = load_inverse_params()
@@ -22,7 +24,7 @@ ori = inverse_params['estimate_type']
 ori = ori if ori in ('vector', 'normal') else None  # None == 'magnitude'
 
 # config paths
-data_root, subjects_dir, _ = load_paths()
+data_root, subjects_dir, _ = load_paths(r_cohort=True)
 
 # config other
 conditions = ['words', 'faces', 'cars', 'aliens']
@@ -30,6 +32,7 @@ methods = ('dSPM',)  # dSPM, sLORETA, eLORETA
 snr = 3.
 lambda2 = 1. / snr ** 2
 smoothing_steps = 10
+lp_cut = 30
 
 # for morph to fsaverage
 fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
@@ -47,9 +50,9 @@ for s in subjects:
         this_subj = os.path.join(data_root,
                                  f'{prepost}_camp', 'twa_hp', 'erp', s)
         inv_path = os.path.join(this_subj, 'inverse',
-                                f'{s}-80-sss-meg{constr}-inv.fif')
+                                f'{s}-{lp_cut}-sss-meg{constr}-inv.fif')
         evk_path = os.path.join(this_subj, 'inverse',
-                                f'Conditions_80-sss_eq_{s}-ave.fif')
+                                f'Conditions_{lp_cut}-sss_eq_{s}-ave.fif')
         stc_path = os.path.join(this_subj, 'stc')
         # prepare output dir
         if not os.path.isdir(stc_path):
@@ -70,7 +73,8 @@ for s in subjects:
             # anatomy hasn't changed; uses the most recent STC from the above
             # saving loop (morph only needs the anatomy, not the MEG data)
             if not already_morphed:
-                morph = mne.compute_source_morph(stc, subject_from=s.upper(),
+                subject_from = s if r_cohort else s.upper()
+                morph = mne.compute_source_morph(stc, subject_from=subject_from,
                                                  subject_to='fsaverage',
                                                  subjects_dir=subjects_dir,
                                                  spacing=fsaverage_vertices,

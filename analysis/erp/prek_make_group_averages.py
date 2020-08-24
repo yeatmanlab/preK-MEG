@@ -14,9 +14,10 @@ from analysis.aux_functions import load_paths, load_params, load_cohorts
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
 overwrite = False
+r_cohort=True
 
 # config paths
-data_root, _, results_dir = load_paths()
+data_root, _, results_dir = load_paths(r_cohort=r_cohort)
 groupavg_path = os.path.join(results_dir, 'group_averages')
 mov_path = os.path.join(results_dir, 'movies')
 for _dir in (groupavg_path, mov_path):
@@ -28,15 +29,20 @@ conditions = ('words', 'faces', 'cars', 'aliens')
 methods = ('dSPM',)  # dSPM, sLORETA, eLORETA
 
 # load params
-brain_plot_kwargs, movie_kwargs, subjects = load_params()
+brain_plot_kwargs, movie_kwargs, subjects = load_params(r_cohort=r_cohort)
+subjects.remove('prek_2171')
+subjects.remove('prek_2259')
 
 # load cohort info (keys Language/LetterIntervention and Lower/UpperKnowledge)
 intervention_group, letter_knowledge_group = load_cohorts()
 
 # assemble groups to iterate over
-groups = dict(GrandAvg=subjects)
-groups.update(intervention_group)
-groups.update(letter_knowledge_group)
+if r_cohort:
+    groups = {'r_cohort': subjects}
+else:
+    groups = dict(GrandAvg=subjects)
+    groups.update(intervention_group)
+    groups.update(letter_knowledge_group)
 
 # loop over algorithms
 for method in methods:

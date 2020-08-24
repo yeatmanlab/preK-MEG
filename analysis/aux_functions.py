@@ -9,14 +9,18 @@ paramdir = os.path.join('..', '..', 'params')
 yamload = partial(yaml.load, Loader=yaml.FullLoader)
 
 
-def load_params(skip=True):
+def load_params(skip=True, r_cohort=False):
     """Load experiment parameters from YAML files."""
     with open(os.path.join(paramdir, 'brain_plot_params.yaml'), 'r') as f:
         brain_plot_kwargs = yamload(f)
     with open(os.path.join(paramdir, 'movie_params.yaml'), 'r') as f:
         movie_kwargs = yamload(f)
-    with open(os.path.join(paramdir, 'subjects.yaml'), 'r') as f:
-        subjects = yamload(f)
+    if r_cohort:
+        with open(os.path.join(paramdir, 'r_cohort_subjects.yaml'), 'r') as f:
+            subjects = yamload(f)
+    else:
+        with open(os.path.join(paramdir, 'subjects.yaml'), 'r') as f:
+            subjects = yamload(f)
     if skip:
         with open(os.path.join(paramdir, 'skip_subjects.yaml'), 'r') as f:
             skips = yamload(f)
@@ -52,10 +56,14 @@ def load_cohorts():
     return intervention_group, letter_knowledge_group
 
 
-def load_paths():
+def load_paths(r_cohort=False):
     """Load necessary filesystem paths."""
-    with open(os.path.join(paramdir, 'paths.yaml'), 'r') as f:
-        paths = yamload(f)
+    if r_cohort:
+        with open(os.path.join(paramdir, 'r_paths.yaml'), 'r') as f:
+            paths = yamload(f)
+    else:
+        with open(os.path.join(paramdir, 'paths.yaml'), 'r') as f:
+            paths = yamload(f)   
     return paths['data_root'], paths['subjects_dir'], paths['results_dir']
 
 

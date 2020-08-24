@@ -17,14 +17,17 @@ from analysis.aux_functions import load_paths, load_params, load_cohorts
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
 overwrite = True
+r_cohort=True
 
 # config paths
-_, _, results_dir = load_paths()
+_, _, results_dir = load_paths(r_cohort=r_cohort)
 groupavg_path = os.path.join(results_dir, 'group_averages')
 mov_path = os.path.join(results_dir, 'movies')
 
 # load params
-brain_plot_kwargs, movie_kwargs, subjects = load_params()
+brain_plot_kwargs, movie_kwargs, subjects = load_params(r_cohort=r_cohort)
+subjects.remove('prek_2171')
+subjects.remove('prek_2259')
 
 # variables to loop over; subtractions between conditions are (lists of) tuples
 methods = ('dSPM',)  # dSPM, sLORETA, eLORETA
@@ -37,9 +40,12 @@ contrasts = {f'{contr[0].capitalize()}Minus{contr[1].capitalize()}': contr
 intervention_group, letter_knowledge_group = load_cohorts()
 
 # assemble groups to iterate over
-groups = dict(GrandAvg=subjects)
-groups.update(intervention_group)
-groups.update(letter_knowledge_group)
+if r_cohort:
+    groups = {'r_cohort': subjects}
+else:
+    groups = dict(GrandAvg=subjects)
+    groups.update(intervention_group)
+    groups.update(letter_knowledge_group)
 
 # LOOP ONCE THROUGH ALL CONDITIONS TO LOAD THE STCs INTO A DICT
 stc_dict = dict()

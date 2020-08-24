@@ -203,6 +203,6 @@ def make_cluster_stc(cluster_fname):
 
 
 cluster_fnames = sorted([x.name for x in os.scandir(cluster_dir)
-                         if x.is_file()])
+                         if x.is_file() and 'dSPM' in x.name])
 for cluster_fname in cluster_fnames:
     make_cluster_stc(cluster_fname)

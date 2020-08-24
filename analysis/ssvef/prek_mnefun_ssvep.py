@@ -18,11 +18,13 @@ import os
 import os.path as op
 import mnefun
 import numpy as np
+import yaml
 
 print(mnefun)
 
 fixed_or_twa = 'twa' # convenience variable for doing different runs
 pre_or_post = 'post'
+r_cohort = True
 
 if fixed_or_twa == 'fixed':
     trans_to = (0., 0., 0.04)
@@ -32,10 +34,23 @@ else:
 pskt_dir = '/mnt/scratch/prek/%s_camp/%s_hp/pskt/' % (pre_or_post, fixed_or_twa)
 
 # load subjects
-with open(os.path.join('..', '..', 'params', 'subjects.yaml'), 'r') as f:
-    subjects = yaml.load(f, Loader=yaml.FullLoader)
+if r_cohort:
+   pskt_dir = '/mnt/scratch/prek/r_cohort/%s_camp/%s_hp/pskt/' % (pre_or_post, fixed_or_twa) 
+else:
+   pskt_dir = '/mnt/scratch/prek/%s_camp/%s_hp/pskt/' % (pre_or_post, fixed_or_twa)
+   
+if r_cohort:
+    with open(os.path.join('..', '..', 'params', 'r_cohort_subjects.yaml'), 'r') as f:
+        subjects = yaml.load(f, Loader=yaml.FullLoader)
+else:
+    with open(os.path.join('..', '..', 'params', 'subjects.yaml'), 'r') as f:
+        subjects = yaml.load(f, Loader=yaml.FullLoader)
+        
+subjects.sort()
+subjects.remove('prek_2171')
+subjects.remove('prek_2259')
 
-structurals = [x.upper() for x in subjects]
+structurals = subjects if r_cohort else [x.upper() for x in subjects]
 
 params = mnefun.Params(tmin=-0.1, tmax=1, n_jobs='cuda',
                        proj_sfreq=200, n_jobs_fir='cuda',
@@ -46,7 +61,7 @@ params = mnefun.Params(tmin=-0.1, tmax=1, n_jobs='cuda',
 params.subjects = subjects
 params.work_dir = pskt_dir
 params.structurals = structurals
-params.subjects_dir = '/mnt/scratch/prek/anat'
+params.subjects_dir = '/mnt/scratch/prek/anat/r_cohort_anat' if r_cohort else '/mnt/scratch/prek/anat'
 params.dates = [(2013, 0, 00)] * len(params.subjects)
 # define which subjects to run
 params.subject_indices = np.arange(len(params.subjects))
@@ -103,8 +118,8 @@ mnefun.do_processing(
     fetch_raw=False,
     do_sss=False, # do tSSS
     do_score=False,  # do scoring
-    gen_ssp=False, # generate ssps
-    apply_ssp=False, # apply ssps
+    gen_ssp=True, # generate ssps
+    apply_ssp=True, # apply ssps
     write_epochs=False, # epoching & filtering
     gen_covs=False, # make covariance 
     gen_fwd=False, # generate fwd model

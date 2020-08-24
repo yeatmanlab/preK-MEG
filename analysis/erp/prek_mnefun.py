@@ -25,24 +25,36 @@ import numpy as np
 import mnefun
 from prek_score import prek_score
 
-pre_or_post = 'post' # convenience variable for rerunning 
-target_dir = '/mnt/scratch/prek/%s_camp/twa_hp/erp/' % pre_or_post
+r_cohort = True  # bool
+lp_cut = 30
+pre_or_post = 'post' # str: 'pre' or 'post' convenience variable for rerunning 
 
-params = mnefun.Params(tmin=-0.1, tmax=1, t_adjust=-0.067, n_jobs='cuda',
+if r_cohort:
+   target_dir = '/mnt/scratch/prek/r_cohort/%s_camp/twa_hp/erp/' % pre_or_post 
+else:
+   target_dir = '/mnt/scratch/prek/%s_camp/twa_hp/erp/' % pre_or_post
+
+params = mnefun.Params(tmin=-0.1, tmax=1, t_adjust=-0.067, n_jobs=8,
                        proj_sfreq=200, n_jobs_fir='cuda',
-                       filter_length='5s', lp_cut=80.,
+                       filter_length='5s', lp_cut=lp_cut,
                        n_jobs_resample='cuda',
                        bmin=-0.1, bem_type='5120')
 # load subjects
-with open(os.path.join('..', '..', 'params', 'subjects.yaml'), 'r') as f:
-    subjects = yaml.load(f, Loader=yaml.FullLoader)
-
+#if r_cohort:
+#    with open(os.path.join('..', '..', 'params', 'r_cohort_subjects.yaml'), 'r') as f:
+#        subjects = yaml.load(f, Loader=yaml.FullLoader)
+#else:
+#    with open(os.path.join('..', '..', 'params', 'subjects.yaml'), 'r') as f:
+#        subjects = yaml.load(f, Loader=yaml.FullLoader)
+        
+subjects =  ['prek_2171']
+# subjects.remove('prek_2259')    
+subjects.sort()    
 print(subjects)
-structurals = [x.upper() for x in subjects]
-
+structurals = [x for x in subjects] if r_cohort else [x.upper() for x in subjects]
 params.subjects = subjects
 params.work_dir = target_dir
-params.subjects_dir = '/mnt/scratch/prek/anat'
+params.subjects_dir = '/mnt/scratch/prek/anat/r_cohort_anat/' if r_cohort else '/mnt/scratch/prek/anat'
 params.score = prek_score
 params.structurals = structurals
 params.dates = [(2013, 0, 00)] * len(params.subjects)
@@ -115,37 +127,37 @@ params.report_params.update(  # add plots
     ],
     source=[
         dict(analysis='Conditions', name='words',
-             inv='%s-80-sss-meg-free-inv.fif',
+             inv='%s-' + str(lp_cut) + '-sss-meg-free-inv.fif',
              views=['lat', 'caudal'], size=(800, 800)),
         dict(analysis='Conditions', name='faces',
-             inv='%s-80-sss-meg-free-inv.fif',
+             inv='%s-' + str(lp_cut) + '-sss-meg-free-inv.fif',
              views=['lat', 'caudal'], size=(800, 800)),
         dict(analysis='Conditions', name='cars',
-             inv='%s-80-sss-meg-free-inv.fif',
+             inv='%s-' + str(lp_cut) + '-sss-meg-free-inv.fif',
              views=['lat', 'caudal'], size=(800, 800)),
         dict(analysis='Conditions', name='aliens',
-             inv='%s-80-sss-meg-free-inv.fif',
+             inv='%s-' + str(lp_cut) + '-sss-meg-free-inv.fif',
              views=['lat', 'caudal'], size=(800, 800)),
     ],
     snr=[
         dict(analysis='Conditions', name='words',
-             inv='%s-80-sss-meg-free-inv.fif'),
+             inv='%s-' + str(lp_cut) + '-sss-meg-free-inv.fif'),
         dict(analysis='Conditions', name='faces',
-             inv='%s-80-sss-meg-free-inv.fif'),
+             inv='%s-' + str(lp_cut) + '-sss-meg-free-inv.fif'),
         dict(analysis='Conditions', name='cars',
-             inv='%s-80-sss-meg-free-inv.fif'),
+             inv='%s-' + str(lp_cut) + '-sss-meg-free-inv.fif'),
         dict(analysis='Conditions', name='aliens',
-             inv='%s-80-sss-meg-free-inv.fif')
+             inv='%s-' + str(lp_cut) + '-sss-meg-free-inv.fif')
     ],
     whitening=[
         dict(analysis='Conditions', name='words',
-             cov='%s-80-sss-cov.fif'),
+             cov='%s-' + str(lp_cut) + '-sss-cov.fif'),
         dict(analysis='Conditions', name='faces',
-             cov='%s-80-sss-cov.fif'),
+             cov='%s-' + str(lp_cut) + '-sss-cov.fif'),
         dict(analysis='Conditions', name='cars',
-             cov='%s-80-sss-cov.fif'),
+             cov='%s-' + str(lp_cut) + '-sss-cov.fif'),
         dict(analysis='Conditions', name='aliens',
-             cov='%s-80-sss-cov.fif')
+             cov='%s-' + str(lp_cut) + '-sss-cov.fif')
     ],
     psd=False,
 )
@@ -153,8 +165,8 @@ params.report_params.update(  # add plots
 mnefun.do_processing(
     params,
     fetch_raw=False,
-    do_sss=True,        # do tSSS
-    do_score=True,       # do scoring
+    do_sss=False,        # do tSSS
+    do_score=False,       # do scoring
     gen_ssp=True,        # generate ssps
     apply_ssp=True,      # apply ssps
     write_epochs=True,   # epoching & filtering

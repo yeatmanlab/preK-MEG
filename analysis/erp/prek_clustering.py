@@ -36,6 +36,7 @@ def do_clustering(X, label, connectivity, groups=1):
     # save clustering results
     out_fname = f'{group}_{timepoint}_{method}_{con}_{hemi}.npz'  # noqa
     out_fpath = os.path.join(cluster_dir, out_fname)
+    print('Saving cluster to %s.' % out_fpath)
     np.savez(out_fpath, **stats)
 
 

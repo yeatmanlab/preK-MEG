@@ -33,7 +33,8 @@ frames_dir = os.path.join(cluster_dir, 'frames')
 
 # config other
 conditions = ('words', 'faces', 'cars')  # we purposely omit 'aliens' here
-methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
+# methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
+methods = ['dSPM']
 
 # generate contrast names
 contrasts = [f'{cond_0.capitalize()}Minus{cond_1.capitalize()}'
@@ -63,7 +64,7 @@ def make_cluster_movie(group, prepost, method, con, results_dir,
     stc_fpath = os.path.join(results_dir, results_subdir, stc_fname)
     stc = mne.read_source_estimate(stc_fpath)
     # load the cluster results
-    cluster_fname = f'{stc_fname}.npz'
+    cluster_fname = f'{stc_fname}_lh.npz'
     cluster_fpath = os.path.join(cluster_dir, cluster_fname)
     cluster_dict = np.load(cluster_fpath, allow_pickle=True)
     # keys: clusters tvals pvals hzero good_cluster_idxs n_clusters
