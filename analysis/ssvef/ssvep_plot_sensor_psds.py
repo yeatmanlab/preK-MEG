@@ -14,9 +14,10 @@ from analysis.aux_functions import load_paths, load_params, load_psd_params
 # flags
 plot_psd = True
 plot_topo = True
+cohorts = 'all'
 
 # config paths
-data_root, subjects_dir, results_dir = load_paths()
+data_root, subjects_dir, results_dir = load_paths(cohorts=cohorts)
 in_dir = os.path.join(results_dir, 'pskt', 'epochs')
 fig_dir = os.path.join(results_dir, 'pskt', 'fig', 'psd')
 topo_dir = os.path.join(results_dir, 'pskt', 'fig', 'topo')
@@ -24,13 +25,15 @@ for _dir in (fig_dir, topo_dir):
     os.makedirs(_dir, exist_ok=True)
 
 # load params
-_, _, subjects = load_params()
-psd_params = load_psd_params()
+_, _, subjects = load_params(cohorts=cohorts)
+# psd_params = load_psd_params()
 
 # config other
 timepoints = ('pre', 'post')
-bandwidth = psd_params['bandwidth']
-subdivide_epochs = psd_params['epoch_dur']
+# bandwidth = psd_params['bandwidth']
+# subdivide_epochs = psd_params['epoch_dur']
+bandwidth = 0.20
+subdivide_epochs = 5
 subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 
 # loop over subjects

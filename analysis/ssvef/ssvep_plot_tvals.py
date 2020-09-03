@@ -17,13 +17,14 @@ mne.cuda.init_cuda()
 
 # flags
 save_movie = False
+cohorts = 'all'
 
 # load params
-brain_plot_kwargs, movie_kwargs, subjects = load_params()
+brain_plot_kwargs, movie_kwargs, subjects = load_params(cohorts=cohorts)
 inverse_params = load_inverse_params()
 
 # config paths
-data_root, subjects_dir, results_dir = load_paths()
+data_root, subjects_dir, results_dir = load_paths(cohorts=cohorts)
 chosen_constraints = ('{orientation_constraint}-{estimate_type}'
                       ).format_map(inverse_params)
 
@@ -45,7 +46,7 @@ median_split_fname = 'UpperVsLowerKnowledge-pre_camp'
 intervention_fname = 'LetterVsLanguageIntervention-PostMinusPre_camp'
 
 # load an STC as a template
-fname = 'GrandAvg-pre_camp-pskt-5_sec-fft-amp'
+fname = f'{cohorts}_GrandAvg-pre_camp-pskt-5_sec-fft-amp'
 stc = mne.read_source_estimate(os.path.join(stc_dir, fname))
 
 for prefix in (precamp_fname, postcamp_fname, median_split_fname,

@@ -13,9 +13,10 @@ from analysis.aux_functions import load_paths, load_params
 
 # flags
 mne.cuda.init_cuda()
+cohorts = 'all'
 
 # config paths
-data_root, subjects_dir, results_dir = load_paths()
+data_root, subjects_dir, results_dir = load_paths(cohorts=cohorts)
 fft_dir = os.path.join(results_dir, 'pskt', 'fft-evoked')
 stc_dir = os.path.join(results_dir, 'pskt', 'stc', 'subject-specific')
 morph_dir = os.path.join(results_dir, 'pskt', 'stc', 'morphed-to-fsaverage')
@@ -23,7 +24,7 @@ for _dir in (stc_dir, morph_dir):
     os.makedirs(_dir, exist_ok=True)
 
 # load params
-_, _, subjects = load_params()
+_, _, subjects = load_params(cohorts=cohorts)
 
 # config other
 timepoints = ('pre', 'post')
@@ -61,12 +62,14 @@ for s in subjects:
             # not in PSKT (TODO: this may change at some point)
             inv_path = os.path.join(data_root, f'{timepoint}_camp', 'twa_hp',
                                     'erp', s, 'inverse',
-                                    f'{s}-80-sss-meg{constr}-inv.fif')
+                                    f'{s}-30-sss-meg{constr}-inv.fif')
             inverse = mne.minimum_norm.read_inverse_operator(inv_path)
             # loop over estimate types
             for estim_type in estim_types:
                 if constr == '-fixed' and estim_type == 'normal':
                     continue  # not implemented
+#                elif constr == '-fixed' and estim_type == 'vector':
+#                    continue 
                 # make the output dirs
                 estim_dir = 'magnitude' if estim_type is None else estim_type
                 out_dir = f'{constr_dir}-{estim_dir}'
@@ -81,8 +84,9 @@ for s in subjects:
                 stc.save(fpath, ftype='h5')
                 # compute morph for this subject
                 if not has_morph:
+                    sf = s if 'prek_2' in s else s.upper()
                     morph = mne.compute_source_morph(
-                        stc, subject_from=s.upper(), subject_to='fsaverage',
+                        stc, subject_from=sf, subject_to='fsaverage',
                         subjects_dir=subjects_dir, spacing=fsaverage_vertices,
                         smooth=smoothing_steps)
                     has_morph = True
@@ -90,4 +94,5 @@ for s in subjects:
                 morphed_stc = morph.apply(stc)
                 fname = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-fft'
                 fpath = os.path.join(morph_dir, out_dir, fname)
+                print('Saving stc to %s' % fpath)
                 morphed_stc.save(fpath, ftype='h5')

@@ -16,12 +16,13 @@ from analysis.aux_functions import load_paths, load_params, load_cohorts
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
 n_jobs = 10
+cohorts = 'all'
 
 # load params
-brain_plot_kwargs, movie_kwargs, subjects = load_params()
+brain_plot_kwargs, movie_kwargs, subjects = load_params(cohorts=cohorts)
 
 # config paths
-data_root, subjects_dir, results_dir = load_paths()
+data_root, subjects_dir, results_dir = load_paths(cohorts=cohorts)
 cluster_root = os.path.join(results_dir, 'clustering')
 mov_dir = os.path.join(results_dir, 'movies', 'clustering')
 if not os.path.isdir(mov_dir):
@@ -41,7 +42,7 @@ contrasts = [f'{cond_0.capitalize()}Minus{cond_1.capitalize()}'
              for (cond_0, cond_1) in combinations(conditions, 2)]
 
 # load cohort info (keys Language/LetterIntervention and Lower/UpperKnowledge)
-intervention_group, letter_knowledge_group = load_cohorts()
+intervention_group, letter_knowledge_group = load_cohorts(cohorts=cohorts)
 
 # assemble groups to iterate over
 # groups = dict(GrandAvg=subjects)
@@ -57,14 +58,14 @@ fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
 
 # workhorse function
 def make_cluster_movie(group, prepost, method, con, results_dir,
-                       results_subdir, cluster_dir, mov_dir):
+                       results_subdir, cluster_dir, mov_dir, cohorts='orig_only'):
     """NB: 'con' can be either condition (str) or contrast (tuple)."""
     # load the STC
-    stc_fname = f'{group}_{prepost}Camp_{method}_{con}'
+    stc_fname = f'{cohorts}_{group}_{prepost}Camp_{method}_{con}'
     stc_fpath = os.path.join(results_dir, results_subdir, stc_fname)
     stc = mne.read_source_estimate(stc_fpath)
     # load the cluster results
-    cluster_fname = f'{stc_fname}_lh.npz'
+    cluster_fname = f'{stc_fname}_lh.npz'                     
     cluster_fpath = os.path.join(cluster_dir, cluster_fname)
     cluster_dict = np.load(cluster_fpath, allow_pickle=True)
     # keys: clusters tvals pvals hzero good_cluster_idxs n_clusters
@@ -100,7 +101,7 @@ def make_cluster_movie(group, prepost, method, con, results_dir,
                 # fill in verts that are surrounded by cluster verts
                 label = label.fill(fsaverage_src)
                 brain.add_label(label, borders=True, color='m')
-        frame_fname = f'{stc_fname}_{t_idx:03}.png'
+        frame_fname = f'{cohorts}_{stc_fname}_{t_idx:03}.png'
         brain.save_image(os.path.join(this_frames_dir, frame_fname))
         brain.remove_labels()
 
@@ -123,10 +124,10 @@ for method in methods:
         # post-pre subtraction for single conditions
         for condition in conditions:
             make_cluster_movie(prepost='PostCampMinusPre', con=condition,
-                               results_subdir='prepost_contrasts',
+                               results_subdir='group_averages', cohorts=cohorts,
                                **common_kwargs)
         # post-pre subtraction for condition contrasts
         for contrast in contrasts:
             make_cluster_movie(prepost='PostCampMinusPre', con=contrast,
-                               results_subdir='prepost_contrasts',
+                               results_subdir='group_averages', cohorts=cohorts,
                                **common_kwargs)

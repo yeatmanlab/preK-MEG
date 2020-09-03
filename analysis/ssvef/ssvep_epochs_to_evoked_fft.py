@@ -8,15 +8,17 @@ Load SSVEP epochs, compute FFT, apply inverse, & morph to FSAverage.
 
 import os
 import numpy as np
+import scipy
 from scipy.fft import rfft, rfftfreq
 import mne
 from analysis.aux_functions import load_paths, load_params
 
 # flags
 mne.cuda.init_cuda()
+cohorts = 'r_only'
 
 # config paths
-data_root, subjects_dir, results_dir = load_paths()
+data_root, subjects_dir, results_dir = load_paths(cohorts=cohorts)
 in_dir = os.path.join(results_dir, 'pskt', 'epochs')
 evk_dir = os.path.join(results_dir, 'pskt', 'evoked')
 fft_dir = os.path.join(results_dir, 'pskt', 'fft-evoked')
@@ -24,7 +26,7 @@ for _dir in (evk_dir, fft_dir):
     os.makedirs(_dir, exist_ok=True)
 
 # load params
-_, _, subjects = load_params()
+_, _, subjects = load_params(cohorts=cohorts)
 
 # config other
 timepoints = ('pre', 'post')

@@ -17,14 +17,15 @@ mne.cuda.init_cuda()
 compute_psds = True
 plot_psds = True
 plot_topomaps = True
+cohorts = 'r_only'
 
 # config paths
-data_root, subjects_dir, results_dir = load_paths()
+data_root, subjects_dir, results_dir = load_paths(cohorts=cohorts)
 epo_dir = os.path.join(results_dir, 'pskt', 'epochs')
 os.makedirs(epo_dir, exist_ok=True)
 
 # load params
-_, _, subjects = load_params()
+_, _, subjects = load_params(cohorts=cohorts)
 
 # config other
 timepoints = ('pre', 'post')
@@ -73,6 +74,7 @@ for s in subjects:
                                       np.zeros_like(new_indices),
                                       np.repeat(events[:, -1], n_new_events)))
         # downsample
+        raw.load_data()
         raw, events = raw.resample(sfreq=50, events=events, n_jobs='cuda')
         # clean up
         del raws, first_samps, last_samps, events_list

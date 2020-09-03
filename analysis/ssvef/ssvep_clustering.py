@@ -18,17 +18,18 @@ from analysis.aux_functions import (load_paths, load_params, load_cohorts,
 # flags
 tfce = True
 n_jobs = 10
+cohorts = 'all'
 
 # load params
-_, _, subjects = load_params()
+_, _, subjects = load_params(cohorts=cohorts)
 inverse_params = load_inverse_params()
-intervention_group, letter_knowledge_group = load_cohorts()
+intervention_group, letter_knowledge_group = load_cohorts(cohorts=cohorts)
 groups = dict(GrandAvg=subjects)
 groups.update(intervention_group)
 groups.update(letter_knowledge_group)
 
 # config paths
-data_root, subjects_dir, results_dir = load_paths()
+data_root, subjects_dir, results_dir = load_paths(cohorts=cohorts)
 chosen_constraints = ('{orientation_constraint}-{estimate_type}'
                       ).format_map(inverse_params)
 
@@ -61,7 +62,7 @@ connectivity = mne.spatial_src_connectivity(fsaverage_src)
 # load one STC to get bin centers
 stc_path = os.path.join(results_dir, 'pskt', 'group-level', 'stc',
                         chosen_constraints,
-                        'GrandAvg-post_camp-pskt-5_sec-fft-amp-stc.h5')
+                        'all_GrandAvg-post_camp-pskt-5_sec-fft-amp-stc.h5')
 stc = mne.read_source_estimate(stc_path)
 all_freqs = stc.times
 del stc

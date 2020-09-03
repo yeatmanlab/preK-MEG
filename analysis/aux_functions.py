@@ -9,17 +9,20 @@ paramdir = os.path.join('..', '..', 'params')
 yamload = partial(yaml.load, Loader=yaml.FullLoader)
 
 
-def load_params(skip=True, r_cohort=False):
+def load_params(skip=True, cohorts='orig_only'):
     """Load experiment parameters from YAML files."""
     with open(os.path.join(paramdir, 'brain_plot_params.yaml'), 'r') as f:
         brain_plot_kwargs = yamload(f)
     with open(os.path.join(paramdir, 'movie_params.yaml'), 'r') as f:
         movie_kwargs = yamload(f)
-    if r_cohort:
+    if cohorts == 'r_only':
         with open(os.path.join(paramdir, 'r_cohort_subjects.yaml'), 'r') as f:
             subjects = yamload(f)
+    elif cohorts == 'all':
+        with open(os.path.join(paramdir, 'all_subjects.yaml'), 'r') as f:
+            subjects = yamload(f)
     else:
-        with open(os.path.join(paramdir, 'subjects.yaml'), 'r') as f:
+        with open(os.path.join(paramdir, 'orig_subjects.yaml'), 'r') as f:
             subjects = yamload(f)
     if skip:
         with open(os.path.join(paramdir, 'skip_subjects.yaml'), 'r') as f:
@@ -42,11 +45,17 @@ def load_inverse_params():
     return inverse_params
 
 
-def load_cohorts():
+def load_cohorts(cohorts='orig_only'):
     """load intervention and knowledge groups."""
-    with open(os.path.join(paramdir, 'intervention_cohorts.yaml'), 'r') as f:
+    if cohorts == 'all':
+        insert = 'all_'
+    elif cohorts == 'r_only':
+        insert = 'r_'
+    else:
+        insert = ''
+    with open(os.path.join(paramdir, insert + 'intervention_cohorts.yaml'), 'r') as f:
         intervention_group = yamload(f)
-    with open(os.path.join(paramdir, 'letter_knowledge_cohorts.yaml'),
+    with open(os.path.join(paramdir, insert + 'letter_knowledge_cohorts.yaml'),
               'r') as f:
         letter_knowledge_group = yamload(f)
     # convert 1103 → 'prek_1103'
@@ -56,13 +65,16 @@ def load_cohorts():
     return intervention_group, letter_knowledge_group
 
 
-def load_paths(r_cohort=False):
+def load_paths(cohorts='orig_only'):
     """Load necessary filesystem paths."""
-    if r_cohort:
+    if cohorts == 'r_only':
         with open(os.path.join(paramdir, 'r_paths.yaml'), 'r') as f:
             paths = yamload(f)
+    elif cohorts == 'all':
+        with open(os.path.join(paramdir, 'all_paths.yaml'), 'r') as f:
+            paths = yamload(f)
     else:
-        with open(os.path.join(paramdir, 'paths.yaml'), 'r') as f:
+        with open(os.path.join(paramdir, 'orig_paths.yaml'), 'r') as f:
             paths = yamload(f)   
     return paths['data_root'], paths['subjects_dir'], paths['results_dir']
 

@@ -13,15 +13,16 @@ from analysis.aux_functions import (load_paths, load_params, load_cohorts,
                                     div_by_adj_bins)
 
 # config paths
-_, _, results_dir = load_paths()
+cohorts = 'all'
+_, _, results_dir = load_paths(cohorts=cohorts)
 in_dir = os.path.join(results_dir, 'pskt', 'stc', 'morphed-to-fsaverage')
 stc_dir = os.path.join(results_dir, 'pskt', 'group-level', 'stc')
 for _dir in (stc_dir,):
     os.makedirs(_dir, exist_ok=True)
 
 # load params
-_, _, subjects = load_params()
-intervention_group, letter_knowledge_group = load_cohorts()
+_, _, subjects = load_params(cohorts=cohorts)
+intervention_group, letter_knowledge_group = load_cohorts(cohorts=cohorts)
 groups = dict(GrandAvg=subjects)
 groups.update(intervention_group)
 groups.update(letter_knowledge_group)
@@ -41,6 +42,8 @@ for constr in constraints:
     # loop over estimate types
     for estim_type in estim_types:
         if constr == 'fixed' and estim_type == 'normal':
+            continue  # not implemented
+        if constr == 'fixed' and estim_type == 'vector':
             continue  # not implemented
         # make the output directory if needed
         out_dir = f'{constr}-{estim_type}'
@@ -69,6 +72,6 @@ for constr in constraints:
                     this_stc = stc.copy()
                     this_stc.data = _data / len(members)
                     # save stc
-                    fname = f'{group}-{timepoint}_camp-pskt{subdiv}-fft-{kind}'
+                    fname = f'{cohorts}_{group}-{timepoint}_camp-pskt{subdiv}-fft-{kind}'
                     fpath = os.path.join(stc_dir, out_dir, fname)
                     this_stc.save(fpath, ftype='h5')

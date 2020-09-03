@@ -50,7 +50,7 @@ cohort_groups = {key: value.tolist() for key, value in cohort_groups.items()}
 camp_groups = {key: value.tolist() for key, value in camp_groups.items()}
 
 # save
-fnames = ('letter_knowledge_cohorts.yaml', 'intervention_cohorts.yaml')
+fnames = ('all_letter_knowledge_cohorts.yaml', 'all_intervention_cohorts.yaml')
 for fname, _dict in zip(fnames, (cohort_groups, camp_groups)):
     with open(os.path.join('..', '..', 'params', fname), 'w') as f:
         yaml.dump(_dict, stream=f)

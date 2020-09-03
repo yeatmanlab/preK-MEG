@@ -13,13 +13,14 @@ import mne
 from analysis.aux_functions import load_paths, load_params, div_by_adj_bins
 
 # config paths
-data_root, subjects_dir, results_dir = load_paths()
+cohorts = 'all'
+data_root, subjects_dir, results_dir = load_paths(cohorts=cohorts)
 fft_dir = os.path.join(results_dir, 'pskt', 'fft-evoked')
 fig_dir = os.path.join(results_dir, 'pskt', 'fig', 'phase')
 os.makedirs(fig_dir, exist_ok=True)
 
 # load params
-_, _, subjects = load_params()
+_, _, subjects = load_params(cohorts=cohorts)
 
 # config other
 timepoints = ('pre', 'post')
