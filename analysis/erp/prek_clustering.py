@@ -23,10 +23,9 @@ mne.cuda.init_cuda()
 rng = np.random.RandomState(seed=15485863)  # the one millionth prime
 n_jobs = 10
 threshold = None        # or dict(start=0, step=0.2) for TFCE
-cohorts = 'all'     # str: options are 'orig_only', 'r_only', or 'all'
 
 
-def do_clustering(X, label, connectivity, groups=1, cohorts='orig_only'):
+def do_clustering(X, label, connectivity, groups=1):
     fun = (spatio_temporal_cluster_1samp_test if groups == 1 else
            spatio_temporal_cluster_test)
     cluster_results = fun(X, spatial_exclude=label.vertices,
@@ -35,9 +34,9 @@ def do_clustering(X, label, connectivity, groups=1, cohorts='orig_only'):
                           n_jobs=n_jobs, seed=rng, buffer_size=1024)
     stats = prep_cluster_stats(cluster_results)
     # save clustering results
-    out_fname = f'{group}_{timepoint}_{method}_{con}_{hemi}.npz'  # noqa
+    out_fname = f'{cohort}_{group}_{timepoint}_{method}_{con}_{hemi}.npz'
     out_fpath = os.path.join(cluster_dir, out_fname)
-    print('Saving cluster to %s.' % out_fpath)
+    print(f'Saving cluster results to {out_fpath}')
     np.savez(out_fpath, **stats)
 
 
@@ -53,10 +52,10 @@ def do_clustering(X, label, connectivity, groups=1, cohorts='orig_only'):
 spatial_limits = dict(action='include', region='VOTC', hemi=['lh'])
 
 # load params
-_, _, subjects = load_params(cohorts=cohorts)
+_, _, subjects, cohort = load_params()
 
 # config paths
-data_root, subjects_dir, results_dir = load_paths(cohorts=cohorts)
+data_root, subjects_dir, results_dir = load_paths()
 
 # set cache dir
 cache_dir = os.path.join(data_root, 'cache')
@@ -71,7 +70,7 @@ contrasts = {f'{contr[0].capitalize()}Minus{contr[1].capitalize()}': contr
              for contr in list(combinations(conditions, 2))}
 
 # load cohort info (keys Language/LetterIntervention and Lower/UpperKnowledge)
-intervention_group, letter_knowledge_group = load_cohorts(cohorts=cohorts)
+intervention_group, letter_knowledge_group = load_cohorts()
 
 # assemble groups to iterate over
 groups = dict(GrandAvg=subjects)
@@ -142,7 +141,7 @@ for hemi in spatial_limits['hemi']:
         data_dict = dict()
         # loop over groups
         for group_name, group_members in groups.items():
-            group = f'{cohorts}_{group_name}N{len(group_members)}FSAverage'
+            group = f'{cohort}_{group_name}N{len(group_members)}FSAverage'
             data_dict[group] = dict()
             # loop over pre/post measurement time
             for timepoint in timepoints:
@@ -175,7 +174,7 @@ for hemi in spatial_limits['hemi']:
                     X = (data_dict[group][timepoint][contr_0] -
                          data_dict[group][timepoint][contr_1])
                     data_dict[group][timepoint][con] = X
-                    do_clustering(X, label, conn_matrix, cohorts=cohorts)
+                    do_clustering(X, label, conn_matrix)
 
             # CONTRAST POST-MINUS-PRE
             timepoint = 'PostCampMinusPreCamp'
@@ -187,7 +186,7 @@ for hemi in spatial_limits['hemi']:
                 X = (data_dict[group]['postCamp'][con] -
                      data_dict[group]['preCamp'][con])
                 data_dict[group][timepoint][con] = X
-                do_clustering(X, label, conn_matrix, cohorts=cohorts)
+                do_clustering(X, label, conn_matrix)
 
         # CONTRAST PRE-INTERVENTION LETTER KNOWLEDGE
         timepoint = 'preCamp'
@@ -199,17 +198,17 @@ for hemi in spatial_limits['hemi']:
         data_dict[group][timepoint] = dict()
         keys = {g: f'{g}N{n_subj[g]}FSAverage' for g in letter_knowledge_group}
         for con in conditions + list(contrasts):
-            X = (data_dict[cohorts + '_' + keys['UpperKnowledge']][timepoint][con] -
-                 data_dict[cohorts + '_' + keys['LowerKnowledge']][timepoint][con])
+            X = (data_dict[keys['UpperKnowledge']][timepoint][con] -
+                 data_dict[keys['LowerKnowledge']][timepoint][con])
             data_dict[group][timepoint][con] = X
-            do_clustering(X, label, conn_matrix, cohorts=cohorts)
+            do_clustering(X, label, conn_matrix)
 
         # CONTRAST EFFECT OF INTERVENTION ON COHORTS
         # this uses a different stat function, and takes a list of arrays for X
         # instead of doing a subtraction (because subtraction would not have
         # been within-subject)
-        if cohorts == 'r_only':
-            print('Skipping intervention contrast for r_only data.')
+        if cohort == 'replication':
+            print('Skipping intervention contrast for replication cohort.')
         else:
             timepoint = 'PostCampMinusPreCamp'
             group_name = 'LetterMinusLanguageIntervention'
@@ -220,7 +219,7 @@ for hemi in spatial_limits['hemi']:
             data_dict[group][timepoint] = dict()
             keys = {g: f'{g}N{n_subj[g]}FSAverage' for g in intervention_group}
             for con in conditions + list(contrasts):
-                X = [data_dict[cohorts + '_' +keys['LetterIntervention']][timepoint][con],
-                     data_dict[cohorts + '_' +keys['LanguageIntervention']][timepoint][con]]
+                X = [data_dict[keys['LetterIntervention']][timepoint][con],
+                     data_dict[keys['LanguageIntervention']][timepoint][con]]
                 data_dict[group][timepoint][con] = X
-                do_clustering(X, label, conn_matrix, groups=2, cohorts=cohorts)
+                do_clustering(X, label, conn_matrix, groups=2)

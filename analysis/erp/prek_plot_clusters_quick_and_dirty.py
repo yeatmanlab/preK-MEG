@@ -18,12 +18,11 @@ from analysis.aux_functions import (load_paths, load_params, load_cohorts,
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
 n_jobs = 10
-cohorts='all'
 
 # load params
-brain_plot_kwargs, _, subjects = load_params(cohorts=cohorts)
+brain_plot_kwargs, _, subjects, cohort = load_params()
 # config paths
-data_root, subjects_dir, results_dir = load_paths(cohorts=cohorts)
+data_root, subjects_dir, results_dir = load_paths()
 cluster_root = os.path.join(results_dir, 'clustering')
 # get most current cluster subfolder
 with open(os.path.join(cluster_root, 'most-recent-clustering.txt'), 'r') as f:
@@ -36,20 +35,16 @@ for folder in (img_dir, cluster_stc_dir, timeseries_dir):
     os.makedirs(folder, exist_ok=True)
 
 # load cohort info (keys Language/LetterIntervention and Lower/UpperKnowledge)
-intervention_group, letter_knowledge_group = load_cohorts(cohorts=cohorts)
+intervention_group, letter_knowledge_group = load_cohorts()
 
 # assemble groups info
-if cohorts == 'r_only':
-    groups_dict = dict(grandavg=subjects,
+groups_dict = dict(grandavg=subjects,
+                   language=intervention_group['LanguageIntervention'],
                    letter=intervention_group['LetterIntervention'],
                    lower=letter_knowledge_group['LowerKnowledge'],
                    upper=letter_knowledge_group['UpperKnowledge'])
-else:
-    groups_dict = dict(grandavg=subjects,
-                       language=intervention_group['LanguageIntervention'],
-                       letter=intervention_group['LetterIntervention'],
-                       lower=letter_knowledge_group['LowerKnowledge'],
-                       upper=letter_knowledge_group['UpperKnowledge'])
+if cohort == 'replication':
+    del groups_dict['language']
 for group, members in groups_dict.items():
     groups_dict[group] = [f'prek_{n}' for n in members]
 

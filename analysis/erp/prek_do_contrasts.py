@@ -17,16 +17,13 @@ from analysis.aux_functions import load_paths, load_params, load_cohorts
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
 overwrite = True
-cohorts = 'all'  # str: can be 'r_only', 'orig_only' or 'all'
 
-
-# config paths
-_, _, results_dir = load_paths(cohorts=cohorts)
+# load params
+brain_plot_kwargs, movie_kwargs, subjects, cohort = load_params()
+_, _, results_dir = load_paths()
 groupavg_path = os.path.join(results_dir, 'group_averages')
 mov_path = os.path.join(results_dir, 'movies')
 
-# load params
-brain_plot_kwargs, movie_kwargs, subjects = load_params(cohorts=cohorts)
 
 # variables to loop over; subtractions between conditions are (lists of) tuples
 methods = ('dSPM',)  # dSPM, sLORETA, eLORETA
@@ -36,7 +33,7 @@ contrasts = {f'{contr[0].capitalize()}Minus{contr[1].capitalize()}': contr
              for contr in list(combinations(conditions[:-1], 2))}
 
 # load cohort info (keys Language/LetterIntervention and Lower/UpperKnowledge)
-intervention_group, letter_knowledge_group = load_cohorts(cohorts=cohorts)
+intervention_group, letter_knowledge_group = load_cohorts()
 
 # assemble groups to iterate over
 
@@ -76,7 +73,7 @@ for method in methods:
                        stc_dict[method][group][timepoint][contr_1])
                 stc_dict[method][group][timepoint][contr_key] = stc
                 # save the contrast STC
-                fname = f'{cohorts}_{group}_{timepoint}_{method}_{contr_key}'
+                fname = f'{cohort}_{group}_{timepoint}_{method}_{contr_key}'
                 print('Saving stc %s' % fname)
                 stc.save(os.path.join(groupavg_path, fname))
 
@@ -92,7 +89,7 @@ for method in methods:
                    stc_dict[method][group]['preCamp'][con])
             stc_dict[method][group][timepoint][con] = stc
             # save the contrast STC
-            fname = f'{cohorts}_{group}_{timepoint}_{method}_{con}'
+            fname = f'{cohort}_{group}_{timepoint}_{method}_{con}'
             print('Saving stc %s' % fname)
             stc.save(os.path.join(groupavg_path, fname))
 
@@ -111,13 +108,13 @@ for method in methods:
                stc_dict[method][keys['LowerKnowledge']][timepoint][con])
         stc_dict[method][group][timepoint][con] = stc
         # save the contrast STC
-        fname = f'{cohorts}_{group}_{timepoint}_{method}_{con}'
+        fname = f'{cohort}_{group}_{timepoint}_{method}_{con}'
         print('Saving stc %s' % fname)
         stc.save(os.path.join(groupavg_path, fname))
 
     # CONTRAST EFFECT OF INTERVENTION ON COHORTS
-    if cohorts == 'r_only':
-        print('Skipping contrast between intervention types for r cohort only.')
+    if cohort == 'replication':
+        print('Skipping intervention type contrast for replication cohort.')
     else:
         timepoint = 'PostCampMinusPreCamp'
         group_name = 'LetterMinusLanguageIntervention'
@@ -128,11 +125,11 @@ for method in methods:
         stc_dict[method][group][timepoint] = dict()
         keys = {g: f'{g}N{n_subj[g]}FSAverage' for g in intervention_group}
         for con in conditions + list(contrasts):
-            stc = (stc_dict[method][keys['LetterIntervention']][timepoint][con] -
-                   stc_dict[method][keys['LanguageIntervention']][timepoint][con])
+            stc = (stc_dict[method][keys['LetterIntervention']][timepoint][con] -   # noqa E501
+                   stc_dict[method][keys['LanguageIntervention']][timepoint][con])  # noqa E501
             stc_dict[method][group][timepoint][con] = stc
             # save the contrast STC
-            fname = f'{cohorts}_{group}_{timepoint}_{method}_{con}'
+            fname = f'{cohort}_{group}_{timepoint}_{method}_{con}'
             stc.save(os.path.join(groupavg_path, fname))
 
 # MAKE THE MOVIES
@@ -141,7 +138,7 @@ for method, group_dict in stc_dict.items():
         for timepoint, condition_dict in timepoint_dict.items():
             for con, stc in condition_dict.items():
                 # if the movie already exists and overwrite=False, skip it
-                mov_fname = f'{cohorts}_{group}_{timepoint}_{method}_{con}.mov'
+                mov_fname = f'{cohort}_{group}_{timepoint}_{method}_{con}.mov'
                 print('Making movie %s' % mov_fname)
                 mov_fpath = os.path.join(mov_path, mov_fname)
                 if os.path.exists(mov_fpath) and not overwrite:

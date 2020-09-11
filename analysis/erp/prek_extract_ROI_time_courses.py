@@ -22,16 +22,15 @@ from analysis.aux_functions import (load_paths, load_params,
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
 n_jobs = 10
-cohorts = 'all'  # str: can be 'r_only', 'orig_only' or 'all'
 
 # load params
-brain_plot_kwargs, movie_kwargs, subjects = load_params(cohorts=cohorts)
+brain_plot_kwargs, movie_kwargs, subjects, cohort = load_params()
 inverse_params = load_inverse_params()
 chosen_constraints = ('{orientation_constraint}-{estimate_type}'
                       ).format_map(inverse_params)
 
 # config paths
-data_root, subjects_dir, results_dir = load_paths(cohorts=cohorts)
+data_root, subjects_dir, results_dir = load_paths()
 roi_dir = os.path.join('..', 'ROIs')
 timeseries_dir = os.path.join(results_dir, 'roi', 'time-series')
 img_dir = os.path.join(results_dir, 'roi', 'images')
@@ -73,8 +72,8 @@ for freq in (2, 4):
 all_conditions = ('words', 'faces', 'cars')
 all_timepoints = ('post', 'pre')
 methods = ('dSPM',)
-if cohorts == 'r_only':
-    group_lists = (['grandavg'], ['letter'], ['upper', 'lower'])  
+if cohort == 'replication':
+    group_lists = (['grandavg'], ['letter'], ['upper', 'lower'])
 else:
     group_lists = (['grandavg'], ['letter', 'language'], ['upper', 'lower'])
 

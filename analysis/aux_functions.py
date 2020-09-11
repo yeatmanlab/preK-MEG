@@ -8,27 +8,29 @@ import numpy as np
 paramdir = os.path.join('..', '..', 'params')
 yamload = partial(yaml.load, Loader=yaml.FullLoader)
 
+with open(os.path.join(paramdir, 'current_cohort.yaml'), 'r') as f:
+    cohort = yamload(f)
 
-def load_params(skip=True, cohorts='orig_only'):
+
+def load_params(skip=True):
     """Load experiment parameters from YAML files."""
     with open(os.path.join(paramdir, 'brain_plot_params.yaml'), 'r') as f:
         brain_plot_kwargs = yamload(f)
     with open(os.path.join(paramdir, 'movie_params.yaml'), 'r') as f:
         movie_kwargs = yamload(f)
-    if cohorts == 'r_only':
-        with open(os.path.join(paramdir, 'r_cohort_subjects.yaml'), 'r') as f:
-            subjects = yamload(f)
-    elif cohorts == 'all':
-        with open(os.path.join(paramdir, 'all_subjects.yaml'), 'r') as f:
-            subjects = yamload(f)
+    # load subjects
+    with open(os.path.join(paramdir, 'subjects.yaml'), 'r') as f:
+        subjects_dict = yamload(f)
+    if cohort == 'pooled':
+        subjects = sum(subjects_dict.values(), start=[])
     else:
-        with open(os.path.join(paramdir, 'orig_subjects.yaml'), 'r') as f:
-            subjects = yamload(f)
+        subjects = list(subjects_dict[cohort])
+    # skip bad subjects
     if skip:
         with open(os.path.join(paramdir, 'skip_subjects.yaml'), 'r') as f:
             skips = yamload(f)
         subjects = sorted(set(subjects) - set(skips))
-    return brain_plot_kwargs, movie_kwargs, subjects
+    return brain_plot_kwargs, movie_kwargs, subjects, cohort
 
 
 def load_psd_params():
@@ -45,19 +47,13 @@ def load_inverse_params():
     return inverse_params
 
 
-def load_cohorts(cohorts='orig_only'):
+def load_cohorts():
     """load intervention and knowledge groups."""
-    if cohorts == 'all':
-        insert = 'all_'
-    elif cohorts == 'r_only':
-        insert = 'r_'
-    else:
-        insert = ''
-    with open(os.path.join(paramdir, insert + 'intervention_cohorts.yaml'), 'r') as f:
-        intervention_group = yamload(f)
-    with open(os.path.join(paramdir, insert + 'letter_knowledge_cohorts.yaml'),
+    with open(os.path.join(paramdir, 'intervention_cohorts.yaml'), 'r') as f:
+        intervention_group = yamload(f)[cohort]
+    with open(os.path.join(paramdir, 'letter_knowledge_cohorts.yaml'),
               'r') as f:
-        letter_knowledge_group = yamload(f)
+        letter_knowledge_group = yamload(f)[cohort]
     # convert 1103 → 'prek_1103'
     for _dict in (intervention_group, letter_knowledge_group):
         for key, value in _dict.items():
@@ -65,17 +61,11 @@ def load_cohorts(cohorts='orig_only'):
     return intervention_group, letter_knowledge_group
 
 
-def load_paths(cohorts='orig_only'):
+def load_paths():
     """Load necessary filesystem paths."""
-    if cohorts == 'r_only':
-        with open(os.path.join(paramdir, 'r_paths.yaml'), 'r') as f:
-            paths = yamload(f)
-    elif cohorts == 'all':
-        with open(os.path.join(paramdir, 'all_paths.yaml'), 'r') as f:
-            paths = yamload(f)
-    else:
-        with open(os.path.join(paramdir, 'orig_paths.yaml'), 'r') as f:
-            paths = yamload(f)   
+    with open(os.path.join(paramdir, 'paths.yaml'), 'r') as f:
+        paths = yamload(f)
+    paths['results_dir'] = os.path.join(paths['results_dir'], cohort)
     return paths['data_root'], paths['subjects_dir'], paths['results_dir']
 
 

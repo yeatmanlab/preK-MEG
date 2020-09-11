@@ -14,10 +14,10 @@ from analysis.aux_functions import load_paths, load_params, load_cohorts
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
 overwrite = False
-cohorts = 'all'
 
-# config paths
-data_root, _, results_dir = load_paths(cohorts=cohorts)
+# load params
+brain_plot_kwargs, movie_kwargs, subjects, cohort = load_params()
+data_root, _, results_dir = load_paths()
 groupavg_path = os.path.join(results_dir, 'group_averages')
 mov_path = os.path.join(results_dir, 'movies')
 for _dir in (groupavg_path, mov_path):
@@ -28,13 +28,9 @@ for _dir in (groupavg_path, mov_path):
 conditions = ('words', 'faces', 'cars', 'aliens')
 methods = ('dSPM',)  # dSPM, sLORETA, eLORETA
 
-# load params
-brain_plot_kwargs, movie_kwargs, subjects = load_params(cohorts=cohorts)
-subjects.sort()
-
 
 # load cohort info (keys Language/LetterIntervention and Lower/UpperKnowledge)
-intervention_group, letter_knowledge_group = load_cohorts(cohorts=cohorts)
+intervention_group, letter_knowledge_group = load_cohorts()
 
 # assemble groups to iterate over
 groups = dict(GrandAvg=subjects)
@@ -51,7 +47,7 @@ for method in methods:
         for cond in conditions:
             # loop over groups
             for group_name, group_members in groups.items():
-                print('Working on group %s.' % group_name)
+                print(f'Working on group {group_name}.')
                 avg = 0
                 group = f'{group_name}N{len(group_members)}FSAverage'
                 avg_fname = f'{group}_{prepost}Camp_{method}_{cond}'
@@ -66,7 +62,7 @@ for method in methods:
                     continue
                 # make cross-subject average
                 for s in group_members:
-                    print('Adding subject %s to group average.' % s)
+                    print(f'Adding subject {s} to group average.')
                     this_subj = os.path.join(data_root, f'{prepost}_camp',
                                              'twa_hp', 'erp', s)
                     fname = f'{s}FSAverage_{prepost}Camp_{method}_{cond}'
