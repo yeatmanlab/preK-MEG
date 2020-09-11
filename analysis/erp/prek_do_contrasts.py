@@ -115,22 +115,22 @@ for method in methods:
     # CONTRAST EFFECT OF INTERVENTION ON COHORTS
     if cohort == 'replication':
         print('Skipping intervention type contrast for replication cohort.')
-    else:
-        timepoint = 'PostCampMinusPreCamp'
-        group_name = 'LetterMinusLanguageIntervention'
-        n_subj = {g: len(groups[g]) for g in intervention_group}
-        n = '-'.join([str(n_subj[g]) for g in intervention_group])
-        group = f'{group_name}N{n}FSAverage'
-        stc_dict[method][group] = dict()
-        stc_dict[method][group][timepoint] = dict()
-        keys = {g: f'{g}N{n_subj[g]}FSAverage' for g in intervention_group}
-        for con in conditions + list(contrasts):
-            stc = (stc_dict[method][keys['LetterIntervention']][timepoint][con] -   # noqa E501
-                   stc_dict[method][keys['LanguageIntervention']][timepoint][con])  # noqa E501
-            stc_dict[method][group][timepoint][con] = stc
-            # save the contrast STC
-            fname = f'{cohort}_{group}_{timepoint}_{method}_{con}'
-            stc.save(os.path.join(groupavg_path, fname))
+        continue
+    timepoint = 'PostCampMinusPreCamp'
+    group_name = 'LetterMinusLanguageIntervention'
+    n_subj = {g: len(groups[g]) for g in intervention_group}
+    n = '-'.join([str(n_subj[g]) for g in intervention_group])
+    group = f'{group_name}N{n}FSAverage'
+    stc_dict[method][group] = dict()
+    stc_dict[method][group][timepoint] = dict()
+    keys = {g: f'{g}N{n_subj[g]}FSAverage' for g in intervention_group}
+    for con in conditions + list(contrasts):
+        stc = (stc_dict[method][keys['LetterIntervention']][timepoint][con] -
+               stc_dict[method][keys['LanguageIntervention']][timepoint][con])
+        stc_dict[method][group][timepoint][con] = stc
+        # save the contrast STC
+        fname = f'{cohort}_{group}_{timepoint}_{method}_{con}'
+        stc.save(os.path.join(groupavg_path, fname))
 
 # MAKE THE MOVIES
 for method, group_dict in stc_dict.items():
