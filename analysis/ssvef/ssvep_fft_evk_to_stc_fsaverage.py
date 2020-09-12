@@ -81,9 +81,8 @@ for s in subjects:
                 stc.save(fpath, ftype='h5')
                 # compute morph for this subject
                 if not has_morph:
-                    sf = s if 'prek_2' in s else s.upper()
                     morph = mne.compute_source_morph(
-                        stc, subject_from=sf, subject_to='fsaverage',
+                        stc, subject_from=s.upper(), subject_to='fsaverage',
                         subjects_dir=subjects_dir, spacing=fsaverage_vertices,
                         smooth=smoothing_steps)
                     has_morph = True
