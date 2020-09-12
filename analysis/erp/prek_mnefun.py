@@ -27,7 +27,11 @@ from analysis.aux_functions import load_paths, load_params
 lp_cut = 30
 pre_or_post = 'post'  # str: 'pre' or 'post' convenience variable for rerunning
 
-if r_cohort:
+# load subjects
+*_, subjects, cohort = load_params()
+print(subjects)
+
+if cohort == 'replication':
     target_dir = '/mnt/scratch/prek/r_cohort/%s_camp/twa_hp/erp/' % pre_or_post
 else:
     target_dir = '/mnt/scratch/prek/%s_camp/twa_hp/erp/' % pre_or_post
@@ -39,9 +43,7 @@ params = mnefun.Params(tmin=-0.1, tmax=1, t_adjust=-0.067, n_jobs=8,
                        bmin=-0.1, bem_type='5120')
 # load paths
 _, subjects_dir, _ = load_paths()
-# load subjects
-*_, subjects, cohort = load_params()
-print(subjects)
+
 structurals = [x.upper() for x in subjects]
 params.subjects = subjects
 params.work_dir = target_dir
