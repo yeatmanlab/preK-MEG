@@ -13,16 +13,15 @@ from analysis.aux_functions import (load_paths, load_params, load_cohorts,
                                     div_by_adj_bins)
 
 # config paths
-cohorts = 'all'
-_, _, results_dir = load_paths(cohorts=cohorts)
+_, _, results_dir = load_paths()
 in_dir = os.path.join(results_dir, 'pskt', 'stc', 'morphed-to-fsaverage')
 stc_dir = os.path.join(results_dir, 'pskt', 'group-level', 'stc')
 for _dir in (stc_dir,):
     os.makedirs(_dir, exist_ok=True)
 
 # load params
-_, _, subjects = load_params(cohorts=cohorts)
-intervention_group, letter_knowledge_group = load_cohorts(cohorts=cohorts)
+*_, subjects, cohort = load_params()
+intervention_group, letter_knowledge_group = load_cohorts()
 groups = dict(GrandAvg=subjects)
 groups.update(intervention_group)
 groups.update(letter_knowledge_group)
@@ -72,6 +71,6 @@ for constr in constraints:
                     this_stc = stc.copy()
                     this_stc.data = _data / len(members)
                     # save stc
-                    fname = f'{cohorts}_{group}-{timepoint}_camp-pskt{subdiv}-fft-{kind}'
+                    fname = f'{cohort}_{group}-{timepoint}_camp-pskt{subdiv}-fft-{kind}'  # noqa E501
                     fpath = os.path.join(stc_dir, out_dir, fname)
                     this_stc.save(fpath, ftype='h5')

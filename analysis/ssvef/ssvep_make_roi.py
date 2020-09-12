@@ -19,14 +19,13 @@ mlab.options.offscreen = True
 mne.cuda.init_cuda()
 mne.viz.set_3d_backend('mayavi')
 roi_freq = 4
-cohorts = 'all'
 
 # load params
-brain_plot_kwargs, *_ = load_params(cohorts=cohorts)
+brain_plot_kwargs, *_, cohort = load_params()
 inverse_params = load_inverse_params()
 
 # config paths
-_, subjects_dir, results_dir = load_paths(cohorts=cohorts)
+_, subjects_dir, results_dir = load_paths()
 chosen_constraints = ('{orientation_constraint}-{estimate_type}'
                       ).format_map(inverse_params)
 
@@ -50,7 +49,7 @@ fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
 # average the SNR data across pre/post timepoints
 avg_stc = None
 for timepoint in timepoints:
-    fname = f'{cohorts}_GrandAvg-{timepoint}_camp-pskt{subdiv}-fft-snr'
+    fname = f'{cohort}_GrandAvg-{timepoint}_camp-pskt{subdiv}-fft-snr'
     fpath = os.path.join(stc_dir, fname)
     stc = mne.read_source_estimate(fpath, subject='fsaverage')
     if avg_stc is None:

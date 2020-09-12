@@ -16,12 +16,11 @@ from analysis.aux_functions import load_paths, load_params, load_inverse_params
 mlab.options.offscreen = True
 
 # load params
-cohorts = 'all'
-brain_plot_kwargs, _, subjects = load_params(cohorts=cohorts)
+brain_plot_kwargs, _, subjects, cohort = load_params()
 inverse_params = load_inverse_params()
 
 # config paths
-data_root, subjects_dir, results_dir = load_paths(cohorts=cohorts)
+data_root, subjects_dir, results_dir = load_paths()
 chosen_constraints = ('{orientation_constraint}-{estimate_type}'
                       ).format_map(inverse_params)
 
@@ -42,7 +41,7 @@ intervention_fname = 'LetterVsLanguageIntervention-PostMinusPre_camp'
 freqs = (2, 4, 6, 12)
 
 # get some params from group-level STC
-stc_fname = f'{cohorts}_GrandAvg-pre_camp-pskt-5_sec-fft-snr'
+stc_fname = f'{cohort}_GrandAvg-pre_camp-pskt-5_sec-fft-snr'
 stc_fpath = os.path.join(results_dir, 'pskt', 'group-level', 'stc',
                          chosen_constraints, stc_fname)
 stc = mne.read_source_estimate(stc_fpath)

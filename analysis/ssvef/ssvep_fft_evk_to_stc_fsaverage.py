@@ -13,10 +13,9 @@ from analysis.aux_functions import load_paths, load_params
 
 # flags
 mne.cuda.init_cuda()
-cohorts = 'all'
 
 # config paths
-data_root, subjects_dir, results_dir = load_paths(cohorts=cohorts)
+data_root, subjects_dir, results_dir = load_paths()
 fft_dir = os.path.join(results_dir, 'pskt', 'fft-evoked')
 stc_dir = os.path.join(results_dir, 'pskt', 'stc', 'subject-specific')
 morph_dir = os.path.join(results_dir, 'pskt', 'stc', 'morphed-to-fsaverage')
@@ -24,7 +23,7 @@ for _dir in (stc_dir, morph_dir):
     os.makedirs(_dir, exist_ok=True)
 
 # load params
-_, _, subjects = load_params(cohorts=cohorts)
+*_, subjects, cohort = load_params()
 
 # config other
 timepoints = ('pre', 'post')
@@ -68,8 +67,6 @@ for s in subjects:
             for estim_type in estim_types:
                 if constr == '-fixed' and estim_type == 'normal':
                     continue  # not implemented
-#                elif constr == '-fixed' and estim_type == 'vector':
-#                    continue 
                 # make the output dirs
                 estim_dir = 'magnitude' if estim_type is None else estim_type
                 out_dir = f'{constr_dir}-{estim_dir}'

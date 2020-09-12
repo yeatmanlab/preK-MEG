@@ -13,12 +13,11 @@ from analysis.aux_functions import (load_paths, load_params, div_by_adj_bins,
                                     load_inverse_params)
 
 # load params
-cohorts = 'all'
-brain_plot_kwargs, _, subjects = load_params(cohorts=cohorts)
+brain_plot_kwargs, _, subjects = load_params()
 inverse_params = load_inverse_params()
 
 # config paths
-data_root, subjects_dir, results_dir = load_paths(cohorts=cohorts)
+data_root, subjects_dir, results_dir = load_paths()
 chosen_constraints = ('{orientation_constraint}-{estimate_type}'
                       ).format_map(inverse_params)
 

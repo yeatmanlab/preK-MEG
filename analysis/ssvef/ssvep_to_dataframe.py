@@ -13,12 +13,11 @@ import mne
 from analysis.aux_functions import load_paths, load_params, load_inverse_params
 
 # load params
-cohorts = 'all'
-_, _, subjects = load_params(cohorts=cohorts)
+_, _, subjects, cohort = load_params()
 inverse_params = load_inverse_params()
 
 # config paths
-_, _, results_dir = load_paths(cohorts=cohorts)
+_, _, results_dir = load_paths()
 chosen_constraints = ('{orientation_constraint}-{estimate_type}'
                       ).format_map(inverse_params)
 

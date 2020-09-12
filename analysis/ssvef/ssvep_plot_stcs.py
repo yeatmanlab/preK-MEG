@@ -16,16 +16,15 @@ from analysis.aux_functions import load_paths, load_params, div_by_adj_bins
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
 mne.viz.set_3d_backend('mayavi')
-cohorts = 'all'
 
 # config paths
-data_root, subjects_dir, results_dir = load_paths(cohorts=cohorts)
+data_root, subjects_dir, results_dir = load_paths()
 in_dir = os.path.join(results_dir, 'pskt', 'stc', 'morphed-to-fsaverage')
 fig_dir = os.path.join(results_dir, 'pskt', 'fig', 'brain')
 os.makedirs(fig_dir, exist_ok=True)
 
 # load params
-brain_plot_kwargs, movie_kwargs, subjects = load_params(cohorts=cohorts)
+brain_plot_kwargs, movie_kwargs, subjects, cohort = load_params()
 brain_plot_kwargs.update(time_label='freq=%0.2f Hz')
 
 # config other

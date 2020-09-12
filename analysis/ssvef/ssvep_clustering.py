@@ -18,18 +18,17 @@ from analysis.aux_functions import (load_paths, load_params, load_cohorts,
 # flags
 tfce = True
 n_jobs = 10
-cohorts = 'all'
 
 # load params
-_, _, subjects = load_params(cohorts=cohorts)
+*_, subjects, cohort = load_params()
 inverse_params = load_inverse_params()
-intervention_group, letter_knowledge_group = load_cohorts(cohorts=cohorts)
+intervention_group, letter_knowledge_group = load_cohorts()
 groups = dict(GrandAvg=subjects)
 groups.update(intervention_group)
 groups.update(letter_knowledge_group)
 
 # config paths
-data_root, subjects_dir, results_dir = load_paths(cohorts=cohorts)
+data_root, subjects_dir, results_dir = load_paths()
 chosen_constraints = ('{orientation_constraint}-{estimate_type}'
                       ).format_map(inverse_params)
 

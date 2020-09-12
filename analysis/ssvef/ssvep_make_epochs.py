@@ -17,15 +17,14 @@ mne.cuda.init_cuda()
 compute_psds = True
 plot_psds = True
 plot_topomaps = True
-cohorts = 'r_only'
 
 # config paths
-data_root, subjects_dir, results_dir = load_paths(cohorts=cohorts)
+data_root, subjects_dir, results_dir = load_paths()
 epo_dir = os.path.join(results_dir, 'pskt', 'epochs')
 os.makedirs(epo_dir, exist_ok=True)
 
 # load params
-_, _, subjects = load_params(cohorts=cohorts)
+_, _, subjects, cohort = load_params()
 
 # config other
 timepoints = ('pre', 'post')
