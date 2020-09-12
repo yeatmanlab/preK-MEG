@@ -88,7 +88,7 @@ for constr in constraints:
                 # load and plot untransformed data & SNR data
                 for kind, lims in zip(['amp', 'snr'], [abs_lims, snr_lims]):
                     # load stc
-                    fname = f'{group}-{timepoint}_camp-pskt{subdiv}-fft-{kind}'
+                    fname = f'{cohort}-{group}-{timepoint}_camp-pskt{subdiv}-fft-{kind}'  # noqa E501
                     fpath = os.path.join(stc_dir, out_dir, fname)
                     stc = mne.read_source_estimate(fpath, subject='fsaverage')
                     # plot stc

@@ -71,6 +71,6 @@ for constr in constraints:
                     this_stc = stc.copy()
                     this_stc.data = _data / len(members)
                     # save stc
-                    fname = f'{cohort}_{group}-{timepoint}_camp-pskt{subdiv}-fft-{kind}'  # noqa E501
+                    fname = f'{cohort}-{group}-{timepoint}_camp-pskt{subdiv}-fft-{kind}'  # noqa E501
                     fpath = os.path.join(stc_dir, out_dir, fname)
                     this_stc.save(fpath, ftype='h5')
