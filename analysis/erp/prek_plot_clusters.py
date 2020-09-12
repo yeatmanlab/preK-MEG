@@ -33,8 +33,7 @@ frames_dir = os.path.join(cluster_dir, 'frames')
 
 # config other
 conditions = ('words', 'faces', 'cars')  # we purposely omit 'aliens' here
-# methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
-methods = ['dSPM']
+methods = ('dSPM',)  # dSPM, sLORETA, eLORETA
 
 # generate contrast names
 contrasts = [f'{cond_0.capitalize()}Minus{cond_1.capitalize()}'
