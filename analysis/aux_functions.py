@@ -194,7 +194,7 @@ def get_dataframe_from_label(label, src, methods=('dSPM', 'sLORETA'),
         label = [label]
     # load subjects list
     if subjects is None:
-        _, _, subjects = load_params()
+        _, _, subjects, _ = load_params()
     elif isinstance(subjects, str):
         subjects = [subjects]
     # load cohort information
