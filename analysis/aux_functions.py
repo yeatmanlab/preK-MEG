@@ -26,7 +26,7 @@ def load_subjects(cohort, skip=True):
     with open(os.path.join(paramdir, 'subjects.yaml'), 'r') as f:
         subjects_dict = yamload(f)
     if cohort == 'pooled':
-        subjects = sum(subjects_dict.values(), start=[])
+        subjects = sum(subjects_dict.values(), [])
     else:
         subjects = list(subjects_dict[cohort])
     # skip bad subjects
