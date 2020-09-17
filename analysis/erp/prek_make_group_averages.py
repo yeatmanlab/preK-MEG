@@ -15,7 +15,8 @@ mlab.options.offscreen = True
 mne.cuda.init_cuda()
 overwrite = False
 
-# config paths
+# load params
+brain_plot_kwargs, movie_kwargs, subjects, cohort = load_params()
 data_root, _, results_dir = load_paths()
 groupavg_path = os.path.join(results_dir, 'group_averages')
 mov_path = os.path.join(results_dir, 'movies')
@@ -27,8 +28,6 @@ for _dir in (groupavg_path, mov_path):
 conditions = ('words', 'faces', 'cars', 'aliens')
 methods = ('dSPM',)  # dSPM, sLORETA, eLORETA
 
-# load params
-brain_plot_kwargs, movie_kwargs, subjects = load_params()
 
 # load cohort info (keys Language/LetterIntervention and Lower/UpperKnowledge)
 intervention_group, letter_knowledge_group = load_cohorts()
@@ -38,6 +37,8 @@ groups = dict(GrandAvg=subjects)
 groups.update(intervention_group)
 groups.update(letter_knowledge_group)
 
+print(groups)
+
 # loop over algorithms
 for method in methods:
     # loop over pre/post measurement time
@@ -46,6 +47,7 @@ for method in methods:
         for cond in conditions:
             # loop over groups
             for group_name, group_members in groups.items():
+                print(f'Working on group {group_name}.')
                 avg = 0
                 group = f'{group_name}N{len(group_members)}FSAverage'
                 avg_fname = f'{group}_{prepost}Camp_{method}_{cond}'
@@ -60,6 +62,7 @@ for method in methods:
                     continue
                 # make cross-subject average
                 for s in group_members:
+                    print(f'Adding subject {s} to group average.')
                     this_subj = os.path.join(data_root, f'{prepost}_camp',
                                              'twa_hp', 'erp', s)
                     fname = f'{s}FSAverage_{prepost}Camp_{method}_{cond}'

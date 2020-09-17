@@ -20,7 +20,7 @@ for _dir in (stc_dir,):
     os.makedirs(_dir, exist_ok=True)
 
 # load params
-_, _, subjects = load_params()
+*_, subjects, cohort = load_params()
 intervention_group, letter_knowledge_group = load_cohorts()
 groups = dict(GrandAvg=subjects)
 groups.update(intervention_group)
@@ -41,6 +41,8 @@ for constr in constraints:
     # loop over estimate types
     for estim_type in estim_types:
         if constr == 'fixed' and estim_type == 'normal':
+            continue  # not implemented
+        if constr == 'fixed' and estim_type == 'vector':
             continue  # not implemented
         # make the output directory if needed
         out_dir = f'{constr}-{estim_type}'
@@ -69,6 +71,6 @@ for constr in constraints:
                     this_stc = stc.copy()
                     this_stc.data = _data / len(members)
                     # save stc
-                    fname = f'{group}-{timepoint}_camp-pskt{subdiv}-fft-{kind}'
+                    fname = f'{cohort}-{group}-{timepoint}_camp-pskt{subdiv}-fft-{kind}'  # noqa E501
                     fpath = os.path.join(stc_dir, out_dir, fname)
                     this_stc.save(fpath, ftype='h5')

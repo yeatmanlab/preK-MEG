@@ -8,6 +8,9 @@ import numpy as np
 paramdir = os.path.join('..', '..', 'params')
 yamload = partial(yaml.load, Loader=yaml.FullLoader)
 
+with open(os.path.join(paramdir, 'current_cohort.yaml'), 'r') as f:
+    cohort = yamload(f)
+
 
 def load_params(skip=True):
     """Load experiment parameters from YAML files."""
@@ -15,13 +18,23 @@ def load_params(skip=True):
         brain_plot_kwargs = yamload(f)
     with open(os.path.join(paramdir, 'movie_params.yaml'), 'r') as f:
         movie_kwargs = yamload(f)
+    subjects = load_subjects(cohort)
+    return brain_plot_kwargs, movie_kwargs, subjects, cohort
+
+
+def load_subjects(cohort, skip=True):
     with open(os.path.join(paramdir, 'subjects.yaml'), 'r') as f:
-        subjects = yamload(f)
+        subjects_dict = yamload(f)
+    if cohort == 'pooled':
+        subjects = sum(subjects_dict.values(), [])
+    else:
+        subjects = list(subjects_dict[cohort])
+    # skip bad subjects
     if skip:
         with open(os.path.join(paramdir, 'skip_subjects.yaml'), 'r') as f:
             skips = yamload(f)
         subjects = sorted(set(subjects) - set(skips))
-    return brain_plot_kwargs, movie_kwargs, subjects
+    return subjects
 
 
 def load_psd_params():
@@ -41,10 +54,10 @@ def load_inverse_params():
 def load_cohorts():
     """load intervention and knowledge groups."""
     with open(os.path.join(paramdir, 'intervention_cohorts.yaml'), 'r') as f:
-        intervention_group = yamload(f)
+        intervention_group = yamload(f)[cohort]
     with open(os.path.join(paramdir, 'letter_knowledge_cohorts.yaml'),
               'r') as f:
-        letter_knowledge_group = yamload(f)
+        letter_knowledge_group = yamload(f)[cohort]
     # convert 1103 → 'prek_1103'
     for _dict in (intervention_group, letter_knowledge_group):
         for key, value in _dict.items():
@@ -56,6 +69,7 @@ def load_paths():
     """Load necessary filesystem paths."""
     with open(os.path.join(paramdir, 'paths.yaml'), 'r') as f:
         paths = yamload(f)
+    paths['results_dir'] = os.path.join(paths['results_dir'], cohort)
     return paths['data_root'], paths['subjects_dir'], paths['results_dir']
 
 
@@ -180,7 +194,7 @@ def get_dataframe_from_label(label, src, methods=('dSPM', 'sLORETA'),
         label = [label]
     # load subjects list
     if subjects is None:
-        _, _, subjects = load_params()
+        _, _, subjects, _ = load_params()
     elif isinstance(subjects, str):
         subjects = [subjects]
     # load cohort information

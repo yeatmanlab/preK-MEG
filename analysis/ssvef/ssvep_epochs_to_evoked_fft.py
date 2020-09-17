@@ -24,7 +24,7 @@ for _dir in (evk_dir, fft_dir):
     os.makedirs(_dir, exist_ok=True)
 
 # load params
-_, _, subjects = load_params()
+*_, subjects, cohort = load_params()
 
 # config other
 timepoints = ('pre', 'post')

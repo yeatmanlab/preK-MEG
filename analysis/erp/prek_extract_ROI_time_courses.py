@@ -24,7 +24,7 @@ mne.cuda.init_cuda()
 n_jobs = 10
 
 # load params
-brain_plot_kwargs, movie_kwargs, subjects = load_params()
+brain_plot_kwargs, movie_kwargs, subjects, cohort = load_params()
 inverse_params = load_inverse_params()
 chosen_constraints = ('{orientation_constraint}-{estimate_type}'
                       ).format_map(inverse_params)
@@ -72,7 +72,10 @@ for freq in (2, 4):
 all_conditions = ('words', 'faces', 'cars')
 all_timepoints = ('post', 'pre')
 methods = ('dSPM',)
-group_lists = (['grandavg'], ['letter', 'language'], ['upper', 'lower'])
+if cohort == 'replication':
+    group_lists = (['grandavg'], ['letter'], ['upper', 'lower'])
+else:
+    group_lists = (['grandavg'], ['letter', 'language'], ['upper', 'lower'])
 
 for region, label in rois.items():
     # prepare to plot

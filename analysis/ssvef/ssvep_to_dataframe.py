@@ -13,7 +13,7 @@ import mne
 from analysis.aux_functions import load_paths, load_params, load_inverse_params
 
 # load params
-_, _, subjects = load_params()
+_, _, subjects, cohort = load_params()
 inverse_params = load_inverse_params()
 
 # config paths

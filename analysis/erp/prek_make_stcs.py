@@ -12,7 +12,7 @@ from mne.minimum_norm import apply_inverse, read_inverse_operator
 from analysis.aux_functions import load_paths, load_params, load_inverse_params
 
 # load params
-*_, subjects = load_params()
+*_, subjects, cohort = load_params()
 
 # inverse params
 inverse_params = load_inverse_params()
@@ -30,6 +30,7 @@ methods = ('dSPM',)  # dSPM, sLORETA, eLORETA
 snr = 3.
 lambda2 = 1. / snr ** 2
 smoothing_steps = 10
+lp_cut = 30
 
 # for morph to fsaverage
 fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
@@ -47,9 +48,9 @@ for s in subjects:
         this_subj = os.path.join(data_root,
                                  f'{prepost}_camp', 'twa_hp', 'erp', s)
         inv_path = os.path.join(this_subj, 'inverse',
-                                f'{s}-80-sss-meg{constr}-inv.fif')
+                                f'{s}-{lp_cut}-sss-meg{constr}-inv.fif')
         evk_path = os.path.join(this_subj, 'inverse',
-                                f'Conditions_80-sss_eq_{s}-ave.fif')
+                                f'Conditions_{lp_cut}-sss_eq_{s}-ave.fif')
         stc_path = os.path.join(this_subj, 'stc')
         # prepare output dir
         if not os.path.isdir(stc_path):

@@ -13,7 +13,7 @@ from analysis.aux_functions import (load_paths, load_params, load_cohorts,
                                     load_inverse_params)
 
 # load params
-brain_plot_kwargs, _, subjects = load_params()
+brain_plot_kwargs, _, subjects, cohort = load_params()
 inverse_params = load_inverse_params()
 intervention_group, letter_knowledge_group = load_cohorts()
 groups = dict(GrandAvg=subjects)
@@ -43,6 +43,7 @@ data_dict = {k: v for k, v in data_npz.items()}
 noise_dict = {k: v for k, v in noise_npz.items()}
 data_npz.close()
 noise_npz.close()
+print('Data dict keys: %s' % data_dict.keys())
 
 # across-subj 1-sample t-values (freq bin versus mean of 4 surrounding bins)
 for tpt in timepoints:
@@ -60,11 +61,15 @@ median_split_tvals = ttest_ind_no_p(*median_split)
 
 # planned comparison: post-minus-pre-intervention, language-vs-letter cohort
 intervention = list()
-for group in ('LetterIntervention', 'LanguageIntervention'):
-    data = np.array([data_dict[f'{s}-post'] - data_dict[f'{s}-pre']
-                    for s in groups[group]])
-    intervention.append(data)
-intervention_tvals = ttest_ind_no_p(*intervention)
+if cohort == 'replication':
+    print('Skipping t-values for intervention group for replication cohort.')
+    intervention_tvals = []
+else:
+    for group in ('LetterIntervention', 'LanguageIntervention'):
+        data = np.array([data_dict[f'{s}-post'] - data_dict[f'{s}-pre']
+                        for s in groups[group]])
+        intervention.append(data)
+    intervention_tvals = ttest_ind_no_p(*intervention)
 
 # save the data
 tval_dict = {'UpperVsLowerKnowledge-pre_camp': median_split_tvals,

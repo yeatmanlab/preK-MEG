@@ -24,7 +24,7 @@ epo_dir = os.path.join(results_dir, 'pskt', 'epochs')
 os.makedirs(epo_dir, exist_ok=True)
 
 # load params
-_, _, subjects = load_params()
+_, _, subjects, cohort = load_params()
 
 # config other
 timepoints = ('pre', 'post')
@@ -73,6 +73,7 @@ for s in subjects:
                                       np.zeros_like(new_indices),
                                       np.repeat(events[:, -1], n_new_events)))
         # downsample
+        raw.load_data()
         raw, events = raw.resample(sfreq=50, events=events, n_jobs='cuda')
         # clean up
         del raws, first_samps, last_samps, events_list

@@ -13,7 +13,7 @@ from analysis.aux_functions import (load_paths, load_params, div_by_adj_bins,
                                     load_inverse_params)
 
 # load params
-brain_plot_kwargs, _, subjects = load_params()
+brain_plot_kwargs, _, subjects, cohort = load_params()
 inverse_params = load_inverse_params()
 
 # config paths
@@ -37,6 +37,7 @@ subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 data_dict = dict()
 noise_dict = dict()
 for s in subjects:
+    print('Working on subject %s.' % s)
     for timepoint in timepoints:
         stub = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-fft'
         stc = mne.read_source_estimate(os.path.join(in_dir, f'{stub}-stc.h5'),

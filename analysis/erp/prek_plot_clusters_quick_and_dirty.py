@@ -20,7 +20,7 @@ mne.cuda.init_cuda()
 n_jobs = 10
 
 # load params
-brain_plot_kwargs, _, subjects = load_params()
+brain_plot_kwargs, _, subjects, cohort = load_params()
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
 cluster_root = os.path.join(results_dir, 'clustering')
@@ -28,6 +28,7 @@ cluster_root = os.path.join(results_dir, 'clustering')
 with open(os.path.join(cluster_root, 'most-recent-clustering.txt'), 'r') as f:
     cluster_dir = f.readline().strip()
 cluster_stc_dir = os.path.join(cluster_dir, 'stcs')
+print('cluster directory: %s' % cluster_stc_dir)
 img_dir = os.path.join(cluster_dir, 'images')
 timeseries_dir = os.path.join(cluster_dir, 'time-series')
 for folder in (img_dir, cluster_stc_dir, timeseries_dir):
@@ -42,6 +43,8 @@ groups_dict = dict(grandavg=subjects,
                    letter=intervention_group['LetterIntervention'],
                    lower=letter_knowledge_group['LowerKnowledge'],
                    upper=letter_knowledge_group['UpperKnowledge'])
+if cohort == 'replication':
+    del groups_dict['language']
 for group, members in groups_dict.items():
     groups_dict[group] = [f'prek_{n}' for n in members]
 
@@ -82,8 +85,9 @@ def plot_clusters(stc, cluster_stc, signif_clu):
 # helper function: extract condition names from filename
 def get_condition_names(cluster_fname):
     # extract condition names from filenames
+    print('Getting condition for stc %s.' % cluster_fname)
     avg_stc_fname = re.sub(r'(_[lr]h)?\.npz$', '', cluster_fname)
-    group, timepoint, method, condition = avg_stc_fname.split('_')
+    _, group, timepoint, method, condition = avg_stc_fname.split('_')
     hemi_str = re.sub(r'\.npz$', '', cluster_fname)[-2:]
     # convert condition names as needed
     timepoints = dict(preCamp=['pre'], postCamp=['post'],
@@ -203,6 +207,6 @@ def make_cluster_stc(cluster_fname):
 
 
 cluster_fnames = sorted([x.name for x in os.scandir(cluster_dir)
-                         if x.is_file()])
+                         if x.is_file() and 'dSPM' in x.name])
 for cluster_fname in cluster_fnames:
     make_cluster_stc(cluster_fname)

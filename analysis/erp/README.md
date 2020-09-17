@@ -20,7 +20,7 @@
       condition, across all subjects, separately for pre- and post-intervention
       recordings). Also makes group averages for each intervention cohort and
       for the top/bottom half on the letter awareness pre-tests.
-      Writes group-average STCs to `/mnt/scratch/prek/results/group_averages`
+      Writes group-average STCs to `/mnt/scratch/prek/results/<COHORT>/group_averages`
 
 4. Contrasts:
     - The script `prek_do_contrasts.py`:
@@ -38,9 +38,9 @@
           intervention; cohort information is stored in
           `../../params/intervention_cohorts.yaml`). This group comparison is
           done only for the post-camp-minus-pre-camp differences.
-    - STCs are saved to `/mnt/scratch/prek/results/group_averages`
+    - STCs are saved to `/mnt/scratch/prek/results/<COHORT>/group_averages`
     - Movies are made of every STC, and are saved to 
-      `/mnt/scratch/prek/results/movies`
+      `/mnt/scratch/prek/results/<COHORT>/movies`
 
 5. ROI analysis:
     - `../ROIs/create_ventral_band_labels.py` will generate the ROI labels

@@ -23,7 +23,7 @@ for _dir in (stc_dir, morph_dir):
     os.makedirs(_dir, exist_ok=True)
 
 # load params
-_, _, subjects = load_params()
+*_, subjects, cohort = load_params()
 
 # config other
 timepoints = ('pre', 'post')
@@ -61,7 +61,7 @@ for s in subjects:
             # not in PSKT (TODO: this may change at some point)
             inv_path = os.path.join(data_root, f'{timepoint}_camp', 'twa_hp',
                                     'erp', s, 'inverse',
-                                    f'{s}-80-sss-meg{constr}-inv.fif')
+                                    f'{s}-30-sss-meg{constr}-inv.fif')
             inverse = mne.minimum_norm.read_inverse_operator(inv_path)
             # loop over estimate types
             for estim_type in estim_types:
@@ -90,4 +90,5 @@ for s in subjects:
                 morphed_stc = morph.apply(stc)
                 fname = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-fft'
                 fpath = os.path.join(morph_dir, out_dir, fname)
+                print('Saving stc to %s' % fpath)
                 morphed_stc.save(fpath, ftype='h5')

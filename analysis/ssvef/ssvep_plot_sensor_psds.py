@@ -9,7 +9,7 @@ Load SSVEP epochs and plot PSDs / scalp topographies for each subject.
 import os
 import matplotlib.pyplot as plt
 import mne
-from analysis.aux_functions import load_paths, load_params, load_psd_params
+from analysis.aux_functions import load_paths, load_params
 
 # flags
 plot_psd = True
@@ -24,13 +24,12 @@ for _dir in (fig_dir, topo_dir):
     os.makedirs(_dir, exist_ok=True)
 
 # load params
-_, _, subjects = load_params()
-psd_params = load_psd_params()
+*_, subjects, cohort = load_params()
 
 # config other
 timepoints = ('pre', 'post')
-bandwidth = psd_params['bandwidth']
-subdivide_epochs = psd_params['epoch_dur']
+bandwidth = 0.20
+subdivide_epochs = 5
 subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 
 # loop over subjects

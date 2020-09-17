@@ -34,8 +34,9 @@ def do_clustering(X, label, connectivity, groups=1):
                           n_jobs=n_jobs, seed=rng, buffer_size=1024)
     stats = prep_cluster_stats(cluster_results)
     # save clustering results
-    out_fname = f'{group}_{timepoint}_{method}_{con}_{hemi}.npz'  # noqa
+    out_fname = f'{cohort}_{group}_{timepoint}_{method}_{con}_{hemi}.npz'
     out_fpath = os.path.join(cluster_dir, out_fname)
+    print(f'Saving cluster results to {out_fpath}')
     np.savez(out_fpath, **stats)
 
 
@@ -51,7 +52,7 @@ def do_clustering(X, label, connectivity, groups=1):
 spatial_limits = dict(action='include', region='VOTC', hemi=['lh'])
 
 # load params
-_, _, subjects = load_params()
+_, _, subjects, cohort = load_params()
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
@@ -91,6 +92,7 @@ conn_matrices = {hemi: mne.spatial_src_connectivity(src)
                  for hemi, src in source_spaces.items()}
 
 for hemi in spatial_limits['hemi']:
+    print('Working on hemi %s.' % hemi)
     hemi_idx = dict(lh=0, rh=1, both=(0, 1))[hemi]
     source_space = source_spaces[hemi]
     conn_matrix = conn_matrices[hemi]
@@ -139,7 +141,7 @@ for hemi in spatial_limits['hemi']:
         data_dict = dict()
         # loop over groups
         for group_name, group_members in groups.items():
-            group = f'{group_name}N{len(group_members)}FSAverage'
+            group = f'{cohort}_{group_name}N{len(group_members)}FSAverage'
             data_dict[group] = dict()
             # loop over pre/post measurement time
             for timepoint in timepoints:
@@ -205,16 +207,19 @@ for hemi in spatial_limits['hemi']:
         # this uses a different stat function, and takes a list of arrays for X
         # instead of doing a subtraction (because subtraction would not have
         # been within-subject)
-        timepoint = 'PostCampMinusPreCamp'
-        group_name = 'LetterMinusLanguageIntervention'
-        n_subj = {g: len(groups[g]) for g in intervention_group}
-        n = '-'.join([str(n_subj[g]) for g in intervention_group])
-        group = f'{group_name}N{n}FSAverage'
-        data_dict[group] = dict()
-        data_dict[group][timepoint] = dict()
-        keys = {g: f'{g}N{n_subj[g]}FSAverage' for g in intervention_group}
-        for con in conditions + list(contrasts):
-            X = [data_dict[keys['LetterIntervention']][timepoint][con],
-                 data_dict[keys['LanguageIntervention']][timepoint][con]]
-            data_dict[group][timepoint][con] = X
-            do_clustering(X, label, conn_matrix, groups=2)
+        if cohort == 'replication':
+            print('Skipping intervention contrast for replication cohort.')
+        else:
+            timepoint = 'PostCampMinusPreCamp'
+            group_name = 'LetterMinusLanguageIntervention'
+            n_subj = {g: len(groups[g]) for g in intervention_group}
+            n = '-'.join([str(n_subj[g]) for g in intervention_group])
+            group = f'{group_name}N{n}FSAverage'
+            data_dict[group] = dict()
+            data_dict[group][timepoint] = dict()
+            keys = {g: f'{g}N{n_subj[g]}FSAverage' for g in intervention_group}
+            for con in conditions + list(contrasts):
+                X = [data_dict[keys['LetterIntervention']][timepoint][con],
+                     data_dict[keys['LanguageIntervention']][timepoint][con]]
+                data_dict[group][timepoint][con] = X
+                do_clustering(X, label, conn_matrix, groups=2)

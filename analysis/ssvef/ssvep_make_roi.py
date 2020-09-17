@@ -21,7 +21,7 @@ mne.viz.set_3d_backend('mayavi')
 roi_freq = 4
 
 # load params
-brain_plot_kwargs, *_ = load_params()
+brain_plot_kwargs, *_, cohort = load_params()
 inverse_params = load_inverse_params()
 
 # config paths
@@ -49,7 +49,7 @@ fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
 # average the SNR data across pre/post timepoints
 avg_stc = None
 for timepoint in timepoints:
-    fname = f'GrandAvg-{timepoint}_camp-pskt{subdiv}-fft-snr'
+    fname = f'{cohort}-GrandAvg-{timepoint}_camp-pskt{subdiv}-fft-snr'
     fpath = os.path.join(stc_dir, fname)
     stc = mne.read_source_estimate(fpath, subject='fsaverage')
     if avg_stc is None:
