@@ -49,7 +49,7 @@ for s in subjects:
             raw_path = os.path.join(this_subj, 'raw_fif', this_fname)
             raw = mne.io.read_raw_fif(raw_path, allow_maxshield=True)
             eve = mne.find_events(raw, stim_channel='STI001')
-            eve[3:, 2] = 7  # fix events to code for PS vs KT differently
+            eve[3:, 2] = 7  # fix events to code for PS=5 vs KT=7 differently
             first_samps.append(raw.first_samp)
             last_samps.append(raw.last_samp)
             events_list.append(eve)

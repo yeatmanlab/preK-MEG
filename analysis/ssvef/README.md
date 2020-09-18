@@ -1,11 +1,10 @@
 # Analysis pipeline for steady-state responses
 
 1. `ssvep_make_epochs.py`
-    - optional: `ssvep_plot_phases.py`
     - optional: `ssvep_plot_sensor_psds.py`
 
 2. `ssvep_epochs_to_evoked_fft.py` averages the epoched data and applies FFT.
-
+    - optional: `ssvep_plot_phases.py`
 
 3. `ssvep_fft_evk_to_stc_fsaverage.py` converts the frequency-domain evokeds
    into source estimates (STCs), optionally looping over different inverse

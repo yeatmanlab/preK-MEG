@@ -34,45 +34,49 @@ for _dir in (tval_dir,):
 
 # config other
 timepoints = ('pre', 'post')
+conditions = ('ps', 'kt', 'all')
 
-# load in all the data
-data_npz = np.load(os.path.join(npz_dir, 'data.npz'))
-noise_npz = np.load(os.path.join(npz_dir, 'noise.npz'))
-# make mutable (NpzFile is not)
-data_dict = {k: v for k, v in data_npz.items()}
-noise_dict = {k: v for k, v in noise_npz.items()}
-data_npz.close()
-noise_npz.close()
-print('Data dict keys: %s' % data_dict.keys())
+for condition in conditions:
+    # load in all the data
+    data_npz = np.load(os.path.join(npz_dir, f'data-{condition}.npz'))
+    noise_npz = np.load(os.path.join(npz_dir, f'noise-{condition}.npz'))
+    # make mutable (NpzFile is not)
+    data_dict = {k: v for k, v in data_npz.items()}
+    noise_dict = {k: v for k, v in noise_npz.items()}
+    data_npz.close()
+    noise_npz.close()
+    print(f'Data dict keys: {data_dict.keys()}')
 
-# across-subj 1-sample t-values (freq bin versus mean of 4 surrounding bins)
-for tpt in timepoints:
-    data = np.array([data_dict[f'{s}-{tpt}'] for s in groups['GrandAvg']])
-    noise = np.array([noise_dict[f'{s}-{tpt}'] for s in groups['GrandAvg']])
-    tvals = ttest_1samp_no_p(data - noise)
-    np.save(os.path.join(tval_dir, f'GrandAvg-{tpt}_camp-tvals.npy'), tvals)
+    # across-subj 1-sample t-vals (freq bin versus mean of 4 surrounding bins)
+    for tpt in timepoints:
+        data = np.array([data_dict[f'{s}-{tpt}'] for s in groups['GrandAvg']])
+        nois = np.array([noise_dict[f'{s}-{tpt}'] for s in groups['GrandAvg']])
+        tvals = ttest_1samp_no_p(data - nois)
+        fname = f'GrandAvg-{tpt}_camp-{condition}-tvals.npy'
+        np.save(os.path.join(tval_dir, fname), tvals)
 
-# planned comparison: pre-intervention median split on letter awareness test
-median_split = list()
-for group in ('UpperKnowledge', 'LowerKnowledge'):
-    data = np.array([data_dict[f'{s}-pre'] for s in groups[group]])
-    median_split.append(data)
-median_split_tvals = ttest_ind_no_p(*median_split)
+    # planned comparison: group split on pre-intervention letter awareness test
+    median_split = list()
+    for group in ('UpperKnowledge', 'LowerKnowledge'):
+        data = np.array([data_dict[f'{s}-pre'] for s in groups[group]])
+        median_split.append(data)
+    median_split_tvals = ttest_ind_no_p(*median_split)
 
-# planned comparison: post-minus-pre-intervention, language-vs-letter cohort
-intervention = list()
-if cohort == 'replication':
-    print('Skipping t-values for intervention group for replication cohort.')
-    intervention_tvals = []
-else:
-    for group in ('LetterIntervention', 'LanguageIntervention'):
-        data = np.array([data_dict[f'{s}-post'] - data_dict[f'{s}-pre']
-                        for s in groups[group]])
-        intervention.append(data)
-    intervention_tvals = ttest_ind_no_p(*intervention)
+    # planned comparison: post-minus-pre-intervention, language-vs-letter group
+    intervention = list()
+    if cohort == 'replication':
+        print('Skipping t-test for intervention group for replication cohort.')
+        intervention_tvals = np.array([])
+    else:
+        for group in ('LetterIntervention', 'LanguageIntervention'):
+            data = np.array([data_dict[f'{s}-post'] - data_dict[f'{s}-pre']
+                            for s in groups[group]])
+            intervention.append(data)
+        intervention_tvals = ttest_ind_no_p(*intervention)
 
-# save the data
-tval_dict = {'UpperVsLowerKnowledge-pre_camp': median_split_tvals,
-             'LetterVsLanguageIntervention-PostMinusPre_camp': intervention_tvals}  # noqa E501
-for fname, tvals in tval_dict.items():
-    np.save(os.path.join(tval_dir, f'{fname}-tvals.npy'), tvals)
+    # save the data
+    tval_dict = {'UpperVsLowerKnowledge-pre_camp': median_split_tvals,
+                 'LetterVsLanguageIntervention-PostMinusPre_camp': intervention_tvals}  # noqa E501
+    for fname, tvals in tval_dict.items():
+        np.save(os.path.join(tval_dir, f'{fname}-{condition}-tvals.npy'),
+                tvals)

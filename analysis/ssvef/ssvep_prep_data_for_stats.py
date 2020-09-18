@@ -32,20 +32,22 @@ for _dir in (npz_dir,):
 timepoints = ('pre', 'post')
 subdivide_epochs = 5
 subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
+conditions = ('ps', 'kt', 'all')
 
 # load in all the data
-data_dict = dict()
-noise_dict = dict()
-for s in subjects:
-    print('Working on subject %s.' % s)
-    for timepoint in timepoints:
-        stub = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-fft'
-        stc = mne.read_source_estimate(os.path.join(in_dir, f'{stub}-stc.h5'),
-                                       subject='fsaverage')
-        # compute magnitude (signal) & avg of adjacent bins on either side
-        # (noise), & save for later group comparisons
-        data_dict[f'{s}-{timepoint}'] = np.abs(stc.data)
-        noise_dict[f'{s}-{timepoint}'] = div_by_adj_bins(np.abs(stc.data),
-                                                         return_noise=True)
-np.savez(os.path.join(npz_dir, 'data.npz'), **data_dict)
-np.savez(os.path.join(npz_dir, 'noise.npz'), **noise_dict)
+for condition in conditions:
+    data_dict = dict()
+    noise_dict = dict()
+    for s in subjects:
+        print(f'Working on subject {s}.')
+        for timepoint in timepoints:
+            stub = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-{condition}-fft'  # noqa E501
+            stc = mne.read_source_estimate(
+                os.path.join(in_dir, f'{stub}-stc.h5'), subject='fsaverage')
+            # compute magnitude (signal) & avg of adjacent bins on either side
+            # (noise), & save for later group comparisons
+            data_dict[f'{s}-{timepoint}'] = np.abs(stc.data)
+            noise_dict[f'{s}-{timepoint}'] = div_by_adj_bins(np.abs(stc.data),
+                                                             return_noise=True)
+    np.savez(os.path.join(npz_dir, f'data-{condition}.npz'), **data_dict)
+    np.savez(os.path.join(npz_dir, f'noise-{condition}.npz'), **noise_dict)

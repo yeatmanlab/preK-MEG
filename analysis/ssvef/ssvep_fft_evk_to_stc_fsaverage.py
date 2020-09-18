@@ -9,7 +9,7 @@ Load frequency-domain SSVEP evokeds, apply inverse, & morph to FSAverage.
 import os
 import numpy as np
 import mne
-from analysis.aux_functions import load_paths, load_params
+from analysis.aux_functions import load_paths, load_params, load_inverse_params
 
 # flags
 mne.cuda.init_cuda()
@@ -24,6 +24,8 @@ for _dir in (stc_dir, morph_dir):
 
 # load params
 *_, subjects, cohort = load_params()
+inverse_params = load_inverse_params()
+inverse_method = inverse_params['method']
 
 # config other
 timepoints = ('pre', 'post')
@@ -48,47 +50,52 @@ for s in subjects:
     has_morph = False
     # loop over timepoints
     for timepoint in timepoints:
-        # (TODO: separately for "ps" and "kt" trials)
-        stub = f'{s}-{timepoint}_camp-pskt{subdiv}'
-        fname = f'{stub}-fft-ave.fif'
-        evoked_spect = mne.read_evokeds(os.path.join(fft_dir, fname))
-        assert len(evoked_spect) == 1
-        evoked_spect = evoked_spect[0]
-        # loop over cortical estimate orientation constraints
-        for constr in constraints:
-            constr_dir = constr.lstrip('-') if len(constr) else 'loose'
-            # load inverse operator. it is only located in the ERP folder tree,
-            # not in PSKT (TODO: this may change at some point)
-            inv_path = os.path.join(data_root, f'{timepoint}_camp', 'twa_hp',
-                                    'erp', s, 'inverse',
-                                    f'{s}-30-sss-meg{constr}-inv.fif')
-            inverse = mne.minimum_norm.read_inverse_operator(inv_path)
-            # loop over estimate types
-            for estim_type in estim_types:
-                if constr == '-fixed' and estim_type == 'normal':
-                    continue  # not implemented
-                # make the output dirs
-                estim_dir = 'magnitude' if estim_type is None else estim_type
-                out_dir = f'{constr_dir}-{estim_dir}'
-                for _dir in (stc_dir, morph_dir):
-                    os.makedirs(os.path.join(_dir, out_dir), exist_ok=True)
-                # apply inverse & save
-                stc = mne.minimum_norm.apply_inverse(
-                    evoked_spect, inverse, lambda2, pick_ori=estim_type)
-                assert stc.tstep == np.diff(evoked_spect.times[:2])
-                fname = f'{stub}-fft'
-                fpath = os.path.join(stc_dir, out_dir, fname)
-                stc.save(fpath, ftype='h5')
-                # compute morph for this subject
-                if not has_morph:
-                    morph = mne.compute_source_morph(
-                        stc, subject_from=s.upper(), subject_to='fsaverage',
-                        subjects_dir=subjects_dir, spacing=fsaverage_vertices,
-                        smooth=smoothing_steps)
-                    has_morph = True
-                # morph to fsaverage & save
-                morphed_stc = morph.apply(stc)
-                fname = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-fft'
-                fpath = os.path.join(morph_dir, out_dir, fname)
-                print('Saving stc to %s' % fpath)
-                morphed_stc.save(fpath, ftype='h5')
+        for condition in ('ps', 'kt', 'all'):
+            stub = f'{s}-{timepoint}_camp-pskt{subdiv}'
+            fname = f'{stub}-{condition}-fft-ave.fif'
+            evoked_spect = mne.read_evokeds(os.path.join(fft_dir, fname))
+            assert len(evoked_spect) == 1
+            evoked_spect = evoked_spect[0]
+            # loop over cortical estimate orientation constraints
+            for constr in constraints:
+                constr_dir = constr.lstrip('-') if len(constr) else 'loose'
+                # load inverse operator. it is only located in the ERP folder
+                # tree, not in PSKT (TODO: this may change at some point)
+                inv_path = os.path.join(data_root, f'{timepoint}_camp',
+                                        'twa_hp', 'erp', s, 'inverse',
+                                        f'{s}-30-sss-meg{constr}-inv.fif')
+                inverse = mne.minimum_norm.read_inverse_operator(inv_path)
+                # loop over estimate types
+                for estim_type in estim_types:
+                    if constr == '-fixed' and estim_type == 'normal':
+                        continue  # not implemented
+                    # make the output dirs
+                    estim_dir = ('magnitude' if estim_type is None else
+                                 estim_type)
+                    out_dir = f'{constr_dir}-{estim_dir}'
+                    for _dir in (stc_dir, morph_dir):
+                        os.makedirs(os.path.join(_dir, out_dir), exist_ok=True)
+                    # apply inverse & save
+                    stc = mne.minimum_norm.apply_inverse(
+                        evoked_spect, inverse, lambda2, pick_ori=estim_type,
+                        method=inverse_method)
+                    assert stc.tstep == np.diff(evoked_spect.times[:2])
+                    fname = f'{stub}-{condition}-fft'
+                    fpath = os.path.join(stc_dir, out_dir, fname)
+                    stc.save(fpath, ftype='h5')
+                    # compute morph for this subject
+                    if not has_morph:
+                        morph = mne.compute_source_morph(
+                            stc,
+                            subject_from=s.upper(),
+                            subject_to='fsaverage',
+                            subjects_dir=subjects_dir,
+                            spacing=fsaverage_vertices,
+                            smooth=smoothing_steps)
+                        has_morph = True
+                    # morph to fsaverage & save
+                    morphed_stc = morph.apply(stc)
+                    fname = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-{condition}-fft'  # noqa E501
+                    fpath = os.path.join(morph_dir, out_dir, fname)
+                    print('Saving stc to %s' % fpath)
+                    morphed_stc.save(fpath, ftype='h5')

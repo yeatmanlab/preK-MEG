@@ -42,7 +42,8 @@ for s in subjects:
         epochs = mne.read_epochs(os.path.join(in_dir, fname), proj=True)
         # plot the sensor-space PSD
         if plot_psd:
-            fig = epochs.plot_psd(fmin=0, fmax=20, bandwidth=bandwidth)
+            fig = epochs.plot_psd(fmin=0, fmax=20, bandwidth=bandwidth,
+                                  spatial_colors=True, average=False)
             fig.axes[0].set_xticks(range(0, 21, 2))
             fname = f'{stub}-sensor_psd.pdf'
             fig.savefig(os.path.join(fig_dir, fname))
