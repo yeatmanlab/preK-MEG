@@ -131,6 +131,7 @@ for hemi in spatial_limits['hemi']:
         cluster_subsubdir = f'thresh_{threshold}'
     # write most recently used cluster dir to file
     cluster_dir = os.path.join(cluster_root, cluster_subdir, cluster_subsubdir)
+    os.makedirs(cluster_dir, exist_ok=True)
     cluster_path = os.path.join(cluster_root, 'most-recent-clustering.txt')
     with open(cluster_path, 'w') as f:
         f.write(cluster_dir)
@@ -141,7 +142,7 @@ for hemi in spatial_limits['hemi']:
         data_dict = dict()
         # loop over groups
         for group_name, group_members in groups.items():
-            group = f'{cohort}_{group_name}N{len(group_members)}FSAverage'
+            group = f'{group_name}N{len(group_members)}FSAverage'
             data_dict[group] = dict()
             # loop over pre/post measurement time
             for timepoint in timepoints:
@@ -196,10 +197,16 @@ for hemi in spatial_limits['hemi']:
         group = f'{group_name}N{n}FSAverage'
         data_dict[group] = dict()
         data_dict[group][timepoint] = dict()
-        keys = {g: f'{g}N{n_subj[g]}FSAverage' for g in letter_knowledge_group}
-        for con in conditions + list(contrasts):
+        keys = {g: f'{g}N{n_subj[g]}FSAverage'
+                for g in letter_knowledge_group}
+        for con in conditions:
             X = (data_dict[keys['UpperKnowledge']][timepoint][con] -
                  data_dict[keys['LowerKnowledge']][timepoint][con])
+            data_dict[group][timepoint][con] = X
+            do_clustering(X, label, conn_matrix)
+        for con, (contr_0, contr_1) in contrasts.items():
+            X = (data_dict[keys['UpperKnowledge']][timepoint][contr_0] -
+                 data_dict[keys['LowerKnowledge']][timepoint][contr_1])
             data_dict[group][timepoint][con] = X
             do_clustering(X, label, conn_matrix)
 
@@ -217,9 +224,15 @@ for hemi in spatial_limits['hemi']:
             group = f'{group_name}N{n}FSAverage'
             data_dict[group] = dict()
             data_dict[group][timepoint] = dict()
-            keys = {g: f'{g}N{n_subj[g]}FSAverage' for g in intervention_group}
-            for con in conditions + list(contrasts):
+            keys = {g: f'{g}N{n_subj[g]}FSAverage'
+                    for g in intervention_group}
+            for con in conditions:
                 X = [data_dict[keys['LetterIntervention']][timepoint][con],
                      data_dict[keys['LanguageIntervention']][timepoint][con]]
+                data_dict[group][timepoint][con] = X
+                do_clustering(X, label, conn_matrix, groups=2)
+            for con, (contr_0, contr_1) in contrasts.items():
+                X = [data_dict[keys['LetterIntervention']][timepoint][contr_0],
+                     data_dict[keys['LanguageIntervention']][timepoint][contr_1]]  # noqa E501
                 data_dict[group][timepoint][con] = X
                 do_clustering(X, label, conn_matrix, groups=2)

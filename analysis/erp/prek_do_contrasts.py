@@ -14,9 +14,9 @@ from mayavi import mlab
 import mne
 from analysis.aux_functions import load_paths, load_params, load_cohorts
 
-mlab.options.offscreen = True
+#mlab.options.offscreen = True
 mne.cuda.init_cuda()
-overwrite = True
+overwrite = False
 
 # load params
 brain_plot_kwargs, movie_kwargs, subjects, cohort = load_params()

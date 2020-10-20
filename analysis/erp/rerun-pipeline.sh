@@ -1,4 +1,5 @@
 #!/bin/sh
+export DISPLAY=:1.0
 
 python prek_make_stcs.py && \
 python prek_make_group_averages.py && \
