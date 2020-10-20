@@ -1,9 +1,9 @@
 #!/bin/sh
 
 python ssvep_make_epochs.py && \
-python ssvep_plot_phases.py && \                 # optional
-python ssvep_plot_sensor_psds.py && \            # optional
 python ssvep_epochs_to_evoked_fft.py && \
+python ssvep_plot_sensor_psds.py && \            # optional
+python ssvep_plot_phases.py && \                 # optional
 python ssvep_fft_evk_to_stc_fsaverage.py && \
 python ssvep_plot_stcs.py && \                   # optional
 python ssvep_group_level_aggregate_stcs.py && \
