@@ -25,7 +25,7 @@ from prek_score import prek_score
 from analysis.aux_functions import load_paths, load_params
 
 lp_cut = 30
-pre_or_post = 'post'  # str: 'pre' or 'post' convenience variable for rerunning
+pre_or_post = 'pre'  # str: 'pre' or 'post' convenience variable for rerunning
 
 # load subjects
 *_, subjects, cohort = load_params()
@@ -67,15 +67,21 @@ params.st_correlation = 0.98
 params.trans_to = 'twa'  # "twa" (time-weighted avg) or "fixed" head pos; use "fixed" for within-subj sensor-level analyses
 params.coil_t_window = 'auto'
 params.movecomp = 'inter'
+params.hp_type = 'python'
+params.mf_autobad = True
+params.mf_autobad_type = 'python'
 # remove segments with < 3 good coils for at least 100 ms
 params.coil_bad_count_duration_limit = 0.1
-# Trial rejection criteria
+# SSP and rejection params
 params.reject = dict()
 params.auto_bad_reject = None
 params.ssp_ecg_reject = None
 params.flat = dict(grad=1e-13, mag=1e-15)
 params.auto_bad_flat = None
 params.auto_bad_meg_thresh = 10
+params.ssp_eog_reject = dict(grad=2000e-13, mag=6000e-15)
+params.veog_channel=['EOG061']
+params.heog_channel = ['EOG062']
 # naming
 params.run_names = ['%s_erp_' + pre_or_post]
 params.subject_run_indices = None
@@ -155,8 +161,8 @@ params.report_params.update(  # add plots
 mnefun.do_processing(
     params,
     fetch_raw=False,
-    do_sss=False,        # do tSSS
-    do_score=False,      # do scoring
+    do_sss=True,        # do tSSS
+    do_score=True,      # do scoring
     gen_ssp=True,        # generate ssps
     apply_ssp=True,      # apply ssps
     write_epochs=True,   # epoching & filtering
