@@ -14,6 +14,7 @@ from analysis.aux_functions import load_paths, load_params, load_inverse_params
 
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
+mne.viz.set_3d_backend('mayavi')
 
 # flags
 save_movie = False

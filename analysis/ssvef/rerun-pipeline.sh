@@ -1,4 +1,5 @@
 #!/bin/sh
+export DISPLAY=:1.0
 
 python ssvep_make_epochs.py && \
 python ssvep_epochs_to_evoked_fft.py && \
