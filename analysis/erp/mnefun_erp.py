@@ -40,7 +40,7 @@ common_kw = dict(analysis='Conditions')
 sns_kw = dict(times='peaks', **common_kw)
 snr_kw = dict(inv=f'%s-{params.lp_cut}-sss-meg-free-inv.fif', **common_kw)
 src_kw = dict(views=['lat', 'caudal'], size=(800, 800), **snr_kw)
-wht_kw = dict(cov=f'%s-{params.lp_cut}-sss-cov.fif', , **common_kw)
+wht_kw = dict(cov=f'%s-{params.lp_cut}-sss-cov.fif', **common_kw)
 conditions = ('words', 'faces', 'cars', 'aliens')
 params.report['snr'] = [dict(name=cond, **snr_kw) for cond in conditions]
 params.report['sensor'] = [dict(name=cond, **sns_kw) for cond in conditions]
