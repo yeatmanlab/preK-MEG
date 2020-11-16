@@ -17,7 +17,7 @@ data_root, subjects_dir, _ = load_paths()
 *_, subjects, cohort = load_params()
 
 # load mnefun params from YAML
-params = mnefun.read_params('mnefun_params.yaml')
+params = mnefun.read_params('mnefun_params_erp.yaml')
 
 # set additional params: general
 params.work_dir = os.path.join(data_root, f'{prepost}_camp', f'{headpos}_hp',
