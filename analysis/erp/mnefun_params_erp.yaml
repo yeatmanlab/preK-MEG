@@ -1,0 +1,98 @@
+fetch_raw:
+    acq_ssh: nordme@kasga.ilabs.uw.edu
+    acq_dir: /brainstudio/prek/
+    runs_empty: ['%s_erm']
+    subject_run_indices: null
+
+scoring:
+    score: prek_score.py
+
+preprocessing:
+    multithreading:
+        n_jobs: 10
+        n_jobs_mkl: 2
+        n_jobs_fir: cuda
+        n_jobs_resample: cuda
+
+    bads:
+        mf_autobad: True
+        mf_autobad_type: python
+        auto_bad_meg_thresh: 10
+        auto_bad_flat: null
+        auto_bad_reject: null
+
+    head_position_estimation:
+        coil_t_window: auto
+
+    annotations:
+        coil_bad_count_duration_limit: 0.1  # remove segments with < 3 good coils for at least 100 ms
+
+    sss:
+        movecomp: inter
+        hp_type: python
+        sss_type: python
+        sss_regularize: in
+        int_order: 8
+        tsss_dur: 4.0
+        st_correlation: 0.98
+
+    filtering:
+        lp_cut: 30
+        filter_length: 5s
+    ssp:
+        proj_sfreq: 200
+        ecg_channel: ECG063
+        veog_channel: EOG062
+        veog_t_lims: [-0.22, 0.22]
+        veog_f_lims: [0.5, 2.0]
+        proj_nums: [[1, 1, 0],  # ECG: grad/mag/eeg
+                    [0, 0, 0],  # EOG  (combined saccade and blink events)
+                    [0, 0, 0],  # Continuous (from ERM)
+                    [0, 0, 0],  # HEOG (focus on saccades)
+                    [1, 1, 0]]  # VEOG  (focus on blinks)
+        ssp_ecg_reject:
+            grad: 1500.0e-13
+            mag: 4500.0e-15
+        ssp_eog_reject:
+            grad: 2000.0e-13
+            mag: 6000.0e-15
+        get_projs_from: [0, 1]
+
+    epoching:
+        tmin: -0.1
+        tmax: 1
+        t_adjust: -0.067
+        baseline: [-0.1, 0.]
+        reject: null
+        flat:
+            grad: 1.0e-13
+            mag: 1.0e-15
+        reject_epochs_by_annot: False  # ignore manual EOG annotations
+        in_names: [words, faces, cars, aliens]          # [ps, kt]
+        in_numbers: [10, 20, 30, 40]                    # [5, 7]
+        analyses: [All, Conditions]                     # [pooled, separate]
+        out_names: [All, [words, faces, cars, aliens]]  # [[pooled], [ps, kt]]
+        out_numbers: [[10, 10, 10, 10],  # Combine all trials  # [[5, 5],
+                      [10, 20, 30, 40]]  # Separate trials     #  [5, 7]]
+        must_match: [[], []]
+
+    covariance:
+        cov_method: shrunk
+        compute_rank: True
+        cov_rank: null
+        force_erm_cov_rank_full: False
+
+    forward:
+        bem_type: "5120"
+
+    inverse:
+        inv_names: ['%s']
+        inv_runs: [0, 1]
+
+report:
+    bem: true
+    psd: false
+    sensor: []
+    snr: []
+    source: []
+    whitening: []
