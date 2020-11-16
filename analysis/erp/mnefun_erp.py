@@ -33,7 +33,7 @@ params.run_names = [f'%s_erp_{prepost}']
 #                  [f'%s_pskt_{run:02}_{prepost}' for run in (1, 2)]
 
 # set additional params: SSS
-params.sss.trans_to = (0., 0., 0.04) if headpos == 'fixed' else headpos
+params.trans_to = (0., 0., 0.04) if headpos == 'fixed' else headpos
 
 # set additional params: report
 common_kw = dict(analysis='Conditions')
