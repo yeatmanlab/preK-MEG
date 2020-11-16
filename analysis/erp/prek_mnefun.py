@@ -72,16 +72,25 @@ params.mf_autobad = True
 params.mf_autobad_type = 'python'
 # remove segments with < 3 good coils for at least 100 ms
 params.coil_bad_count_duration_limit = 0.1
-# SSP and rejection params
+# epoch rejection params
 params.reject = dict()
 params.auto_bad_reject = None
 params.ssp_ecg_reject = None
 params.flat = dict(grad=1e-13, mag=1e-15)
 params.auto_bad_flat = None
 params.auto_bad_meg_thresh = 10
+# SSP params
+params.ssp_ecg_reject = dict(grad=1500e-13, mag=4500e-15)
+params.ecg_channel = 'ECG063'
 params.ssp_eog_reject = dict(grad=2000e-13, mag=6000e-15)
-params.veog_channel=['EOG061']
-params.heog_channel = ['EOG062']
+params.veog_channel = 'EOG062'
+params.veog_f_lims = (0.5, 2)
+params.veog_t_lims = (-0.22, 0.22)
+params.proj_nums = [[1, 1, 0],  # ECG: grad/mag/eeg
+                    [0, 0, 0],  # EOG  (combined saccade and blink events)
+                    [0, 0, 0],  # Continuous (from ERM)
+                    [0, 0, 0],  # HEOG (focus on saccades)
+                    [1, 1, 0]]  # VEOG  (focus on blinks)
 # naming
 params.run_names = ['%s_erp_' + pre_or_post]
 params.subject_run_indices = None
@@ -89,10 +98,7 @@ params.get_projs_from = np.arange(1)
 params.inv_names = ['%s']
 params.inv_runs = np.arange(1)
 params.runs_empty = ['%s_erm']
-# proj
-params.proj_nums = [[1, 1, 0],  # ECG: grad/mag/eeg
-                    [1, 1, 0],  # EOG
-                    [0, 0, 0]]  # Continuous (from ERM)
+# covariance
 params.cov_method = 'shrunk'
 params.bem_type = '5120'
 params.compute_rank = True
@@ -107,7 +113,7 @@ params.analyses = ['All',
 params.out_names = [['All'],
                     ['words', 'faces', 'cars', 'aliens']]
 params.out_numbers = [[10, 10, 10, 10],  # Combine all trials
-                      [10, 20, 30, 40],  # Seperate trials
+                      [10, 20, 30, 40],  # Separate trials
                       ]
 params.must_match = [[],  # trials to match
                      [],

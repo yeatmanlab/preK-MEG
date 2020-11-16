@@ -78,16 +78,25 @@ params.ssp_ecg_reject = None
 params.flat = dict(grad=1e-13, mag=1e-15)
 params.auto_bad_flat = None
 params.auto_bad_meg_thresh = 10
+# SSP params
+params.get_projs_from = np.arange(2)
+params.ssp_ecg_reject = dict(grad=1500e-13, mag=4500e-15)
+params.ecg_channel = 'ECG063'
+params.ssp_eog_reject = dict(grad=2000e-13, mag=6000e-15)
+params.veog_channel = 'EOG062'
+params.veog_f_lims = (0.5, 2)
+params.veog_t_lims = (-0.22, 0.22)
+params.proj_nums = [[1, 1, 0],  # ECG: grad/mag/eeg
+                    [0, 0, 0],  # EOG
+                    [0, 0, 0],  # Continuous (from ERM)
+                    [0, 0, 0],  # HEOG
+                    [1, 1, 0]]  # VEOG
 # naming
 params.run_names = ['%s_pskt_01_' + pre_or_post, '%s_pskt_02_' + pre_or_post]
-params.get_projs_from = np.arange(2)
 params.inv_names = ['%s']
 params.inv_runs = [np.arange(1)]
 params.runs_empty = []
-# proj
-params.proj_nums = [[1, 1, 0],  # ECG: grad/mag/eeg
-                    [1, 1, 0],  # EOG
-                    [0, 0, 0]]  # Continuous (from ERM)
+# covariance
 params.cov_method = 'empirical'
 params.bem_type = '5120'
 params.compute_rank = True
