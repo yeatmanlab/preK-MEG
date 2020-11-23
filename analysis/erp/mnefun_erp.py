@@ -4,11 +4,15 @@ mnefun preprocessing of PSKT runs of the first PRE-K cohort.
 """
 
 import os
+import mne
 import mnefun
 from analysis.aux_functions import load_paths, load_params
+from prek_score import prek_score
+
+mne.viz.set_3d_backend('mayavi')
 
 # FLAGS
-prepost = 'pre'  # 'pre' or 'post' intervention
+prepost = 'post' # 'pre' or 'post' intervention
 headpos = 'twa'  # 'twa' (time-weighted average) or 'fixed'; use "fixed" for
 #                   within-subj sensor-level analyses
 
@@ -24,6 +28,7 @@ params.work_dir = os.path.join(data_root, f'{prepost}_camp', f'{headpos}_hp',
                                'erp')
 params.subjects_dir = subjects_dir
 params.subject_indices = list(range(len(subjects)))
+params.score = prek_score
 
 # set additional params: fetch_raw
 params.subjects = subjects
@@ -66,6 +71,6 @@ mnefun.do_processing(
     gen_covs=True,       # make covariance
     gen_fwd=True,        # generate fwd model
     gen_inv=True,        # generate inverse
-    gen_report=False,    # print report
+    gen_report=True,     # print report
     print_status=True    # show status
 )
