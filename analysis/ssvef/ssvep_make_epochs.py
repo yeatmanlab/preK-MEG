@@ -74,7 +74,7 @@ for s in subjects:
                                       np.repeat(events[:, -1], n_new_events)))
         # downsample
         raw.load_data()
-        raw, events = raw.resample(sfreq=50, events=events, n_jobs='cuda')
+        raw, events = raw.resample(sfreq=60, events=events, n_jobs='cuda')
         # clean up
         del raws, first_samps, last_samps, events_list
         # epoch
