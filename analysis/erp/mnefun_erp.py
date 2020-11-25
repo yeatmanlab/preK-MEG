@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-mnefun preprocessing of PSKT runs of the first PRE-K cohort.
+mnefun preprocessing of ERP runs of both PRE-K cohorts (original & replication).
 """
 
 import os
@@ -35,7 +35,6 @@ params.subjects = subjects
 params.structurals = [s.upper() for s in subjects]
 params.dates = [(2013, 0, 00)] * len(subjects)
 params.run_names = [f'%s_erp_{prepost}']
-#                  [f'%s_pskt_{run:02}_{prepost}' for run in (1, 2)]
 
 # set additional params: SSS
 params.trans_to = (0., 0., 0.04) if headpos == 'fixed' else headpos
@@ -51,13 +50,6 @@ params.report['snr'] = [dict(name=cond, **snr_kw) for cond in conditions]
 params.report['sensor'] = [dict(name=cond, **sns_kw) for cond in conditions]
 params.report['source'] = [dict(name=cond, **src_kw) for cond in conditions]
 params.report['whitening'] = [dict(name=cond, **wht_kw) for cond in conditions]
-# for PSKT:
-# analyses = ('pooled', 'separate', 'separate')
-# conditions = ('pooled', 'ps', 'kt')
-# views = ('lateral', 'ventral')
-# inv = '%s-80-sss-meg-free-inv.fif'
-# cov = '%s-80-sss-cov.fif'
-
 
 # run it
 mnefun.do_processing(

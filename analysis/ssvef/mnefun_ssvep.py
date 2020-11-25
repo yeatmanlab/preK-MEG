@@ -11,9 +11,9 @@ from analysis.aux_functions import load_paths, load_params
 mne.viz.set_3d_backend('mayavi')
 
 # FLAGS
-prepost = 'pre'  # 'pre' or 'post' intervention
-headpos = 'twa'  # 'twa' (time-weighted average) or 'fixed'; use "fixed" for
-#                   within-subj sensor-level analyses
+prepost = 'pre'    # 'pre' or 'post' intervention
+headpos = 'fixed'  # 'twa' (time-weighted average) or 'fixed'; use "fixed" for
+#                     within-subj sensor-level analyses
 
 # load general params
 data_root, subjects_dir, _ = load_paths()
@@ -48,7 +48,6 @@ params.trans_to = (0., 0., 0.04) if headpos == 'fixed' else headpos
 # params.report['sensor'] = [dict(name=cond, **sns_kw) for cond in conditions]
 # params.report['source'] = [dict(name=cond, **src_kw) for cond in conditions]
 # params.report['whitening'] = [dict(name=cond, **wht_kw) for cond in conditions]
-
 
 # run it
 mnefun.do_processing(

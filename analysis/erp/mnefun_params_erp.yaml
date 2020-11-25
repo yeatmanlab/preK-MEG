@@ -65,12 +65,12 @@ preprocessing:
             grad: 1.0e-13
             mag: 1.0e-15
         reject_epochs_by_annot: False  # ignore manual EOG annotations
-        in_names: [words, faces, cars, aliens]            # [ps, kt]
-        in_numbers: [10, 20, 30, 40]                      # [5, 7]
-        analyses: [All, Conditions]                       # [pooled, separate]
-        out_names: [[All], [words, faces, cars, aliens]]  # [[pooled], [ps, kt]]
-        out_numbers: [[10, 10, 10, 10],  # Combine all trials  # [[5, 5],
-                      [10, 20, 30, 40]]  # Separate trials     #  [5, 7]]
+        in_names: [words, faces, cars, aliens]
+        in_numbers: [10, 20, 30, 40]
+        analyses: [All, Conditions]
+        out_names: [[All], [words, faces, cars, aliens]]
+        out_numbers: [[10, 10, 10, 10],  # Combine all trials
+                      [10, 20, 30, 40]]  # Separate trials
         must_match: [[], []]
 
     covariance:
