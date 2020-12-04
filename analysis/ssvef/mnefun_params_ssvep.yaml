@@ -15,8 +15,9 @@ preprocessing:
         mf_autobad: True
         mf_autobad_type: python
         auto_bad_meg_thresh: 10
-        auto_bad_flat: null
-        auto_bad_reject: null
+        auto_bad: null         # float, % of tainted epochs above which to mark a channel bad
+        auto_bad_flat: null    # dict of thresholds or "auto" to use autoreject package
+        auto_bad_reject: null  # dict of thresholds or "auto" to use autoreject package
 
     head_position_estimation:
         coil_t_window: auto
@@ -48,8 +49,8 @@ preprocessing:
                     [0, 0, 0],  # HEOG (focus on saccades)
                     [1, 1, 0]]  # VEOG  (focus on blinks)
         ssp_ecg_reject:
-            grad: 1500.0e-13
-            mag: 4500.0e-15
+            grad: 1500.0e-13  # mne-python default is 4000 fT/cm
+            mag: 4500.0e-15   # mne-python default is 4000 fT
         ssp_eog_reject:
             grad: 2000.0e-13
             mag: 6000.0e-15
