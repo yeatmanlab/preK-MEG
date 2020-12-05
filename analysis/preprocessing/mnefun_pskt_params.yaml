@@ -1,0 +1,9 @@
+preprocessing:
+    epoching:
+        in_names: [ps, kt]
+        in_numbers: [5, 7]
+        analyses: [pooled, separate]
+        out_names: [[pooled], [ps, kt]]
+        out_numbers: [[5, 5],  # Combine all trials
+                      [5, 7]]  # Separate trials
+        must_match: [[], []]

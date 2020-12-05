@@ -1,7 +1,7 @@
 fetch_raw:
     acq_ssh: nordme@kasga.ilabs.uw.edu
     acq_dir: /brainstudio/prek/
-    runs_empty: []
+    runs_empty: ['%s_erm']
     subject_run_indices: null
 
 preprocessing:
@@ -66,13 +66,6 @@ preprocessing:
             grad: 1.0e-13
             mag: 1.0e-15
         reject_epochs_by_annot: False  # ignore manual EOG annotations
-        in_names: [ps, kt]
-        in_numbers: [5, 7]
-        analyses: [pooled, separate]
-        out_names: [[pooled], [ps, kt]]
-        out_numbers: [[5, 5],  # Combine all trials
-                      [5, 7]]  # Separate trials
-        must_match: [[], []]
 
     covariance:
         cov_method: shrunk
