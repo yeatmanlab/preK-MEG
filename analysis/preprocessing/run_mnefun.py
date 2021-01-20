@@ -6,6 +6,7 @@ mnefun preprocessing of both PRE-K cohorts (original & replication).
 import os
 import mne
 import mnefun
+from mnefun._yaml import _flat_params_read
 from analysis.aux_functions import load_paths, load_params
 from prek_score import prek_score
 
@@ -14,11 +15,13 @@ mne.viz.set_3d_backend('mayavi')
 # load general params
 data_root, subjects_dir, _ = load_paths()
 *_, subjects, cohort = load_params()
-
-for paradigm in ('pskt', 'erp'):
+for paradigm in ('erp', 'pskt'):
     # load mnefun params from YAML
     params = mnefun.read_params('mnefun_common_params.yaml')
-
+    # load more params from paradigm-specific YAML
+    extra_params = _flat_params_read(f'mnefun_{paradigm}_params.yaml')
+    vars(params).update(extra_params)
+    del extra_params
     # set additional params: general
     params.subjects_dir = subjects_dir
     params.subject_indices = list(range(len(subjects)))
@@ -27,10 +30,6 @@ for paradigm in ('pskt', 'erp'):
     params.subjects = subjects
     params.structurals = [s.upper() for s in subjects]
     params.dates = [(2013, 0, 00)] * len(subjects)
-    # load more params from paradigm-specific YAML
-    extra_params = mnefun.read_params(f'mnefun_{paradigm}_params.yaml')
-    vars(params).update(vars(extra_params))
-    del extra_params
 
     # loop over pre/post intervention recordings, and over head pos transforms
     for prepost in ('pre', 'post'):
@@ -63,17 +62,20 @@ for paradigm in ('pskt', 'erp'):
                 params.report['whitening'] = [dict(name=c, **wht_kw) for c in conds]  # noqa E501
 
             # run it
+            is_erp = paradigm == 'erp'
+            is_twa = headpos == 'twa'
+
             mnefun.do_processing(
                 params,
-                fetch_raw=False,     # go get the Raw files
-                do_sss=False,        # tSSS / maxwell filtering
-                do_score=False,      # run scoring function to extract events
-                gen_ssp=False,       # create SSP projectors
-                apply_ssp=False,     # apply SSP projectors
-                write_epochs=False,  # epoching & filtering
-                gen_covs=False,      # make covariance
-                gen_fwd=False,       # generate fwd model
-                gen_inv=False,       # generate inverse
-                gen_report=False,    # print report
-                print_status=True    # show status
+                fetch_raw=False,      # go get the Raw files
+                do_sss=True,          # tSSS / maxwell filtering
+                do_score=is_erp,      # run scoring function to extract events
+                gen_ssp=True,         # create SSP projectors
+                apply_ssp=True,       # apply SSP projectors
+                write_epochs=is_twa,  # epoching & filtering
+                gen_covs=is_twa,      # make covariance
+                gen_fwd=is_twa,       # generate fwd model
+                gen_inv=is_twa,       # generate inverse
+                gen_report=True,      # print report
+                print_status=True     # show status
             )
