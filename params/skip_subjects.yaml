@@ -1,4 +1,6 @@
 [
-prek_2171,  # cHPI problems
-prek_2259   # cHPI problems
+prek_1751,  # cHPI problems in pre_camp run
+prek_2171,  # cHPI problems in post_camp run
+prek_2173,  # cHPI problems in both pre- and post_camp runs
+prek_2259   # cHPI problems in post_camp run
 ]
