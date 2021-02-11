@@ -31,7 +31,11 @@ conditions = ['words', 'faces', 'cars', 'aliens']
 snr = 3.
 lambda2 = 1. / snr ** 2
 smoothing_steps = 10
-lp_cut = 30
+paramfile = os.path.join('..', 'preprocessing', 'mnefun_common_params.yaml')
+with open(paramfile, 'r') as f:
+    params = yamload(f)
+lp_cut = params['preprocessing']['filtering']['lp_cut']
+del params
 
 # for morph to fsaverage
 fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
