@@ -72,10 +72,10 @@ for paradigm in ('erp', 'pskt'):
                 do_score=is_erp,      # run scoring function to extract events
                 gen_ssp=True,         # create SSP projectors
                 apply_ssp=True,       # apply SSP projectors
-                write_epochs=is_twa,  # epoching & filtering
-                gen_covs=is_twa,      # make covariance
-                gen_fwd=is_twa,       # generate fwd model
-                gen_inv=is_twa,       # generate inverse
-                gen_report=True,      # print report
+                write_epochs=is_erp,  # epoching & filtering
+                gen_covs=is_erp,      # make covariance
+                gen_fwd=is_erp,       # generate fwd model
+                gen_inv=is_erp,       # generate inverse
+                gen_report=is_erp,    # print report
                 print_status=True     # show status
             )
