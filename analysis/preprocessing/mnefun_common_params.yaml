@@ -35,7 +35,7 @@ preprocessing:
         st_correlation: 0.98
 
     filtering:
-        lp_cut: 30
+        lp_cut: 40
         filter_length: 5s
     ssp:
         proj_sfreq: 200
@@ -47,7 +47,7 @@ preprocessing:
                     [0, 0, 0],  # EOG  (combined saccade and blink events)
                     [0, 0, 0],  # Continuous (from ERM)
                     [0, 0, 0],  # HEOG (focus on saccades)
-                    [0, 0, 0]]  # VEOG  (focus on blinks)
+                    [1, 1, 0]]  # VEOG  (focus on blinks)
         ssp_ecg_reject:
             grad: 1500.0e-13  # mne-python default is 4000 fT/cm
             mag: 4500.0e-15   # mne-python default is 4000 fT
