@@ -29,29 +29,33 @@ for _dir in (out_dir,):
 
 # config other
 timepoints = ('pre', 'post')
-trial_dur = 20
+conditions = ('ps', 'kt', 'all')
 subdivide_epochs = 5
 subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 
-# container
-df = pd.DataFrame()
+# loop over trial types
+for condition in conditions:
+    # container
+    df = pd.DataFrame()
+    # loop over timepoints
+    for timepoint in timepoints:
+        # loop over cohort groups
+        for s in subjects:
+            fname = (f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-'
+                     f'{condition}-fft-stc.h5')
+            stc = mne.read_source_estimate(os.path.join(in_dir, fname),
+                                           subject='fsaverage')
+            # convert complex values to magnitude
+            stc.data = np.abs(stc.data)
+            # convert to dataframe
+            this_df = stc.to_data_frame(time_format=None, long_format=True)
+            this_df.rename(columns=dict(time='freq'), inplace=True)
+            this_df['subject'] = s
+            this_df['timepoint'] = timepoint
+            this_df['condition'] = condition
+            # aggregate
+            df = pd.concat((df, this_df), axis=0)
 
-# loop over timepoints
-for timepoint in timepoints:
-    # loop over cohort groups
-    for s in subjects:
-        fname = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-fft-stc.h5'
-        stc = mne.read_source_estimate(os.path.join(in_dir, fname),
-                                       subject='fsaverage')
-        # convert complex values to magnitude
-        stc.data = np.abs(stc.data)
-        # convert to dataframe
-        this_df = stc.to_data_frame(time_format=None, long_format=True)
-        this_df.rename(columns=dict(time='freq'), inplace=True)
-        this_df['subject'] = s
-        this_df['timepoint'] = timepoint
-        # aggregate
-        df = pd.concat((df, this_df), axis=0)
-
-fname = f'all_subjects-fsaverage-{chosen_constraints}-freq_domain-stc.csv'
-df.to_csv(os.path.join(out_dir, fname), index=False)
+    fname = (f'all_subjects-fsaverage-{condition}-{chosen_constraints}-'
+             'freq_domain-stc.csv')
+    df.to_csv(os.path.join(out_dir, fname), index=False)

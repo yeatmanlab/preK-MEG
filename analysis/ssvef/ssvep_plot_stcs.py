@@ -31,41 +31,48 @@ brain_plot_kwargs.update(time_label='freq=%0.2f Hz')
 timepoints = ('pre', 'post')
 subdivide_epochs = 5
 subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
+conditions = ('ps', 'kt', 'all')
 
 # inverse params
 constraints = ('free', 'loose', 'fixed')
 estim_types = ('vector', 'magnitude', 'normal')
+morphed = False
 
 # loop over timepoints
 for timepoint in timepoints:
     # loop over subjects
     for s in subjects:
-        # loop over cortical estimate orientation constraints
-        for constr in constraints:
-            # loop over estimate types
-            for estim_type in estim_types:
-                if constr == 'fixed' and estim_type == 'normal':
-                    continue  # not implemented
-                # load this subject's STC
-                fname = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-fft'
-                fpath = os.path.join(in_dir, f'{constr}-{estim_type}', fname)
-                stc = mne.read_source_estimate(fpath)
-                # convert complex values to magnitude & normalize to "SNR"
-                abs_data = np.abs(stc.data)
-                snr_data = div_by_adj_bins(abs_data)
-                data_dict = dict(amp=abs_data, snr=snr_data)
-                # prepare output folder
-                out_dir = os.path.join(fig_dir, f'{constr}-{estim_type}')
-                os.makedirs(out_dir, exist_ok=True)
-                # loop over data kinds & plot
-                kwargs = (dict(surface='white') if estim_type != 'vector' else
-                          dict(brain_alpha=1, overlay_alpha=0, vector_alpha=1))
-                for kind, _data in data_dict.items():
-                    stc.data = _data
-                    brain = stc.plot(subject='fsaverage', **brain_plot_kwargs,
-                                     **kwargs)
-                    for freq in (2, 4, 6, 12):
-                        brain.set_time(freq)
-                        fname = f'{s}-{timepoint}_camp-pskt{subdiv}-fft-{kind}-{freq:02}_Hz.png'  # noqa E501
-                        brain.save_image(os.path.join(out_dir, fname))
-                    del brain
+        # loop over trial types
+        for condition in conditions:
+            # loop over cortical estimate orientation constraints
+            for constr in constraints:
+                # loop over estimate types
+                for estim_type in estim_types:
+                    if constr == 'fixed' and estim_type == 'normal':
+                        continue  # not implemented
+                    # load this subject's STC
+                    fsavg = 'FSAverage' if morphed else ''
+                    fname = f'{s}{fsavg}-{timepoint}_camp-pskt{subdiv}-{condition}-fft'  # noqa E501
+                    fpath = os.path.join(in_dir, f'{constr}-{estim_type}',
+                                         fname)
+                    stc = mne.read_source_estimate(fpath)
+                    # convert complex values to magnitude & normalize to "SNR"
+                    abs_data = np.abs(stc.data)
+                    snr_data = div_by_adj_bins(abs_data)
+                    data_dict = dict(amp=abs_data, snr=snr_data)
+                    # prepare output folder
+                    out_dir = os.path.join(fig_dir, f'{constr}-{estim_type}')
+                    os.makedirs(out_dir, exist_ok=True)
+                    # loop over data kinds & plot
+                    kwargs = (dict(surface='white') if estim_type != 'vector'
+                              else dict(brain_alpha=1, overlay_alpha=0,
+                                        vector_alpha=1))
+                    for kind, _data in data_dict.items():
+                        stc.data = _data
+                        brain = stc.plot(subject='fsaverage',
+                                         **brain_plot_kwargs, **kwargs)
+                        for freq in (2, 4, 6, 12):
+                            brain.set_time(freq)
+                            bname = f'{fname}-{kind}-{freq:02}_Hz.png'
+                            brain.save_image(os.path.join(out_dir, bname))
+                        del brain

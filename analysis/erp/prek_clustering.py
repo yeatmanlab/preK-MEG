@@ -17,7 +17,8 @@ import mne
 from mne.stats import (spatio_temporal_cluster_1samp_test,
                        spatio_temporal_cluster_test)
 from analysis.aux_functions import (load_paths, load_params, load_cohorts,
-                                    prep_cluster_stats, define_labels)
+                                    prep_cluster_stats, define_labels,
+                                    load_inverse_params)
 
 mne.cuda.init_cuda()
 rng = np.random.RandomState(seed=15485863)  # the one millionth prime
@@ -53,6 +54,8 @@ spatial_limits = dict(action='include', region='VOTC', hemi=['lh'])
 
 # load params
 _, _, subjects, cohort = load_params()
+inverse_params = load_inverse_params()
+method = inverse_params['method']
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
@@ -63,7 +66,6 @@ os.makedirs(cache_dir, exist_ok=True)
 mne.set_cache_dir(cache_dir)
 
 # config other
-methods = ('dSPM', 'sLORETA')  # dSPM, sLORETA, eLORETA
 timepoints = ('preCamp', 'postCamp')
 conditions = ['words', 'faces', 'cars']  # we purposely omit 'aliens' here
 contrasts = {f'{contr[0].capitalize()}Minus{contr[1].capitalize()}': contr
@@ -82,20 +84,19 @@ fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
                                   'fsaverage-ico-5-src.fif')
 fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
 hemi_nverts = len(fsaverage_src[0]['vertno'])
-# make separate source spaces and connectivity matrices for each hemisphere
+# make separate source spaces and adjacency matrices for each hemisphere
 lh_src = fsaverage_src.copy()
 rh_src = fsaverage_src.copy()
 _ = lh_src.pop(1)
 _ = rh_src.pop(0)
 source_spaces = dict(both=fsaverage_src, lh=lh_src, rh=rh_src)
-conn_matrices = {hemi: mne.spatial_src_connectivity(src)
-                 for hemi, src in source_spaces.items()}
+adj_matrices = {hemi: mne.spatial_src_adjacency(src)
+                for hemi, src in source_spaces.items()}
 
 for hemi in spatial_limits['hemi']:
-    print('Working on hemi %s.' % hemi)
     hemi_idx = dict(lh=0, rh=1, both=(0, 1))[hemi]
     source_space = source_spaces[hemi]
-    conn_matrix = conn_matrices[hemi]
+    adj_matrix = adj_matrices[hemi]
     # get the label
     label = define_labels(region=spatial_limits['region'],
                           action=spatial_limits['action'],
@@ -131,95 +132,106 @@ for hemi in spatial_limits['hemi']:
         cluster_subsubdir = f'thresh_{threshold}'
     # write most recently used cluster dir to file
     cluster_dir = os.path.join(cluster_root, cluster_subdir, cluster_subsubdir)
+    os.makedirs(cluster_dir, exist_ok=True)
     cluster_path = os.path.join(cluster_root, 'most-recent-clustering.txt')
     with open(cluster_path, 'w') as f:
         f.write(cluster_dir)
     os.makedirs(cluster_dir, exist_ok=True)
 
-    # loop over source localization algorithms
-    for method in methods:
-        data_dict = dict()
-        # loop over groups
-        for group_name, group_members in groups.items():
-            group = f'{cohort}_{group_name}N{len(group_members)}FSAverage'
-            data_dict[group] = dict()
-            # loop over pre/post measurement time
-            for timepoint in timepoints:
-                # skip conditions we don't need / care about
-                if group_name.endswith('Knowledge') and \
-                        timepoint == 'postCamp':
-                    continue
-                data_dict[group][timepoint] = dict()
-                # load the individual subject STCs for each condition
-                for cond in conditions:
-                    data_dict[group][timepoint][cond] = list()
-                    # loop over subjects
-                    for s in group_members:
-                        this_subj = os.path.join(data_root,
-                                                 f'{timepoint[:-4]}_camp',
-                                                 'twa_hp', 'erp', s, 'stc')
-                        fname = f'{s}FSAverage_{timepoint}_{method}_{cond}'
-                        stc_path = os.path.join(this_subj, fname)
-                        stc = mne.read_source_estimate(stc_path)
-                        # get just the hemisphere(s) we want; transpose because
-                        # we ultimately need (subj, time, space)
-                        attr = dict(lh='lh_data', rh='rh_data', both='data')
-                        stc_data = getattr(stc, attr[hemi]).transpose(1, 0)
-                        data_dict[group][timepoint][cond].append(stc_data)
-                    data_dict[group][timepoint][cond] = \
-                        np.array(data_dict[group][timepoint][cond])
-
-                # CONTRAST TRIAL CONDITIONS
-                for con, (contr_0, contr_1) in contrasts.items():
-                    X = (data_dict[group][timepoint][contr_0] -
-                         data_dict[group][timepoint][contr_1])
-                    data_dict[group][timepoint][con] = X
-                    do_clustering(X, label, conn_matrix)
-
-            # CONTRAST POST-MINUS-PRE
-            timepoint = 'PostCampMinusPreCamp'
+    # loop over groups
+    data_dict = dict()
+    for group_name, group_members in groups.items():
+        group = f'{group_name}N{len(group_members)}FSAverage'
+        data_dict[group] = dict()
+        # loop over pre/post measurement time
+        for timepoint in timepoints:
+            # skip conditions we don't need / care about
+            if group_name.endswith('Knowledge') and \
+                    timepoint == 'postCamp':
+                continue
             data_dict[group][timepoint] = dict()
-            for con in conditions + list(contrasts):
-                # skip conditions we don't need / care about
-                if group_name.endswith('Knowledge'):
-                    continue
-                X = (data_dict[group]['postCamp'][con] -
-                     data_dict[group]['preCamp'][con])
-                data_dict[group][timepoint][con] = X
-                do_clustering(X, label, conn_matrix)
+            # load the individual subject STCs for each condition
+            for cond in conditions:
+                data_dict[group][timepoint][cond] = list()
+                # loop over subjects
+                for s in group_members:
+                    this_subj = os.path.join(data_root,
+                                             f'{timepoint[:-4]}_camp',
+                                             'twa_hp', 'erp', s, 'stc')
+                    fname = f'{s}FSAverage_{timepoint}_{method}_{cond}'
+                    stc_path = os.path.join(this_subj, fname)
+                    stc = mne.read_source_estimate(stc_path)
+                    # get just the hemisphere(s) we want; transpose because
+                    # we ultimately need (subj, time, space)
+                    attr = dict(lh='lh_data', rh='rh_data', both='data')
+                    stc_data = getattr(stc, attr[hemi]).transpose(1, 0)
+                    data_dict[group][timepoint][cond].append(stc_data)
+                data_dict[group][timepoint][cond] = \
+                    np.array(data_dict[group][timepoint][cond])
 
-        # CONTRAST PRE-INTERVENTION LETTER KNOWLEDGE
-        timepoint = 'preCamp'
-        group_name = 'UpperMinusLowerKnowledge'
-        n_subj = {g: len(groups[g]) for g in letter_knowledge_group}
-        n = '-'.join([str(n_subj[g]) for g in letter_knowledge_group])
+            # CONTRAST TRIAL CONDITIONS
+            for con, (contr_0, contr_1) in contrasts.items():
+                X = (data_dict[group][timepoint][contr_0] -
+                     data_dict[group][timepoint][contr_1])
+                data_dict[group][timepoint][con] = X
+                do_clustering(X, label, adj_matrix)
+
+        # CONTRAST POST-MINUS-PRE
+        timepoint = 'PostCampMinusPreCamp'
+        data_dict[group][timepoint] = dict()
+        for con in conditions + list(contrasts):
+            # skip conditions we don't need / care about
+            if group_name.endswith('Knowledge'):
+                continue
+            X = (data_dict[group]['postCamp'][con] -
+                 data_dict[group]['preCamp'][con])
+            data_dict[group][timepoint][con] = X
+            do_clustering(X, label, adj_matrix)
+
+    # CONTRAST PRE-INTERVENTION LETTER KNOWLEDGE
+    timepoint = 'preCamp'
+    group_name = 'UpperMinusLowerKnowledge'
+    n_subj = {g: len(groups[g]) for g in letter_knowledge_group}
+    n = '-'.join([str(n_subj[g]) for g in letter_knowledge_group])
+    group = f'{group_name}N{n}FSAverage'
+    data_dict[group] = dict()
+    data_dict[group][timepoint] = dict()
+    keys = {g: f'{g}N{n_subj[g]}FSAverage'
+            for g in letter_knowledge_group}
+    for con in conditions:
+        X = (data_dict[keys['UpperKnowledge']][timepoint][con] -
+             data_dict[keys['LowerKnowledge']][timepoint][con])
+        data_dict[group][timepoint][con] = X
+        do_clustering(X, label, adj_matrix)
+    for con, (contr_0, contr_1) in contrasts.items():
+        X = (data_dict[keys['UpperKnowledge']][timepoint][contr_0] -
+             data_dict[keys['LowerKnowledge']][timepoint][contr_1])
+        data_dict[group][timepoint][con] = X
+        do_clustering(X, label, adj_matrix)
+
+    # CONTRAST EFFECT OF INTERVENTION ON COHORTS
+    # this uses a different stat function, and takes a list of arrays for X
+    # instead of doing a subtraction (because subtraction would not have
+    # been within-subject)
+    if cohort == 'replication':
+        print('Skipping intervention contrast for replication cohort.')
+    else:
+        timepoint = 'PostCampMinusPreCamp'
+        group_name = 'LetterMinusLanguageIntervention'
+        n_subj = {g: len(groups[g]) for g in intervention_group}
+        n = '-'.join([str(n_subj[g]) for g in intervention_group])
         group = f'{group_name}N{n}FSAverage'
         data_dict[group] = dict()
         data_dict[group][timepoint] = dict()
-        keys = {g: f'{g}N{n_subj[g]}FSAverage' for g in letter_knowledge_group}
-        for con in conditions + list(contrasts):
-            X = (data_dict[keys['UpperKnowledge']][timepoint][con] -
-                 data_dict[keys['LowerKnowledge']][timepoint][con])
+        keys = {g: f'{g}N{n_subj[g]}FSAverage'
+                for g in intervention_group}
+        for con in conditions:
+            X = [data_dict[keys['LetterIntervention']][timepoint][con],
+                 data_dict[keys['LanguageIntervention']][timepoint][con]]
             data_dict[group][timepoint][con] = X
-            do_clustering(X, label, conn_matrix)
-
-        # CONTRAST EFFECT OF INTERVENTION ON COHORTS
-        # this uses a different stat function, and takes a list of arrays for X
-        # instead of doing a subtraction (because subtraction would not have
-        # been within-subject)
-        if cohort == 'replication':
-            print('Skipping intervention contrast for replication cohort.')
-        else:
-            timepoint = 'PostCampMinusPreCamp'
-            group_name = 'LetterMinusLanguageIntervention'
-            n_subj = {g: len(groups[g]) for g in intervention_group}
-            n = '-'.join([str(n_subj[g]) for g in intervention_group])
-            group = f'{group_name}N{n}FSAverage'
-            data_dict[group] = dict()
-            data_dict[group][timepoint] = dict()
-            keys = {g: f'{g}N{n_subj[g]}FSAverage' for g in intervention_group}
-            for con in conditions + list(contrasts):
-                X = [data_dict[keys['LetterIntervention']][timepoint][con],
-                     data_dict[keys['LanguageIntervention']][timepoint][con]]
-                data_dict[group][timepoint][con] = X
-                do_clustering(X, label, conn_matrix, groups=2)
+            do_clustering(X, label, adj_matrix, groups=2)
+        for con, (contr_0, contr_1) in contrasts.items():
+            X = [data_dict[keys['LetterIntervention']][timepoint][contr_0],
+                 data_dict[keys['LanguageIntervention']][timepoint][contr_1]]  # noqa E501
+            data_dict[group][timepoint][con] = X
+            do_clustering(X, label, adj_matrix, groups=2)

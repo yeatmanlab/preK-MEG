@@ -11,7 +11,8 @@ from itertools import combinations
 import numpy as np
 from mayavi import mlab
 import mne
-from analysis.aux_functions import load_paths, load_params, load_cohorts
+from analysis.aux_functions import (load_paths, load_params, load_cohorts,
+                                    load_inverse_params)
 
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
@@ -19,6 +20,8 @@ n_jobs = 10
 
 # load params
 brain_plot_kwargs, movie_kwargs, subjects, cohort = load_params()
+inverse_params = load_inverse_params()
+method = inverse_params['method']
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
@@ -33,7 +36,6 @@ frames_dir = os.path.join(cluster_dir, 'frames')
 
 # config other
 conditions = ('words', 'faces', 'cars')  # we purposely omit 'aliens' here
-methods = ('dSPM',)  # dSPM, sLORETA, eLORETA
 
 # generate contrast names
 contrasts = [f'{cond_0.capitalize()}Minus{cond_1.capitalize()}'
@@ -104,28 +106,26 @@ def make_cluster_movie(group, prepost, method, con, results_dir,
         brain.remove_labels()
 
 
-# loop over algorithms
-for method in methods:
-    # loop over groups
-    for group_name, group_members in groups.items():
-        group = f'{group_name}N{len(group_members)}FSAverage'
-        common_kwargs = dict(group=group, method=method,
-                             results_dir=results_dir,
-                             cluster_dir=cluster_dir, mov_dir=mov_dir)
-        # loop over pre/post measurement time
-        #for prepost in ('pre', 'post'):
-        #    # loop over contrasts
-        #    for contrast in contrasts:
-        #        make_cluster_movie(prepost=prepost, con=contrast,
-        #                           results_subdir='condition_contrasts',
-        #                           **common_kwargs)
-        # post-pre subtraction for single conditions
-        for condition in conditions:
-            make_cluster_movie(prepost='PostCampMinusPre', con=condition,
-                               results_subdir='group_averages',
-                               **common_kwargs)
-        # post-pre subtraction for condition contrasts
-        for contrast in contrasts:
-            make_cluster_movie(prepost='PostCampMinusPre', con=contrast,
-                               results_subdir='group_averages',
-                               **common_kwargs)
+# loop over groups
+for group_name, group_members in groups.items():
+    group = f'{group_name}N{len(group_members)}FSAverage'
+    common_kwargs = dict(group=group, method=method,
+                         results_dir=results_dir,
+                         cluster_dir=cluster_dir, mov_dir=mov_dir)
+    # loop over pre/post measurement time
+    #for prepost in ('pre', 'post'):
+    #    # loop over contrasts
+    #    for contrast in contrasts:
+    #        make_cluster_movie(prepost=prepost, con=contrast,
+    #                           results_subdir='condition_contrasts',
+    #                           **common_kwargs)
+    # post-pre subtraction for single conditions
+    for condition in conditions:
+        make_cluster_movie(prepost='PostCampMinusPre', con=condition,
+                           results_subdir='group_averages',
+                           **common_kwargs)
+    # post-pre subtraction for condition contrasts
+    for contrast in contrasts:
+        make_cluster_movie(prepost='PostCampMinusPre', con=contrast,
+                           results_subdir='group_averages',
+                           **common_kwargs)

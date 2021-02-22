@@ -26,6 +26,7 @@ n_jobs = 10
 # load params
 brain_plot_kwargs, movie_kwargs, subjects, cohort = load_params()
 inverse_params = load_inverse_params()
+method = inverse_params['method']
 chosen_constraints = ('{orientation_constraint}-{estimate_type}'
                       ).format_map(inverse_params)
 
@@ -71,7 +72,6 @@ for freq in (2, 4):
 
 all_conditions = ('words', 'faces', 'cars')
 all_timepoints = ('post', 'pre')
-methods = ('dSPM',)
 if cohort == 'replication':
     group_lists = (['grandavg'], ['letter'], ['upper', 'lower'])
 else:
@@ -85,22 +85,21 @@ for region, label in rois.items():
     df = get_dataframe_from_label(label, fsaverage_src)
     df['roi'] = region
     # plot
-    for method in methods:
-        for groups in group_lists:
-            # plot label
-            group_str = 'Versus'.join([g.capitalize() for g in groups])
-            img_fname = f'{method}-{group_str}-roi-{region}.png'
-            img_path = os.path.join(img_dir, img_fname)
-            plot_label(label, img_path, **brain_plot_kwargs)
-            # plot timeseries
-            this_df = df.loc[df['method'] == method]
-            plot_label_and_timeseries(label, img_path, this_df, method, groups,
-                                      timepoints=all_timepoints,
-                                      conditions=all_conditions,
-                                      all_timepoints=all_timepoints,
-                                      all_conditions=all_conditions,
-                                      cluster=None,
-                                      lineplot_kwargs=lineplot_kwargs)
+    for groups in group_lists:
+        # plot label
+        group_str = 'Versus'.join([g.capitalize() for g in groups])
+        img_fname = f'{method}-{group_str}-roi-{region}.png'
+        img_path = os.path.join(img_dir, img_fname)
+        plot_label(label, img_path, **brain_plot_kwargs)
+        # plot timeseries
+        this_df = df.loc[df['method'] == method]
+        plot_label_and_timeseries(label, img_path, this_df, method, groups,
+                                  timepoints=all_timepoints,
+                                  conditions=all_conditions,
+                                  all_timepoints=all_timepoints,
+                                  all_conditions=all_conditions,
+                                  cluster=None,
+                                  lineplot_kwargs=lineplot_kwargs)
     # save dataframe
     df.to_csv(os.path.join(timeseries_dir,
                            f'roi-{region}-timeseries-long.csv'))

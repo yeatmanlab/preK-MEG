@@ -54,15 +54,19 @@ def load_inverse_params():
 def load_cohorts():
     """load intervention and knowledge groups."""
     with open(os.path.join(paramdir, 'intervention_cohorts.yaml'), 'r') as f:
-        intervention_group = yamload(f)[cohort]
+        intervention_groups = yamload(f)[cohort]
     with open(os.path.join(paramdir, 'letter_knowledge_cohorts.yaml'),
               'r') as f:
-        letter_knowledge_group = yamload(f)[cohort]
-    # convert 1103 → 'prek_1103'
-    for _dict in (intervention_group, letter_knowledge_group):
-        for key, value in _dict.items():
-            _dict[key] = [f'prek_{num}' for num in value]
-    return intervention_group, letter_knowledge_group
+        letter_knowledge_groups = yamload(f)[cohort]
+    with open(os.path.join(paramdir, 'skip_subjects.yaml'), 'r') as f:
+        skips = yamload(f)
+    for _dict in (intervention_groups, letter_knowledge_groups):
+        for _group in _dict:
+            # convert 1103 → 'prek_1103'
+            _dict[_group] = [f'prek_{num}' for num in _dict[_group]]
+            # remove anyone in skip_subjects.yaml from the cohorts
+            _dict[_group] = sorted(set(_dict[_group]) - set(skips))
+    return intervention_groups, letter_knowledge_groups
 
 
 def load_paths():
@@ -182,7 +186,7 @@ def get_stc_from_conditions(method, timepoint, condition, subject):
     return stc
 
 
-def get_dataframe_from_label(label, src, methods=('dSPM', 'sLORETA'),
+def get_dataframe_from_label(label, src, methods=('dSPM', 'MNE'),
                              timepoints=('pre', 'post'),
                              conditions=('words', 'faces', 'cars', 'aliens'),
                              subjects=None):
@@ -333,7 +337,7 @@ def plot_label_and_timeseries(label, img_path, df, method, groups, timepoints,
             xmax = times[temporal_idxs.max()]
             ax.fill_betweenx((0, 4), xmin, xmax, color='k', alpha=0.1)
         # garnish
-        ymax = 4 if method == 'dSPM' else 2
+        ymax = dict(MNE=1e-10, dSPM=4, sLORETA=2)[method]
         ax.set_ylim(0, ymax)
         ax.set_title(title_dict[group])
         # suppress x-axis label on upper panel
