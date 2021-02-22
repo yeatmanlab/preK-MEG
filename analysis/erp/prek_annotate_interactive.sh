@@ -1,8 +1,9 @@
 #!/bin/bash
 
 # loop over raw files
-# run separately for /mnt/scratch/prek/pre_camp/twa_hp/*/raw_fif/*_pre_raw.fif
-for raw in $(ls /mnt/scratch/prek/post_camp/twa_hp/*/raw_fif/*_post_raw.fif); do
+# run separately for /mnt/scratch/prek/pre_camp/twa_hp/*/*/raw_fif/*_pre_raw.fif
+#                and /mnt/scratch/prek/post_camp/twa_hp/*/*/raw_fif/*_post_raw.fif
+for raw in $(ls /data/prek/pre_camp/twa_hp/*/*/raw_fif/*_pre_raw.fif); do
     # set name of annotation file
     ann=${raw%.fif}"-custom-annot.fif"
     # get the subject ID
