@@ -186,7 +186,7 @@ def get_stc_from_conditions(method, timepoint, condition, subject):
     return stc
 
 
-def get_dataframe_from_label(label, src, methods=('dSPM', 'sLORETA'),
+def get_dataframe_from_label(label, src, methods=('dSPM', 'MNE'),
                              timepoints=('pre', 'post'),
                              conditions=('words', 'faces', 'cars', 'aliens'),
                              subjects=None):
