@@ -337,7 +337,7 @@ def plot_label_and_timeseries(label, img_path, df, method, groups, timepoints,
             xmax = times[temporal_idxs.max()]
             ax.fill_betweenx((0, 4), xmin, xmax, color='k', alpha=0.1)
         # garnish
-        ymax = 4 if method == 'dSPM' else 2
+        ymax = dict(MNE=1e-10, dSPM=4, sLORETA=2)[method]
         ax.set_ylim(0, ymax)
         ax.set_title(title_dict[group])
         # suppress x-axis label on upper panel
