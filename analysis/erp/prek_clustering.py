@@ -84,20 +84,19 @@ fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
                                   'fsaverage-ico-5-src.fif')
 fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
 hemi_nverts = len(fsaverage_src[0]['vertno'])
-# make separate source spaces and connectivity matrices for each hemisphere
+# make separate source spaces and adjacency matrices for each hemisphere
 lh_src = fsaverage_src.copy()
 rh_src = fsaverage_src.copy()
 _ = lh_src.pop(1)
 _ = rh_src.pop(0)
 source_spaces = dict(both=fsaverage_src, lh=lh_src, rh=rh_src)
-conn_matrices = {hemi: mne.spatial_src_connectivity(src)
-                 for hemi, src in source_spaces.items()}
+adj_matrices = {hemi: mne.spatial_src_adjacency(src)
+                for hemi, src in source_spaces.items()}
 
 for hemi in spatial_limits['hemi']:
-    print('Working on hemi %s.' % hemi)
     hemi_idx = dict(lh=0, rh=1, both=(0, 1))[hemi]
     source_space = source_spaces[hemi]
-    conn_matrix = conn_matrices[hemi]
+    adj_matrix = adj_matrices[hemi]
     # get the label
     label = define_labels(region=spatial_limits['region'],
                           action=spatial_limits['action'],
@@ -175,7 +174,7 @@ for hemi in spatial_limits['hemi']:
                 X = (data_dict[group][timepoint][contr_0] -
                      data_dict[group][timepoint][contr_1])
                 data_dict[group][timepoint][con] = X
-                do_clustering(X, label, conn_matrix)
+                do_clustering(X, label, adj_matrix)
 
         # CONTRAST POST-MINUS-PRE
         timepoint = 'PostCampMinusPreCamp'
@@ -187,7 +186,7 @@ for hemi in spatial_limits['hemi']:
             X = (data_dict[group]['postCamp'][con] -
                  data_dict[group]['preCamp'][con])
             data_dict[group][timepoint][con] = X
-            do_clustering(X, label, conn_matrix)
+            do_clustering(X, label, adj_matrix)
 
     # CONTRAST PRE-INTERVENTION LETTER KNOWLEDGE
     timepoint = 'preCamp'
@@ -203,12 +202,12 @@ for hemi in spatial_limits['hemi']:
         X = (data_dict[keys['UpperKnowledge']][timepoint][con] -
              data_dict[keys['LowerKnowledge']][timepoint][con])
         data_dict[group][timepoint][con] = X
-        do_clustering(X, label, conn_matrix)
+        do_clustering(X, label, adj_matrix)
     for con, (contr_0, contr_1) in contrasts.items():
         X = (data_dict[keys['UpperKnowledge']][timepoint][contr_0] -
              data_dict[keys['LowerKnowledge']][timepoint][contr_1])
         data_dict[group][timepoint][con] = X
-        do_clustering(X, label, conn_matrix)
+        do_clustering(X, label, adj_matrix)
 
     # CONTRAST EFFECT OF INTERVENTION ON COHORTS
     # this uses a different stat function, and takes a list of arrays for X
@@ -230,9 +229,9 @@ for hemi in spatial_limits['hemi']:
             X = [data_dict[keys['LetterIntervention']][timepoint][con],
                  data_dict[keys['LanguageIntervention']][timepoint][con]]
             data_dict[group][timepoint][con] = X
-            do_clustering(X, label, conn_matrix, groups=2)
+            do_clustering(X, label, adj_matrix, groups=2)
         for con, (contr_0, contr_1) in contrasts.items():
             X = [data_dict[keys['LetterIntervention']][timepoint][contr_0],
                  data_dict[keys['LanguageIntervention']][timepoint][contr_1]]  # noqa E501
             data_dict[group][timepoint][con] = X
-            do_clustering(X, label, conn_matrix, groups=2)
+            do_clustering(X, label, adj_matrix, groups=2)
