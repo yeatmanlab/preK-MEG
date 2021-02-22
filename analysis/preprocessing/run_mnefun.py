@@ -6,7 +6,6 @@ mnefun preprocessing of both PRE-K cohorts (original & replication).
 import os
 import mne
 import mnefun
-from mnefun._yaml import _flat_params_read
 from analysis.aux_functions import load_paths, load_params
 from prek_score import prek_score
 
@@ -40,11 +39,29 @@ for paradigm in ('erp', 'pskt'):
             if paradigm == 'erp' and headpos == 'fixed':
                 continue
 
-            # set variable-contingent params
-            params.work_dir = os.path.join(data_root, f'{prepost}_camp',
-                                           f'{headpos}_hp', paradigm)
+# loop over pre/post intervention recordings, and over head pos transforms
+for prepost in ('pre', 'post'):
+    for headpos in ('fixed',):  # 'twa', 'fixed'
+        # set variable-contingent params
+        params.work_dir = os.path.join(data_root, f'{prepost}_camp',
+                                       f'{headpos}_hp', 'combined')
+        params.trans_to = (0., 0., 0.04) if headpos == 'fixed' else headpos
+        # run filenames
+        erp_run_names = [f'%s_erp_{prepost}']
+        pskt_run_names = [f'%s_pskt_{run:02}_{prepost}' for run in (1, 2)]
+        params.run_names = erp_run_names + pskt_run_names
 
-            params.trans_to = (0., 0., 0.04) if headpos == 'fixed' else headpos
+        # set additional params: report
+        common_kw = dict(analysis='Conditions')
+        sns_kw = dict(times='peaks', **common_kw)
+        snr_kw = dict(inv=f'%s-{params.lp_cut}-sss-meg-inv.fif', **common_kw)
+        src_kw = dict(views=['lateral', 'ventral'], size=(800, 800), **snr_kw)
+        wht_kw = dict(cov=f'%s-{params.lp_cut}-sss-cov.fif', **common_kw)
+        conds = params.in_names  # experimental conditions
+        params.report['snr'] = [dict(name=c, **snr_kw) for c in conds]
+        params.report['sensor'] = [dict(name=c, **sns_kw) for c in conds]
+        params.report['source'] = [dict(name=c, **src_kw) for c in conds]
+        params.report['whitening'] = [dict(name=c, **wht_kw) for c in conds]
 
             if paradigm == 'pskt':
                 params.run_names = [f'%s_{paradigm}_{run:02}_{prepost}'
