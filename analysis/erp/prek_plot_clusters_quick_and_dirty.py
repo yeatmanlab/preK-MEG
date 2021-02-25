@@ -12,6 +12,7 @@ import numpy as np
 from mayavi import mlab
 import mne
 from analysis.aux_functions import (load_paths, load_params, load_cohorts,
+                                    load_inverse_params,
                                     get_dataframe_from_label,
                                     plot_label_and_timeseries)
 
@@ -21,6 +22,8 @@ n_jobs = 10
 
 # load params
 brain_plot_kwargs, _, subjects, cohort = load_params()
+inverse_params = load_inverse_params()
+method = inverse_params['method']
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
 cluster_root = os.path.join(results_dir, 'clustering')
@@ -207,6 +210,6 @@ def make_cluster_stc(cluster_fname):
 
 
 cluster_fnames = sorted([x.name for x in os.scandir(cluster_dir)
-                         if x.is_file() and 'dSPM' in x.name])
+                         if x.is_file() and method in x.name])
 for cluster_fname in cluster_fnames:
     make_cluster_stc(cluster_fname)
