@@ -199,13 +199,23 @@ for hemi in spatial_limits['hemi']:
     keys = {g: f'{g}N{n_subj[g]}FSAverage'
             for g in letter_knowledge_group}
     for con in conditions:
-        X = (data_dict[keys['UpperKnowledge']][timepoint][con] -
-             data_dict[keys['LowerKnowledge']][timepoint][con])
+        # XXX HACK: THIS NAIVELY DISCARDS SUBJECTS FROM END OF ARRAY
+        # IF THE COHORT SIZES MISMATCH.
+        n_upper = data_dict[keys['UpperKnowledge']][timepoint][con].shape[0]
+        n_lower = data_dict[keys['LowerKnowledge']][timepoint][con].shape[0]
+        size = min(n_upper, n_lower)  # XXX END OF HACK
+        X = (data_dict[keys['UpperKnowledge']][timepoint][con][:size] -
+             data_dict[keys['LowerKnowledge']][timepoint][con][:size])
         data_dict[group][timepoint][con] = X
         do_clustering(X, label, adj_matrix)
     for con, (contr_0, contr_1) in contrasts.items():
-        X = (data_dict[keys['UpperKnowledge']][timepoint][contr_0] -
-             data_dict[keys['LowerKnowledge']][timepoint][contr_1])
+        # XXX HACK: THIS NAIVELY DISCARDS SUBJECTS FROM END OF ARRAY
+        # IF THE COHORT SIZES MISMATCH.
+        n_upper = data_dict[keys['UpperKnowledge']][timepoint][con].shape[0]
+        n_lower = data_dict[keys['LowerKnowledge']][timepoint][con].shape[0]
+        size = min(n_upper, n_lower)  # XXX END OF HACK
+        X = (data_dict[keys['UpperKnowledge']][timepoint][contr_0][:size] -
+             data_dict[keys['LowerKnowledge']][timepoint][contr_1][:size])
         data_dict[group][timepoint][con] = X
         do_clustering(X, label, adj_matrix)
 
