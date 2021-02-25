@@ -102,7 +102,7 @@ for hemi in spatial_limits['hemi']:
                           action=spatial_limits['action'],
                           hemi=hemi, subjects_dir=subjects_dir)
     # make sure label vertex density matches source space density
-    label.restrict(source_space)
+    label.restrict(fsaverage_src)
     # if label is region to *include*, get complement of vertices to use as
     # *exclusion* set
     if spatial_limits['action'] == 'include':
