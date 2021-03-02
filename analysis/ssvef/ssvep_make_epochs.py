@@ -9,7 +9,7 @@ Extract SSVEP epochs, downsample, and save to disk.
 import os
 import numpy as np
 import mne
-from analysis.aux_functions import load_paths, load_params
+from analysis.aux_functions import load_paths, load_params, yamload
 
 mne.cuda.init_cuda()
 
@@ -25,6 +25,10 @@ os.makedirs(epo_dir, exist_ok=True)
 
 # load params
 _, _, subjects, cohort = load_params()
+paramfile = os.path.join('..', 'preprocessing', 'mnefun_common_params.yaml')
+with open(paramfile, 'r') as f:
+    params = yamload(f)
+lp_cut = params['preprocessing']['filtering']['lp_cut']
 
 # config other
 timepoints = ('pre', 'post')
@@ -56,7 +60,7 @@ for s in subjects:
         events = mne.concatenate_events(events_list, first_samps, last_samps)
         # now process the clean files
         for run in runs:
-            this_fname = f'{s}_pskt_{run:02}_{timepoint}_allclean_fil80_raw_sss.fif'  # noqa E501
+            this_fname = f'{s}_pskt_{run:02}_{timepoint}_allclean_fil{lp_cut}_raw_sss.fif'  # noqa E501
             raw_path = os.path.join(this_subj, 'sss_pca_fif', this_fname)
             raw = mne.io.read_raw_fif(raw_path)
             raws.append(raw)
@@ -88,4 +92,4 @@ for s in subjects:
         assert len(epochs.times) % 10 == 0
         # save epochs
         fname = f'{s}-{timepoint}_camp-pskt{subdiv}-epo.fif'
-        epochs.save(os.path.join(epo_dir, fname), fmt='double')
+        epochs.save(os.path.join(epo_dir, fname), fmt='double', overwrite=True)
