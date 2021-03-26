@@ -60,9 +60,10 @@ fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
 connectivity = mne.spatial_src_connectivity(fsaverage_src)
 
 # load one STC to get bin centers
-stc_path = os.path.join(results_dir, 'pskt', 'group-level', 'stc',
-                        chosen_constraints,
-                        'all_GrandAvg-post_camp-pskt-5_sec-all-fft-amp-stc.h5')
+file_prefix = 'all' if cohort == 'pooled' else cohort
+stc_path = os.path.join(
+    results_dir, 'pskt', 'group-level', 'stc', chosen_constraints,
+    f'{file_prefix}-GrandAvg-post_camp-pskt-5_sec-all-fft-amp-stc.h5')
 stc = mne.read_source_estimate(stc_path)
 all_freqs = stc.times
 del stc
