@@ -58,7 +58,7 @@ for condition in conditions:
         # set the colormap lims
         clim = dict(kind='value')
         lims = tuple(np.percentile(tvals, (99, 99.9, 99.99)))
-        pos_lims = tuple(np.percentile(tvals, (95, 99, 99.9)))
+        pos_lims = tuple(np.percentile(np.abs(tvals), (95, 99, 99.9)))
         pos = (dict(lims=lims) if prefix.startswith('Gran') else
                dict(pos_lims=pos_lims))
         clim.update(pos)
