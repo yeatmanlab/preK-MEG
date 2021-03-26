@@ -49,7 +49,7 @@ fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
 # average the SNR data across pre/post timepoints
 avg_stc = None
 for timepoint in timepoints:
-    fname = f'{cohort}-GrandAvg-{timepoint}_camp-pskt{subdiv}-fft-snr'
+    fname = f'{cohort}-GrandAvg-{timepoint}_camp-pskt{subdiv}-all-fft-snr'
     fpath = os.path.join(stc_dir, fname)
     stc = mne.read_source_estimate(fpath, subject='fsaverage')
     if avg_stc is None:
