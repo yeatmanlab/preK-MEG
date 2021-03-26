@@ -34,9 +34,9 @@ subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 conditions = ('ps', 'kt', 'all')
 
 # inverse params
-constraints = ('free', 'loose', 'fixed')
-estim_types = ('vector', 'magnitude', 'normal')
-morphed = False
+constraints = ('free',)  # ('free', 'loose', 'fixed')
+estim_types = ('magnitude',)  # ('vector', 'magnitude', 'normal')
+morphed = True
 
 # loop over timepoints
 for timepoint in timepoints:

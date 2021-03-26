@@ -38,8 +38,8 @@ groups.update(intervention_group)
 groups.update(letter_knowledge_group)
 
 # inverse params
-constraints = ('free', 'loose', 'fixed')
-estim_types = ('vector', 'magnitude', 'normal')
+constraints = ('free',)  # ('free', 'loose', 'fixed')
+estim_types = ('magnitude',)  # ('vector', 'magnitude', 'normal')
 
 # config other
 timepoints = ('pre', 'post')
