@@ -14,6 +14,7 @@ import mne
 from analysis.aux_functions import load_paths, load_params, load_inverse_params
 
 mlab.options.offscreen = True
+mne.viz.set_3d_backend('mayavi')
 
 # load params
 brain_plot_kwargs, _, subjects, cohort = load_params()
