@@ -45,7 +45,6 @@ for condition in conditions:
     noise_dict = {k: v for k, v in noise_npz.items()}
     data_npz.close()
     noise_npz.close()
-    print(f'Data dict keys: {data_dict.keys()}')
 
     # across-subj 1-sample t-vals (freq bin versus mean of 4 surrounding bins)
     for tpt in timepoints:
