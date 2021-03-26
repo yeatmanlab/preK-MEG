@@ -24,16 +24,18 @@ for paradigm in ('erp', 'pskt'):
     del extra_params
     # set additional params: general
     params.subjects_dir = subjects_dir
-    params.subject_indices = list(range(len(subjects)))
     params.score = prek_score
-    # set additional params: fetch_raw
     params.subjects = subjects
-    params.structurals = [s.upper() for s in subjects]
-    params.dates = [(2013, 0, 00)] * len(subjects)
+    # XXX XXX subj_1936 has impossibly noisy data in PSKT runs XXX XXX
+    if paradigm == 'pskt':
+        params.subjects.remove('prek_1936')
+    params.subject_indices = list(range(len(params.subjects)))
+    params.structurals = [s.upper() for s in params.subjects]
+    params.dates = [(2013, 0, 00)] * len(params.subjects)
 
     # loop over pre/post intervention recordings, and over head pos transforms
-    for prepost in ('pre', 'post'):
-        for headpos in ('twa', 'fixed'):
+    for headpos in ('twa', 'fixed'):
+        for prepost in ('pre', 'post'):
             # skip unwanted combination (no sensor-space analysis of ERP runs)
             if paradigm == 'erp' and headpos == 'fixed':
                 continue
@@ -63,7 +65,6 @@ for paradigm in ('erp', 'pskt'):
 
             # run it
             is_erp = paradigm == 'erp'
-            is_twa = headpos == 'twa'
 
             mnefun.do_processing(
                 params,
