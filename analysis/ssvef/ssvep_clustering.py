@@ -17,7 +17,7 @@ from analysis.aux_functions import (load_paths, load_params, load_cohorts,
 
 # flags
 tfce = True
-n_jobs = 10
+n_jobs = 4
 
 # load params
 *_, subjects, cohort = load_params()
@@ -50,14 +50,13 @@ conditions = ('ps', 'kt', 'all')
 subdivide_epochs = 5
 subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 rng = np.random.RandomState(seed=15485863)  # the one millionth prime
-threshold = dict(start=0, step=0.1) if tfce else None
-cluster_sigma = 0.
+cluster_sigma = 0.001
 
 # load fsaverage source space to get connectivity matrix
 fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
                                   'fsaverage-ico-5-src.fif')
 fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
-connectivity = mne.spatial_src_connectivity(fsaverage_src)
+adjacency = mne.spatial_src_adjacency(fsaverage_src)
 
 # load one STC to get bin centers
 file_prefix = 'all' if cohort == 'pooled' else cohort
@@ -83,6 +82,7 @@ def find_clusters(X, fpath, onesamp=False, **kwargs):
 
 
 for condition in conditions:
+    print(f'Running {condition}')
     # load in all the data
     data_npz = np.load(os.path.join(npz_dir, f'data-{condition}.npz'))
     noise_npz = np.load(os.path.join(npz_dir, f'noise-{condition}.npz'))
@@ -140,10 +140,16 @@ for condition in conditions:
                           intervention_fname: intervention_X}.items():
             fname = f'{prefix}-{condition}-{freq}_Hz-SNR-clusters.npz'
             # kwargs for clustering function
-            kwargs = dict(connectivity=connectivity, threshold=threshold,
-                          n_permutations=1024, n_jobs=n_jobs, seed=rng,
-                          buffer_size=1024, step_down_p=0.05,
-                          out_type='indices')
             onesamp = prefix in (grandavg_pre_fname, grandavg_post_fname)
+            func = ttest_1samp_no_p if onesamp else (lambda x: ttest_ind_no_p(*x))
+            # include at most 25% of the brain
+            start, top = np.percentile(np.abs(func(X)), [75, 99])
+            step = min(start, top / 10)
+            threshold = dict(start=start, step=step) if tfce else None
+            kwargs = dict(adjacency=adjacency, threshold=threshold,
+                          n_permutations=10000, n_jobs=n_jobs, seed=rng,
+                          buffer_size=None,
+                          step_down_p=0.05 if not tfce else 0,
+                          out_type='indices', verbose=True)
             find_clusters(X, os.path.join(cluster_dir, fname), onesamp,
                           **kwargs)

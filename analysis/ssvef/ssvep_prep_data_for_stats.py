@@ -47,7 +47,7 @@ for condition in conditions:
             # compute magnitude (signal) & avg of adjacent bins on either side
             # (noise), & save for later group comparisons
             data_dict[f'{s}-{timepoint}'] = np.abs(stc.data)
-            noise_dict[f'{s}-{timepoint}'] = div_by_adj_bins(np.abs(stc.data),
-                                                             return_noise=True)
+            noise_dict[f'{s}-{timepoint}'] = div_by_adj_bins(
+                np.abs(stc.data), return_noise=True)
     np.savez(os.path.join(npz_dir, f'data-{condition}.npz'), **data_dict)
     np.savez(os.path.join(npz_dir, f'noise-{condition}.npz'), **noise_dict)

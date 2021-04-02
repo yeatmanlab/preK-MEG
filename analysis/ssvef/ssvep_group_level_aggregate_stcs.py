@@ -27,8 +27,8 @@ groups.update(intervention_group)
 groups.update(letter_knowledge_group)
 
 # inverse params
-constraints = ('free', 'loose', 'fixed')
-estim_types = ('vector', 'magnitude', 'normal')
+constraints = ('free',)  # 'loose', 'fixed')
+estim_types = ('magnitude',)  # 'vector' 'normal')
 
 # config other
 timepoints = ('pre', 'post')
@@ -39,8 +39,10 @@ conditions = ('ps', 'kt', 'all')
 
 # loop over cortical estimate orientation constraints
 for constr in constraints:
+    print(f'{constr}')
     # loop over estimate types
     for estim_type in estim_types:
+        print(f'  {estim_type}')
         if constr == 'fixed' and estim_type == 'normal':
             continue  # not implemented
         if constr == 'fixed' and estim_type == 'vector':
@@ -50,6 +52,7 @@ for constr in constraints:
         os.makedirs(os.path.join(stc_dir, out_dir), exist_ok=True)
         # loop over timepoints
         for timepoint in timepoints:
+            print(f'    {timepoint}')
             # loop over trial types
             for condition in conditions:
                 # loop over cohort groups
