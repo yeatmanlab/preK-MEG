@@ -65,7 +65,7 @@ preprocessing:
         flat:
             grad: 1.0e-13
             mag: 1.0e-15
-        reject_epochs_by_annot: False  # ignore manual EOG annotations
+        reject_epochs_by_annot: ".*(?!MANUAL)$"  # ignore manual EOG annotations
 
     covariance:
         cov_method: shrunk
