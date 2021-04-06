@@ -46,7 +46,7 @@ mne.set_cache_dir(cache_dir)
 
 # config other
 timepoints = ('pre', 'post')
-conditions = ('ps', 'kt', 'all')
+conditions = ('all', 'ps', 'kt')
 subdivide_epochs = 5
 subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 rng = np.random.RandomState(seed=15485863)  # the one millionth prime
@@ -84,39 +84,30 @@ def find_clusters(X, fpath, onesamp=False, **kwargs):
 for condition in conditions:
     print(f'Running {condition}')
     # load in all the data
-    data_npz = np.load(os.path.join(npz_dir, f'data-{condition}.npz'))
-    noise_npz = np.load(os.path.join(npz_dir, f'noise-{condition}.npz'))
+    snr_npz = np.load(os.path.join(npz_dir, f'snr-{condition}.npz'))
     # make mutable (NpzFile is not) and transpose because for clustering we
     # need (subj, freq, space)
-    data_dict = {k: v.transpose(1, 0) for k, v in data_npz.items()}
-    noise_dict = {k: v.transpose(1, 0) for k, v in noise_npz.items()}
-    data_npz.close()
-    noise_npz.close()
+    snr_dict = {k: v.transpose(1, 0) for k, v in snr_npz.items()}
+    snr_npz.close()
 
-    pre_data_dict = {k: v for k, v in data_dict.items() if k.endswith('pre')}
-    pre_noise_dict = {k: v for k, v in noise_dict.items() if k.endswith('pre')}
-    post_data_dict = {k: v for k, v in data_dict.items() if k.endswith('post')}
-    post_noise_dict = {k: v for k, v in noise_dict.items() if k.endswith('post')}  # noqa E501
+    pre_snr_dict = {k: v for k, v in snr_dict.items() if k.endswith('pre')}
+    post_snr_dict = {k: v for k, v in snr_dict.items() if k.endswith('post')}
 
     # confirmatory/reproduction: detectable effect in GrandAvg bins of interest
-    pre_data = np.array(list(pre_data_dict.values()))
-    pre_noise = np.array(list(pre_noise_dict.values()))
-    post_data = np.array(list(post_data_dict.values()))
-    post_noise = np.array(list(post_noise_dict.values()))
-    pre_snr = pre_data - pre_noise
-    post_snr = post_data - post_noise
+    pre_snr = np.array(list(pre_snr_dict.values()))
+    post_snr = np.array(list(post_snr_dict.values()))
 
     # planned comparison: group split on pre-intervention letter awareness test
-    upper_data = np.array([data_dict[f'{s}-pre'] for s in groups['UpperKnowledge']])  # noqa E501
-    lower_data = np.array([data_dict[f'{s}-pre'] for s in groups['LowerKnowledge']])  # noqa E501
+    upper_data = np.array([snr_dict[f'{s}-pre'] for s in groups['UpperKnowledge']])  # noqa E501
+    lower_data = np.array([snr_dict[f'{s}-pre'] for s in groups['LowerKnowledge']])  # noqa E501
 
     # planned comparison: post-minus-pre-intervention, language-vs-letter group
-    lett_data = np.array([data_dict[f'{s}-post'] - data_dict[f'{s}-pre']
+    lett_data = np.array([snr_dict[f'{s}-post'] - snr_dict[f'{s}-pre']
                           for s in groups['LetterIntervention']])
-    lang_data = np.array([data_dict[f'{s}-post'] - data_dict[f'{s}-pre']
+    lang_data = np.array([snr_dict[f'{s}-post'] - snr_dict[f'{s}-pre']
                           for s in groups['LanguageIntervention']])
 
-    del data_dict, noise_dict
+    del snr_dict
 
     # get the bin numbers we care about
     these_freqs = (2, 4, 6, 12)
@@ -141,7 +132,7 @@ for condition in conditions:
             fname = f'{prefix}-{condition}-{freq}_Hz-SNR-clusters.npz'
             # kwargs for clustering function
             onesamp = prefix in (grandavg_pre_fname, grandavg_post_fname)
-            func = ttest_1samp_no_p if onesamp else (lambda x: ttest_ind_no_p(*x))
+            func = ttest_1samp_no_p if onesamp else (lambda x: ttest_ind_no_p(*x))  # noqa E501
             # include at most 25% of the brain
             start, top = np.percentile(np.abs(func(X)), [75, 99])
             step = min(start, top / 10)

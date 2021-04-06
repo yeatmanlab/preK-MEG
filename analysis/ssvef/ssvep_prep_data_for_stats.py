@@ -38,6 +38,7 @@ conditions = ('ps', 'kt', 'all')
 for condition in conditions:
     data_dict = dict()
     noise_dict = dict()
+    snr_dict = dict()
     for s in subjects:
         print(f'Working on subject {s}.')
         for timepoint in timepoints:
@@ -49,5 +50,7 @@ for condition in conditions:
             data_dict[f'{s}-{timepoint}'] = np.abs(stc.data)
             noise_dict[f'{s}-{timepoint}'] = div_by_adj_bins(
                 np.abs(stc.data), return_noise=True)
+            snr_dict[f'{s}-{timepoint}'] = div_by_adj_bins(np.abs(stc.data))
     np.savez(os.path.join(npz_dir, f'data-{condition}.npz'), **data_dict)
     np.savez(os.path.join(npz_dir, f'noise-{condition}.npz'), **noise_dict)
+    np.savez(os.path.join(npz_dir, f'snr-{condition}.npz'), **snr_dict)
