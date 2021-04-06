@@ -83,7 +83,7 @@ for s in subjects:
         # based on those, but we do want to reject on, e.g., `BAD_ACQ_SKIP`)
         ann_to_del = list()
         for idx, ann in enumerate(raw.annotations):
-            if ann.description == 'BAD_EOG_MANUAL':
+            if ann['description'] == 'BAD_EOG_MANUAL':
                 ann_to_del.append(idx)
         raw.annotations.delete(ann_to_del)
         # clean up
