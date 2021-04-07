@@ -93,7 +93,7 @@ for s in subjects:
         tmax = subdivide_epochs if subdivide_epochs else trial_dur
         epochs = mne.Epochs(raw, events, event_dict, tmin=0, tmax=tmax,
                             baseline=None, proj=True,
-                            reject_by_annotation=False, preload=True)
+                            reject_by_annotation=True, preload=True)
         # trim last sample from epochs so our FFT bins come out nicely spaced
         epochs.crop(tmax=tmax, include_tmax=False)
         assert len(epochs.times) % 10 == 0
