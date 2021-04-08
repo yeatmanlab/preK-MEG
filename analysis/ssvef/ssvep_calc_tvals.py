@@ -43,18 +43,23 @@ sigma = 1e-3  # hat adjustment for low variance
 for condition in conditions:
     print(f'Computing t-vals for {condition}')
     # load in all the data
+    snr_npz = np.load(os.path.join(npz_dir, f'snr-{condition}.npz'))
     data_npz = np.load(os.path.join(npz_dir, f'data-{condition}.npz'))
     noise_npz = np.load(os.path.join(npz_dir, f'noise-{condition}.npz'))
     # make mutable (NpzFile is not)
+    snr_dict = {k: v for k, v in snr_npz.items()}
     data_dict = {k: v for k, v in data_npz.items()}
     noise_dict = {k: v for k, v in noise_npz.items()}
+    snr_npz.close()
     data_npz.close()
     noise_npz.close()
 
     # across-subj 1-sample t-vals (freq bin versus mean of 4 surrounding bins)
     for tpt in timepoints:
+        snr_ = np.array([snr_dict[f'{s}-{tpt}'] for s in groups['GrandAvg']])
         data = np.array([data_dict[f'{s}-{tpt}'] for s in groups['GrandAvg']])
         nois = np.array([noise_dict[f'{s}-{tpt}'] for s in groups['GrandAvg']])
+        assert snr_.dtype == np.float64
         assert data.dtype == np.float64
         assert nois.dtype == np.float64
         x = data[:, :, 30] - nois[:, :, 30]  # 6 Hz
@@ -69,15 +74,15 @@ for condition in conditions:
             data.transpose(2, 0, 1), nois.transpose(2, 0, 1))]).T
         fname = f'DataMinusNoise1samp-{tpt}_camp-{condition}-tvals.npy'
         np.save(os.path.join(tval_dir, fname), tvals)
-        # compute SNR, save as GrandAvg, and sanity check it
-        ave = np.mean(data / nois, axis=0)
+        # compute grand avg of SNR, and sanity check it
+        ave = np.mean(snr_, axis=0)
         check_fname = os.path.join(
             stc_dir,
             f'original-GrandAvg-{tpt}_camp-pskt-5_sec-{condition}'
             '-fft-snr-stc.h5')
         check_stc = mne.read_source_estimate(check_fname)
         np.testing.assert_allclose(ave, check_stc.data)
-        fname = f'GrandAvg-{tpt}_camp-{condition}-tvals.npy'
+        fname = f'GrandAvg-{tpt}_camp-{condition}-grandavg.npy'
         np.save(os.path.join(tval_dir, fname), ave)
         if condition == 'all' and tpt == 'pre':
             print(check_fname)
@@ -87,10 +92,9 @@ for condition in conditions:
     # 2-sample t-test on SNRs
     median_split = list()
     for group in ('UpperKnowledge', 'LowerKnowledge'):
-        data = np.array([data_dict[f'{s}-pre'] / noise_dict[f'{s}-pre']
-                         for s in groups[group]])
-        assert data.dtype == np.float64
-        median_split.append(data)
+        snr = np.array([snr_dict[f'{s}-pre'] for s in groups[group]])
+        assert snr.dtype == np.float64
+        median_split.append(snr)
     median_split_tvals = np.array([
         ttest_ind_no_p(a, b, sigma=sigma) for a, b in zip(
             median_split[0].transpose(2, 0, 1),
@@ -104,11 +108,10 @@ for condition in conditions:
         intervention_tvals = np.array([])
     else:
         for group in ('LetterIntervention', 'LanguageIntervention'):
-            data = np.array([data_dict[f'{s}-post'] / noise_dict[f'{s}-post'] -
-                             data_dict[f'{s}-pre'] / noise_dict[f'{s}-pre']
+            snr = np.array([snr_dict[f'{s}-post'] - snr_dict[f'{s}-pre']
                             for s in groups[group]])
-            assert data.dtype == np.float64
-            intervention.append(data)
+            assert snr.dtype == np.float64
+            intervention.append(snr)
         intervention_tvals = np.array([
             ttest_ind_no_p(a, b, sigma=sigma) for a, b in zip(
                 intervention[0].transpose(2, 0, 1),
