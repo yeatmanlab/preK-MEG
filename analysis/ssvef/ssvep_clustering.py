@@ -17,7 +17,7 @@ from analysis.aux_functions import (load_paths, load_params, load_cohorts,
 
 # flags
 tfce = True
-n_jobs = 4
+n_jobs = 10
 
 # load params
 *_, subjects, cohort = load_params()
@@ -82,7 +82,8 @@ def find_clusters(X, fpath, qc_tvals, onesamp=False, **kwargs):
     np.testing.assert_array_equal(qc_tvals, stat_fun(X))
     cluster_results = cluster_fun(X, stat_fun=stat_fun, **kwargs)
     # sanity check: cluster tvals vs manually-computed tvals
-    np.testing.assert_allclose(qc_tvals, cluster_results[0])
+    # (only valid if not using TFCE)
+    # np.testing.assert_allclose(qc_tvals, cluster_results[0])
     stats = prep_cluster_stats(cluster_results)
     np.savez(fpath, **stats)
 
@@ -150,7 +151,7 @@ for condition in conditions:
             step = min(start, top / 10)
             threshold = dict(start=start, step=step) if tfce else None
             kwargs = dict(adjacency=adjacency, threshold=threshold,
-                          n_permutations=1, n_jobs=n_jobs, seed=rng,  # TODO n_perm 10k
+                          n_permutations=10000, n_jobs=n_jobs, seed=rng,
                           buffer_size=None,
                           step_down_p=0.05 if not tfce else 0,
                           out_type='indices', verbose=True)
