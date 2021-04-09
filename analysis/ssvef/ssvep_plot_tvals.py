@@ -54,7 +54,8 @@ for condition in conditions:
                    postcamp_t_fname,
                    median_split_fname,
                    intervention_fname):
-        fname = f'{prefix}-{condition}-tvals.npy'
+        suffix = 'grandavg' if prefix.startswith('GrandAvg') else 'tvals'
+        fname = f'{prefix}-{condition}-{suffix}.npy'
         tvals = np.load(os.path.join(tval_dir, fname))
         stc.data = tvals
         # sanity check against the group_level_aggregate_stcs step
