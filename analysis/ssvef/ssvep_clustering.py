@@ -32,6 +32,8 @@ data_root, subjects_dir, results_dir = load_paths()
 chosen_constraints = ('{orientation_constraint}-{estimate_type}'
                       ).format_map(inverse_params)
 
+tval_dir = os.path.join(results_dir, 'pskt', 'group-level', 'tvals',
+                        chosen_constraints)
 npz_dir = os.path.join(results_dir, 'pskt', 'group-level', 'npz',
                        chosen_constraints)
 cluster_dir = os.path.join(results_dir, 'pskt', 'group-level', 'cluster',
@@ -68,7 +70,7 @@ all_freqs = stc.times
 del stc
 
 
-def find_clusters(X, fpath, onesamp=False, **kwargs):
+def find_clusters(X, fpath, qc_tvals, onesamp=False, **kwargs):
     if onesamp:
         stat_fun = ttest_1samp_no_p
         cluster_fun = permutation_cluster_1samp_test
@@ -76,7 +78,11 @@ def find_clusters(X, fpath, onesamp=False, **kwargs):
         stat_fun = ttest_ind_no_p
         cluster_fun = permutation_cluster_test
     stat_fun = partial(stat_fun, sigma=cluster_sigma)
+    # sanity check: stat_fun tvals vs manually-computed tvals
+    np.testing.assert_array_equal(qc_tvals, stat_fun(X))
     cluster_results = cluster_fun(X, stat_fun=stat_fun, **kwargs)
+    # sanity check: cluster tvals vs manually-computed tvals
+    np.testing.assert_allclose(qc_tvals, cluster_results[0])
     stats = prep_cluster_stats(cluster_results)
     np.savez(fpath, **stats)
 
@@ -85,17 +91,23 @@ for condition in conditions:
     print(f'Running {condition}')
     # load in all the data
     snr_npz = np.load(os.path.join(npz_dir, f'snr-{condition}.npz'))
-    # make mutable (NpzFile is not) and transpose because for clustering we
-    # need (subj, freq, space)
-    snr_dict = {k: v.transpose(1, 0) for k, v in snr_npz.items()}
+    data_npz = np.load(os.path.join(npz_dir, f'data-{condition}.npz'))
+    noise_npz = np.load(os.path.join(npz_dir, f'noise-{condition}.npz'))
+    # make mutable (NpzFile is not)
+    snr_dict = {k: v for k, v in snr_npz.items()}
+    data_dict = {k: v for k, v in data_npz.items()}
+    noise_dict = {k: v for k, v in noise_npz.items()}
     snr_npz.close()
-
-    pre_snr_dict = {k: v for k, v in snr_dict.items() if k.endswith('pre')}
-    post_snr_dict = {k: v for k, v in snr_dict.items() if k.endswith('post')}
+    data_npz.close()
+    noise_npz.close()
 
     # confirmatory/reproduction: detectable effect in GrandAvg bins of interest
-    pre_snr = np.array(list(pre_snr_dict.values()))
-    post_snr = np.array(list(post_snr_dict.values()))
+    pre_dict = {k: data_dict[k] - noise_dict[k] for k in data_dict
+                if k.endswith('pre')}
+    post_dict = {k: data_dict[k] - noise_dict[k] for k in data_dict
+                 if k.endswith('post')}
+    pre_data = np.array(list(pre_dict.values()))
+    post_data = np.array(list(post_dict.values()))
 
     # planned comparison: group split on pre-intervention letter awareness test
     upper_data = np.array([snr_dict[f'{s}-pre'] for s in groups['UpperKnowledge']])  # noqa E501
@@ -107,7 +119,7 @@ for condition in conditions:
     lang_data = np.array([snr_dict[f'{s}-post'] - snr_dict[f'{s}-pre']
                           for s in groups['LanguageIntervention']])
 
-    del snr_dict
+    del snr_dict, data_dict, noise_dict, pre_dict, post_dict
 
     # get the bin numbers we care about
     these_freqs = (2, 4, 6, 12)
@@ -115,14 +127,14 @@ for condition in conditions:
                 for freq in these_freqs}
 
     for freq, bin_idx in bin_idxs.items():
-        grandavg_pre_X = pre_snr[:, [bin_idx], :]
-        grandavg_post_X = post_snr[:, [bin_idx], :]
-        median_split_X = [upper_data[:, [bin_idx], :],
-                          lower_data[:, [bin_idx], :]]
-        intervention_X = [lett_data[:, [bin_idx], :],
-                          lang_data[:, [bin_idx], :]]
-        grandavg_pre_fname = 'GrandAvg-pre_camp'
-        grandavg_post_fname = 'GrandAvg-post_camp'
+        grandavg_pre_X = pre_data[..., bin_idx]
+        grandavg_post_X = post_data[..., bin_idx]
+        median_split_X = [upper_data[..., bin_idx],
+                          lower_data[..., bin_idx]]
+        intervention_X = [lett_data[..., bin_idx],
+                          lang_data[..., bin_idx]]
+        grandavg_pre_fname = 'DataMinusNoise1samp-pre_camp'
+        grandavg_post_fname = 'DataMinusNoise1samp-post_camp'
         median_split_fname = 'UpperVsLowerKnowledge-pre_camp'
         intervention_fname = 'LetterVsLanguageIntervention-PostMinusPre_camp'
         for prefix, X in {grandavg_pre_fname: grandavg_pre_X,
@@ -138,9 +150,11 @@ for condition in conditions:
             step = min(start, top / 10)
             threshold = dict(start=start, step=step) if tfce else None
             kwargs = dict(adjacency=adjacency, threshold=threshold,
-                          n_permutations=10000, n_jobs=n_jobs, seed=rng,
+                          n_permutations=1, n_jobs=n_jobs, seed=rng,  # TODO n_perm 10k
                           buffer_size=None,
                           step_down_p=0.05 if not tfce else 0,
                           out_type='indices', verbose=True)
-            find_clusters(X, os.path.join(cluster_dir, fname), onesamp,
-                          **kwargs)
+            tval_fname = f'{prefix}-{condition}-tvals.npy'
+            qc_tvals = np.load(os.path.join(tval_dir, tval_fname))[:, bin_idx]
+            find_clusters(X, os.path.join(cluster_dir, fname), qc_tvals,
+                          onesamp, **kwargs)
