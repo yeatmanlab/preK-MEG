@@ -69,9 +69,13 @@ for condition in conditions:
             raise RuntimeError(
                 'Look at subject(s) whose 75th percentile SNR is less than 0 '
                 f'in {repr(tpt)}:\n{bad}')
-        # TODO look at ps post
-        tvals = np.array([ttest_1samp_no_p(d - n, sigma=sigma) for d, n in zip(
-            data.transpose(2, 0, 1), nois.transpose(2, 0, 1))]).T
+        # here we use an ungainly list comprehension instead of:
+        # tvals = ttest_1samp_no_p(data - nois, sigma=sigma)
+        # because we want ttest_1samp_no_p to vectorize over vertices
+        # but *not* over freq bins (the "hat" adjustment shouldn't be
+        # taking other freq bins into account)
+        tvals = np.array([ttest_1samp_no_p(_dmn, sigma=sigma) for _dmn in
+                          (data - nois).transpose(2, 0, 1)]).T
         fname = f'DataMinusNoise1samp-{tpt}_camp-{condition}-tvals.npy'
         np.save(os.path.join(tval_dir, fname), tvals)
         # compute grand avg of SNR, and sanity check it
@@ -89,7 +93,7 @@ for condition in conditions:
             print(os.path.join(tval_dir, fname))
 
     # planned comparison: group split on pre-intervention letter awareness test
-    # 2-sample t-test on SNRs
+    # 2-sample t-test on differences between SNRs
     median_split = list()
     for group in ('UpperKnowledge', 'LowerKnowledge'):
         snr = np.array([snr_dict[f'{s}-pre'] for s in groups[group]])
@@ -101,7 +105,7 @@ for condition in conditions:
             median_split[1].transpose(2, 0, 1))]).T
 
     # planned comparison: post-minus-pre-intervention, language-vs-letter group
-    # 2-sample on differences in SNRs
+    # 2-sample t-test on differences between SNRs
     intervention = list()
     if cohort == 'replication':
         print('Skipping t-test for intervention group for replication cohort.')
