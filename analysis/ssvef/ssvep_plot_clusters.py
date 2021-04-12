@@ -56,20 +56,25 @@ for condition in conditions:
         print(f'  {freq}')
         for prefix in (precamp_fname, postcamp_fname, median_split_fname,
                        intervention_fname):
+            print(f'    {prefix}')
             # load the cluster results
             fname = f'{prefix}-{condition}-{freq}_Hz-SNR-clusters.npz'
             fpath = os.path.join(cluster_dir, fname)
             cluster_dict = np.load(fpath, allow_pickle=True)
             # KEYS: clusters tvals pvals hzero good_cluster_idxs n_clusters
+            # handle case of no signif. clusters
+            pvals = (np.ones_like(cluster_dict['tvals'])
+                     if cluster_dict['n_clusters'] == 0 else
+                     cluster_dict['pvals'])
             # We need to reconstruct the tuple that is output by the clustering
             # function:
-            clu = (cluster_dict['tvals'], cluster_dict['clusters'],
-                   cluster_dict['pvals'], cluster_dict['hzero'])
+            clu = (cluster_dict['tvals'], cluster_dict['clusters'], pvals,
+                   cluster_dict['hzero'])
             # since this is TFCE clustering, don't bother with
             # mne.stats.summarize_clusters_stc, just stick the p-values into
             # the existing STC.
-            stc.data = (-np.log10(cluster_dict['pvals']) *
-                        np.sign(cluster_dict['tvals'])).T
+            stc.data = (-np.log10(pvals) *
+                        np.sign(np.atleast_2d(cluster_dict['tvals']))).T
             assert stc.data.shape == (20484, 1)
             lims = (1.29, 1.3, 3)
             clim_dict = dict(kind='value', pos_lims=lims)
