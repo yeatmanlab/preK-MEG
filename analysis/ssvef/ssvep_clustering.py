@@ -16,7 +16,7 @@ from analysis.aux_functions import (load_paths, load_params, load_cohorts,
                                     prep_cluster_stats, load_inverse_params)
 
 # flags
-tfce = True
+tfce = False
 n_jobs = 10
 
 # load params
