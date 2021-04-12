@@ -52,6 +52,7 @@ conditions = ('all', 'ps', 'kt')
 subdivide_epochs = 5
 subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 rng = np.random.RandomState(seed=15485863)  # the one millionth prime
+threshold = dict(start=0, step=0.2) if tfce else None
 cluster_sigma = 0.001
 
 # load fsaverage source space to get connectivity matrix
@@ -148,9 +149,9 @@ for condition in conditions:
             onesamp = prefix in (grandavg_pre_fname, grandavg_post_fname)
             func = ttest_1samp_no_p if onesamp else (lambda x: ttest_ind_no_p(*x))  # noqa E501
             # include at most 25% of the brain
-            start, top = np.percentile(np.abs(func(X)), [75, 99])
-            step = min(start, top / 10)
-            threshold = dict(start=start, step=step) if tfce else None
+            # start, top = np.percentile(np.abs(func(X)), [75, 99])
+            # step = min(start, top / 10)
+            # threshold = dict(start=start, step=step) if tfce else None
             kwargs = dict(adjacency=adjacency, threshold=threshold,
                           n_permutations=10000, n_jobs=n_jobs, seed=rng,
                           buffer_size=None,
