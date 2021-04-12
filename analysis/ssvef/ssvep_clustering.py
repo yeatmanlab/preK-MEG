@@ -79,7 +79,8 @@ def find_clusters(X, fpath, qc_tvals, onesamp=False, **kwargs):
         cluster_fun = permutation_cluster_test
     stat_fun = partial(stat_fun, sigma=cluster_sigma)
     # sanity check: stat_fun tvals vs manually-computed tvals
-    np.testing.assert_array_equal(qc_tvals, stat_fun(X))
+    stat_fun_X = [X] if onesamp else X
+    np.testing.assert_array_equal(qc_tvals, stat_fun(*stat_fun_X))
     cluster_results = cluster_fun(X, stat_fun=stat_fun, **kwargs)
     # sanity check: cluster tvals vs manually-computed tvals
     # (only valid if not using TFCE)
