@@ -8,16 +8,9 @@ Plot group-level frequency-domain STCs.
 
 import os
 import numpy as np
-from mayavi import mlab
 import mne
 from analysis.aux_functions import (load_paths, load_params, load_cohorts,
                                     div_by_adj_bins)
-
-
-# flags
-mlab.options.offscreen = True
-mne.cuda.init_cuda()
-mne.viz.set_3d_backend('mayavi')
 
 # config paths
 _, _, results_dir = load_paths()
@@ -34,8 +27,8 @@ brain_plot_kwargs.update(time_label='freq=%0.2f Hz')
 # load groups
 intervention_group, letter_knowledge_group = load_cohorts()
 groups = dict(GrandAvg=subjects)
-groups.update(intervention_group)
-groups.update(letter_knowledge_group)
+# groups.update(intervention_group)  # TODO need to restore
+# groups.update(letter_knowledge_group)
 
 # inverse params
 constraints = ('free',)  # ('free', 'loose', 'fixed')
@@ -50,16 +43,19 @@ conditions = ('ps', 'kt', 'all')
 
 # loop over cortical estimate orientation constraints
 for constr in constraints:
+    print(f'{constr}')
     # loop over estimate types
     for estim_type in estim_types:
         if constr == 'fixed' and estim_type == 'normal':
             continue  # not implemented
+        print(f'  {estim_type}')
         # make the output directory if needed
         out_dir = f'{constr}-{estim_type}'
         os.makedirs(os.path.join(fig_dir, out_dir), exist_ok=True)
 
         # loop over trial types
         for condition in conditions:
+            print(f'    {condition}')
             # load in all individual subject data first, to get colormap limits.
             # Not very memory efficient but shouldn't be too bad
             all_data = list()
@@ -80,7 +76,7 @@ for constr in constraints:
             del all_data, abs_data, snr_data
 
             # unify appearance of surface/vector plots
-            kwargs = (dict(surface='white') if estim_type != 'vector' else
+            kwargs = (dict(surface='inflated') if estim_type != 'vector' else
                       dict(brain_alpha=1, overlay_alpha=0, vector_alpha=1))
             # loop over timepoints
             for timepoint in timepoints:
@@ -107,4 +103,5 @@ for constr in constraints:
                             fpath = os.path.join(fig_dir, out_dir,
                                                  f'{fname}-{freq:02}_Hz.png')
                             brain.save_image(fpath)
+                        brain.close()
                         del brain

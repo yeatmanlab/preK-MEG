@@ -382,6 +382,7 @@ def div_by_adj_bins(data, n_bins=2, method='mean', return_noise=False):
         whether to divide by the sum or average of adjacent bins.
     """
     from scipy.ndimage import convolve1d
+    assert data.dtype == np.float64
     weights = np.ones(2 * n_bins + 1)
     weights[n_bins] = 0  # don't divide target bin by itself
     if method == 'mean':

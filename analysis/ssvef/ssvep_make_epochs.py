@@ -79,6 +79,13 @@ for s in subjects:
         # downsample
         raw.load_data()
         raw, events = raw.resample(sfreq=60, events=events, n_jobs='cuda')
+        # remove the `BAD_EOG_MANUAL` annotations (we don't want to reject
+        # based on those, but we do want to reject on, e.g., `BAD_ACQ_SKIP`)
+        ann_to_del = list()
+        for idx, ann in enumerate(raw.annotations):
+            if ann['description'] == 'BAD_EOG_MANUAL':
+                ann_to_del.append(idx)
+        raw.annotations.delete(ann_to_del)
         # clean up
         del raws, first_samps, last_samps, events_list
         # epoch
@@ -86,7 +93,7 @@ for s in subjects:
         tmax = subdivide_epochs if subdivide_epochs else trial_dur
         epochs = mne.Epochs(raw, events, event_dict, tmin=0, tmax=tmax,
                             baseline=None, proj=True,
-                            reject_by_annotation=False, preload=True)
+                            reject_by_annotation=True, preload=True)
         # trim last sample from epochs so our FFT bins come out nicely spaced
         epochs.crop(tmax=tmax, include_tmax=False)
         assert len(epochs.times) % 10 == 0

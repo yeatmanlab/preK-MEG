@@ -1,4 +1,6 @@
 views: ['lat', 'med', 'ven']
+time_viewer: false
+show_traces: false
 hemi: 'split'
 size: [1200, 1200]
 subjects_dir: '/mnt/scratch/prek/anat'
