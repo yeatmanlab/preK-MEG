@@ -171,7 +171,7 @@ for condition in conditions:
             kwargs = dict(adjacency=adjacency, threshold=threshold,
                           n_permutations=10000, n_jobs=n_jobs, seed=rng,
                           buffer_size=None,
-                          step_down_p=0,
+                          step_down_p=0.05,
                           out_type='indices', verbose=True)
             tval_fname = f'{prefix}-{condition}-tvals.npy'
             qc_tvals = np.load(os.path.join(tval_dir, tval_fname))[:, bin_idx]
