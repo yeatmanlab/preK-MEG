@@ -6,17 +6,21 @@
 Run stats & clustering on SSVEP data.
 """
 
-import os
 from functools import partial
+import os
+import time
 import numpy as np
 import mne
+from scipy import stats
 from mne.stats import (permutation_cluster_test, ttest_ind_no_p,
                        permutation_cluster_1samp_test, ttest_1samp_no_p)
 from analysis.aux_functions import (load_paths, load_params, load_cohorts,
                                     prep_cluster_stats, load_inverse_params)
+ppf = stats.t.ppf
+del stats
 
 # flags
-tfce = False
+tfce = True
 n_jobs = 10
 
 # load params
@@ -52,7 +56,6 @@ conditions = ('all', 'ps', 'kt')
 subdivide_epochs = 5
 subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 rng = np.random.RandomState(seed=15485863)  # the one millionth prime
-threshold = dict(start=0, step=0.2) if tfce else None
 cluster_sigma = 0.001
 
 # load fsaverage source space to get connectivity matrix
@@ -75,9 +78,17 @@ def find_clusters(X, fpath, qc_tvals, onesamp=False, **kwargs):
     if onesamp:
         stat_fun = ttest_1samp_no_p
         cluster_fun = permutation_cluster_1samp_test
+        df = len(X) - 1
     else:
         stat_fun = ttest_ind_no_p
         cluster_fun = permutation_cluster_test
+        df = len(X[0]) + len(X[1]) - 2
+    # threshold=None is only valid for f_oneway in permutation_cluster_test,
+    # and even for the onesamp variant it warns because we use partial, so
+    # let's just explicitly set it:
+    if kwargs['threshold'] is None:
+        kwargs['threshold'] = -ppf(0.05 / 2., df)
+
     stat_fun = partial(stat_fun, sigma=cluster_sigma)
     # sanity check: stat_fun tvals vs manually-computed tvals
     stat_fun_X = [X] if onesamp else X
@@ -85,11 +96,15 @@ def find_clusters(X, fpath, qc_tvals, onesamp=False, **kwargs):
     cluster_results = cluster_fun(X, stat_fun=stat_fun, **kwargs)
     # sanity check: cluster tvals vs manually-computed tvals
     # (only valid if not using TFCE)
-    # np.testing.assert_allclose(qc_tvals, cluster_results[0])
+    if not tfce:
+        np.testing.assert_allclose(qc_tvals, cluster_results[0])
     stats = prep_cluster_stats(cluster_results)
+    stats['tfce'] = tfce
+    stats['threshold'] = kwargs['threshold']
     np.savez(fpath, **stats)
 
 
+t0 = time.time()
 for condition in conditions:
     print(f'Running {condition}')
     # load in all the data
@@ -152,12 +167,14 @@ for condition in conditions:
             # start, top = np.percentile(np.abs(func(X)), [75, 99])
             # step = min(start, top / 10)
             # threshold = dict(start=start, step=step) if tfce else None
+            threshold = dict(start=0, step=0.2) if tfce else None
             kwargs = dict(adjacency=adjacency, threshold=threshold,
                           n_permutations=10000, n_jobs=n_jobs, seed=rng,
                           buffer_size=None,
-                          step_down_p=0.05 if not tfce else 0,
+                          step_down_p=0,
                           out_type='indices', verbose=True)
             tval_fname = f'{prefix}-{condition}-tvals.npy'
             qc_tvals = np.load(os.path.join(tval_dir, tval_fname))[:, bin_idx]
             find_clusters(X, os.path.join(cluster_dir, fname), qc_tvals,
                           onesamp, **kwargs)
+print(f'Completed in {time.time() - t0:0.1f} seconds')
