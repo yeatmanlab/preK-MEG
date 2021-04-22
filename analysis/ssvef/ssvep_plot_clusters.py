@@ -72,7 +72,7 @@ for condition in conditions:
             if cluster_dict['n_clusters'] == 0:
                 pass  # nothing to do
             elif cluster_dict['tfce']:
-                assert isinstance(cluster_dict['threshold'], dict)
+                assert isinstance(cluster_dict['threshold'][()], dict)
                 pvals[:] = cluster_dict['pvals']
             else:
                 assert not cluster_dict['tfce']
