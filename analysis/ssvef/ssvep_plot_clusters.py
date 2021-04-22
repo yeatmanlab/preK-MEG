@@ -6,7 +6,9 @@
 Plot clustering results for SSVEP data.
 """
 
+import datetime
 import os
+import pathlib
 import re
 import numpy as np
 import mne
@@ -31,8 +33,8 @@ img_dir = os.path.join(results_dir, 'pskt', 'group-level', 'fig', 'cluster',
 for _dir in (stc_dir, img_dir):
     os.makedirs(_dir, exist_ok=True)
 
-precamp_fname = 'GrandAvg-pre_camp'
-postcamp_fname = 'GrandAvg-post_camp'
+precamp_fname = 'DataMinusNoise1samp-pre_camp'
+postcamp_fname = 'DataMinusNoise1samp-post_camp'
 median_split_fname = 'UpperVsLowerKnowledge-pre_camp'
 intervention_fname = 'LetterVsLanguageIntervention-PostMinusPre_camp'
 
@@ -53,26 +55,33 @@ stc_dur = stc.times[-1] - stc.times[0]
 for condition in conditions:
     print(f'{condition}')
     for freq in freqs:
-        print(f'  {freq}')
+        print(f'  {freq} Hz')
         for prefix in (precamp_fname, postcamp_fname, median_split_fname,
                        intervention_fname):
-            print(f'    {prefix}')
             # load the cluster results
             fname = f'{prefix}-{condition}-{freq}_Hz-SNR-clusters.npz'
             fpath = os.path.join(cluster_dir, fname)
             cluster_dict = np.load(fpath, allow_pickle=True)
+            dt = datetime.datetime.fromtimestamp(
+                pathlib.Path(fpath).stat().st_mtime)
+            print(f'    {prefix.ljust(48)} (modified {dt})')
             # KEYS: clusters tvals pvals hzero good_cluster_idxs n_clusters
             # handle case of no signif. clusters
-            pvals = (np.ones_like(cluster_dict['tvals'])
-                     if cluster_dict['n_clusters'] == 0 else
-                     cluster_dict['pvals'])
-            # We need to reconstruct the tuple that is output by the clustering
-            # function:
-            clu = (cluster_dict['tvals'], cluster_dict['clusters'], pvals,
-                   cluster_dict['hzero'])
-            # since this is TFCE clustering, don't bother with
-            # mne.stats.summarize_clusters_stc, just stick the p-values into
-            # the existing STC.
+            assert len(cluster_dict['pvals']) == len(cluster_dict['clusters'])
+            pvals = np.ones_like(cluster_dict['tvals'])
+            if cluster_dict['n_clusters'] == 0:
+                pass  # nothing to do
+            elif cluster_dict['tfce']:
+                assert isinstance(cluster_dict['threshold'][()], dict)
+                pvals[:] = cluster_dict['pvals']
+            else:
+                assert not cluster_dict['tfce']
+                assert not isinstance(
+                    cluster_dict['threshold'], (dict, type(None)))
+                pvals = np.ones_like(cluster_dict['tvals'])
+                for cl, p in zip(cluster_dict['clusters'],
+                                 cluster_dict['pvals']):
+                    pvals[tuple(cl)] = p
             stc.data = (-np.log10(pvals) *
                         np.sign(np.atleast_2d(cluster_dict['tvals']))).T
             assert stc.data.shape == (20484, 1)
