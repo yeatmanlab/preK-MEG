@@ -40,7 +40,7 @@ intervention_fname = 'LetterVsLanguageIntervention-PostMinusPre_camp'
 
 # config other
 freqs = (2, 4, 6, 12)
-conditions = ('ps', 'kt', 'all')
+conditions = ('all', 'ps', 'kt')
 
 # get some params from group-level STC
 stc_fname = f'{cohort}-GrandAvg-pre_camp-pskt-5_sec-all-fft-snr'
@@ -85,7 +85,7 @@ for condition in conditions:
             stc.data = (-np.log10(pvals) *
                         np.sign(np.atleast_2d(cluster_dict['tvals']))).T
             assert stc.data.shape == (20484, 1)
-            lims = (1.29, 1.3, 3)
+            lims = (1, 1.3, 5)  # equivalent to p=0.1, 0.05, 0.00001
             clim_dict = dict(kind='value', pos_lims=lims)
             # save the STC
             stc.save(os.path.join(stc_dir, fname.replace('.npz', '')))
