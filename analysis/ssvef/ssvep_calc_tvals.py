@@ -8,6 +8,7 @@ Compute uncorrected t-value maps.
 
 import os
 import numpy as np
+from nibabel.freesurfer.io import write_morph_data
 import mne
 from mne.stats import ttest_ind_no_p, ttest_1samp_no_p
 from analysis.aux_functions import (load_paths, load_params, load_cohorts,
@@ -32,27 +33,49 @@ stc_dir = os.path.join(results_dir, 'pskt', 'group-level', 'stc',
                        chosen_constraints)
 tval_dir = os.path.join(results_dir, 'pskt', 'group-level', 'tvals',
                         chosen_constraints)
+src_fname = os.path.join(subjects_dir, 'fsaverage', 'bem',
+                         'fsaverage-ico-5-src.fif')
 for _dir in (tval_dir,):
     os.makedirs(_dir, exist_ok=True)
 
 # config other
-timepoints = ('post', 'pre', 'post')
+timepoints = ('pre', 'post')
 conditions = ('all', 'ps', 'kt')
 sigma = 1e-3  # hat adjustment for low variance
+src = mne.read_source_spaces(src_fname)
+morph = mne.compute_source_morph(
+    src, subjects_dir=subjects_dir, spacing=None, smooth='nearest')
+freqs = mne.read_source_estimate(os.path.join(
+    stc_dir, 'original-GrandAvg-pre_camp-pskt-5_sec-all-fft-snr-stc.h5')).times
+write_freqs = [2., 4., 6., 12.]
+assert np.in1d(write_freqs, freqs).all()
+offsets = np.cumsum([0, len(src[0]['rr']), len(src[1]['rr'])])
+offsets = dict(lh=offsets[:-1],
+               rh=offsets[1:])
+
+
+def save_tvals(fname, tvals, freqs):
+    """Save tvals along with freesurfer overlays."""
+    assert tvals.shape == (20484, len(freqs))
+    np.save(fname, tvals)
+    for f, t in zip(freqs, tvals.T):
+        if f in write_freqs:
+            vals = morph.morph_mat @ t
+            assert vals.shape == (327684,)
+            for hemi, (start, stop) in offsets.items():
+                use_fname = f'{os.path.splitext(fname)[0]}_{f:.0f}_{hemi}.curv'
+                write_morph_data(use_fname, vals[start:stop])
+
 
 for condition in conditions:
     print(f'Computing t-vals for {condition}')
-    # load in all the data
-    snr_npz = np.load(os.path.join(npz_dir, f'snr-{condition}.npz'))
-    data_npz = np.load(os.path.join(npz_dir, f'data-{condition}.npz'))
-    noise_npz = np.load(os.path.join(npz_dir, f'noise-{condition}.npz'))
-    # make mutable (NpzFile is not)
-    snr_dict = {k: v for k, v in snr_npz.items()}
-    data_dict = {k: v for k, v in data_npz.items()}
-    noise_dict = {k: v for k, v in noise_npz.items()}
-    snr_npz.close()
-    data_npz.close()
-    noise_npz.close()
+    # load in all the data, making mutable (NpzFile is not)
+    with np.load(os.path.join(npz_dir, f'snr-{condition}.npz')) as snr_npz:
+        snr_dict = dict(snr_npz.items())
+    with np.load(os.path.join(npz_dir, f'data-{condition}.npz')) as data_npz:
+        data_dict = dict(data_npz.items())
+    with np.load(os.path.join(npz_dir, f'noise-{condition}.npz')) as noise_npz:
+        noise_dict = dict(noise_npz.items())
 
     # across-subj 1-sample t-vals (freq bin versus mean of 4 surrounding bins)
     for tpt in timepoints:
@@ -77,7 +100,7 @@ for condition in conditions:
         tvals = np.array([ttest_1samp_no_p(_dmn, sigma=sigma) for _dmn in
                           (data - nois).transpose(2, 0, 1)]).T
         fname = f'DataMinusNoise1samp-{tpt}_camp-{condition}-tvals.npy'
-        np.save(os.path.join(tval_dir, fname), tvals)
+        save_tvals(os.path.join(tval_dir, fname), tvals, freqs)
         # compute grand avg of SNR, and sanity check it
         ave = np.mean(snr_, axis=0)
         check_fname = os.path.join(
@@ -87,7 +110,7 @@ for condition in conditions:
         check_stc = mne.read_source_estimate(check_fname)
         np.testing.assert_allclose(ave, check_stc.data)
         fname = f'GrandAvg-{tpt}_camp-{condition}-grandavg.npy'
-        np.save(os.path.join(tval_dir, fname), ave)
+        save_tvals(os.path.join(tval_dir, fname), ave, freqs)
         if condition == 'all' and tpt == 'pre':
             print(check_fname)
             print(os.path.join(tval_dir, fname))
@@ -125,5 +148,5 @@ for condition in conditions:
     tval_dict = {'UpperVsLowerKnowledge-pre_camp': median_split_tvals,
                  'LetterVsLanguageIntervention-PostMinusPre_camp': intervention_tvals}  # noqa E501
     for fname, tvals in tval_dict.items():
-        np.save(os.path.join(tval_dir, f'{fname}-{condition}-tvals.npy'),
-                tvals)
+        save_tvals(os.path.join(tval_dir, f'{fname}-{condition}-tvals.npy'),
+                   tvals, freqs)
