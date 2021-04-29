@@ -16,6 +16,11 @@ import expyfun
 # PS = 1  } first 3 trials are always PS
 # KT = 1  } last 3 trials are always KT
 
+pskt_orig_dur = 20
+pskt_new_dur = 5
+assert pskt_orig_dur % pskt_new_dur == 0
+offsets = np.arange(1, pskt_orig_dur // pskt_new_dur)
+
 
 def prek_score(p, subjects):
     for si, subject in enumerate(subjects):
@@ -30,16 +35,15 @@ def prek_score(p, subjects):
             if 'pskt' in fname:
                 events = mne.find_events(raw, shortest_event=1, mask=1)
                 assert events.shape[0] == 6
-                events[2, :3] = 60
-                events[2, 3:] = 70
+                events[2, :3] = 60  # see "incoming event codes" note above
+                events[2, 3:] = 70  # see "incoming event codes" note above
                 new_events = list()
                 for row in events:
                     new_events.append(row)
                     if row[2] in (60, 70):
-                        offsets = np.round(np.arange(1, 4) * 5 * sfreq
-                                           ).astype(int)
-                        for offset in offsets:
-                            new_row = row + np.array([offset, 0, 0])
+                        _offsets = np.rint(offsets * pskt_new_dur * sfreq)
+                        for _offset in _offsets:
+                            new_row = row + np.array([_offset, 0, 0])
                             new_events.append(new_row)
                 events = np.array(new_events)
             else:

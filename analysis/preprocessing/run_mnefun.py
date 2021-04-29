@@ -27,7 +27,7 @@ params.dates = [(2013, 0, 00)] * len(params.subjects)
 
 # loop over pre/post intervention recordings, and over head pos transforms
 for prepost in ('pre', 'post'):
-    for headpos in ('fixed',):  # 'twa', 'fixed'
+    for headpos in ('twa', 'fixed'):
         # set variable-contingent params
         params.work_dir = os.path.join(data_root, f'{prepost}_camp',
                                        f'{headpos}_hp', 'combined')
