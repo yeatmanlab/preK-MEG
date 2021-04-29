@@ -73,7 +73,8 @@ def load_paths():
     """Load necessary filesystem paths."""
     with open(os.path.join(paramdir, 'paths.yaml'), 'r') as f:
         paths = yamload(f)
-    paths['results_dir'] = os.path.join(paths['results_dir'], cohort)
+    paths['results_dir'] = os.path.join(
+        paths['results_dir'], f'{cohort}-joint')
     return paths['data_root'], paths['subjects_dir'], paths['results_dir']
 
 
