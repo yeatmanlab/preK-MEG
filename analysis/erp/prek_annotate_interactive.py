@@ -62,4 +62,4 @@ while not accepted:
 
 # save annotations
 if save and len(raw.annotations):
-    raw.annotations.save(annpath)
+    raw.annotations.save(annpath, overwrite=True)
