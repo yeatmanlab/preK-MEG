@@ -35,8 +35,8 @@ def prek_score(p, subjects):
             if 'pskt' in fname:
                 events = mne.find_events(raw, shortest_event=1, mask=1)
                 assert events.shape[0] == 6
-                events[2, :3] = 60  # see "incoming event codes" note above
-                events[2, 3:] = 70  # see "incoming event codes" note above
+                events[:3, 2] = 60  # see "incoming event codes" note above
+                events[3:, 2] = 70  # see "incoming event codes" note above
                 new_events = list()
                 for row in events:
                     new_events.append(row)
@@ -71,7 +71,7 @@ def prek_score(p, subjects):
             # write events, and bail early if we don't need to analyze presses
             mne.write_events(event_fname, events)
             if 'pskt' in fname:
-                return
+                continue
             # if ERP, write the behavioral data
             hits = []
             misses = []
