@@ -65,7 +65,7 @@ preprocessing:
         flat:
             grad: 1.0e-13
             mag: 1.0e-15
-        reject_epochs_by_annot: ".*(?!MANUAL)$"  # ignore manual EOG annotations
+        reject_epochs_by_annot: "(BAD|EDGE).*(?<!MANUAL)$"  # ignore manual EOG annotations
         in_names: [words, faces, cars, aliens, ps, kt]
         in_numbers: [10, 20, 30, 40, 60, 70]
         analyses: [All, Conditions]
