@@ -46,7 +46,7 @@ src = mne.read_source_spaces(src_fname)
 morph = mne.compute_source_morph(
     src, subjects_dir=subjects_dir, spacing=None, smooth='nearest')
 freqs = mne.read_source_estimate(os.path.join(
-    stc_dir, 'original-GrandAvg-pre_camp-pskt-5_sec-all-fft-snr-stc.h5')).times
+    stc_dir, 'original-GrandAvg-pre_camp-pskt-all-fft-snr-stc.h5')).times
 write_freqs = [2., 4., 6., 12.]
 assert np.in1d(write_freqs, freqs).all()
 offsets = np.cumsum([0, len(src[0]['rr']), len(src[1]['rr'])])
@@ -105,7 +105,7 @@ for condition in conditions:
         ave = np.mean(snr_, axis=0)
         check_fname = os.path.join(
             stc_dir,
-            f'original-GrandAvg-{tpt}_camp-pskt-5_sec-{condition}'
+            f'original-GrandAvg-{tpt}_camp-pskt-{condition}'
             '-fft-snr-stc.h5')
         check_stc = mne.read_source_estimate(check_fname)
         np.testing.assert_allclose(ave, check_stc.data)

@@ -43,7 +43,7 @@ freqs = (2, 4, 6, 12)
 conditions = ('all', 'ps', 'kt')
 
 # get some params from group-level STC
-stc_fname = f'{cohort}-GrandAvg-pre_camp-pskt-5_sec-all-fft-snr'
+stc_fname = f'{cohort}-GrandAvg-pre_camp-pskt-all-fft-snr'
 stc_fpath = os.path.join(results_dir, 'pskt', 'group-level', 'stc',
                          chosen_constraints, stc_fname)
 stc = mne.read_source_estimate(stc_fpath)

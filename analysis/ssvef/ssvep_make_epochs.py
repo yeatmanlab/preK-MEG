@@ -29,74 +29,49 @@ paramfile = os.path.join('..', 'preprocessing', 'mnefun_common_params.yaml')
 with open(paramfile, 'r') as f:
     params = yamload(f)
 lp_cut = params['preprocessing']['filtering']['lp_cut']
+resamp_sfreq = np.rint(2.1 * lp_cut).astype(int)
 
 # config other
 timepoints = ('pre', 'post')
 runs = (1, 2)
-trial_dur = 20  # seconds
-subdivide_epochs = 5
-subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
+tmax = 5  # seconds. Orig trial dur was 20 s but the score func subdivided it
+event_dict = dict(ps=60, kt=70)
 
 # loop over subjects
 for s in subjects:
     for timepoint in timepoints:
         this_subj = os.path.join(data_root, f'{timepoint}_camp', 'twa_hp',
-                                 'pskt', s)
-        raws = list()
-        events_list = list()
-        first_samps = list()
-        last_samps = list()
-        # extract the events from the original raw (STIM channels are dropped
-        # from the preprocessed raw) TODO: this will prob. change at some point
+                                 'combined', s)
+        epochs_list = list()
         for run in runs:
-            this_fname = f'{s}_pskt_{run:02}_{timepoint}_raw.fif'
-            raw_path = os.path.join(this_subj, 'raw_fif', this_fname)
-            raw = mne.io.read_raw_fif(raw_path, allow_maxshield=True)
-            eve = mne.find_events(raw, stim_channel='STI001')
-            eve[3:, 2] = 7  # fix events to code for PS=5 vs KT=7 differently
-            first_samps.append(raw.first_samp)
-            last_samps.append(raw.last_samp)
-            events_list.append(eve)
-        events = mne.concatenate_events(events_list, first_samps, last_samps)
-        # now process the clean files
-        for run in runs:
+            # read events from file made by the score func during preprocessing
+            this_fname = f'ALL_{s}_pskt_{run:02}_{timepoint}-eve.lst'
+            eve_path = os.path.join(this_subj, 'lists', this_fname)
+            events = mne.read_events(eve_path)
+            # load the raw file
             this_fname = f'{s}_pskt_{run:02}_{timepoint}_allclean_fil{lp_cut}_raw_sss.fif'  # noqa E501
             raw_path = os.path.join(this_subj, 'sss_pca_fif', this_fname)
-            raw = mne.io.read_raw_fif(raw_path)
-            raws.append(raw)
-        # combine runs
-        raw, events = mne.concatenate_raws(raws, events_list=events_list)
-        # subdivide
-        if subdivide_epochs:
-            assert trial_dur % subdivide_epochs == 0
-            n_new_events = trial_dur // subdivide_epochs
-            t_offsets = np.arange(n_new_events, dtype=float) * subdivide_epochs
-            samp_offsets = np.round(t_offsets * raw.info['sfreq']).astype(int)
-            new_indices = (events[:, [0]] + samp_offsets[np.newaxis]).ravel()
-            events = np.column_stack((new_indices,
-                                      np.zeros_like(new_indices),
-                                      np.repeat(events[:, -1], n_new_events)))
-        # downsample
-        raw.load_data()
-        raw, events = raw.resample(sfreq=60, events=events, n_jobs='cuda')
-        # remove the `BAD_EOG_MANUAL` annotations (we don't want to reject
-        # based on those, but we do want to reject on, e.g., `BAD_ACQ_SKIP`)
-        ann_to_del = list()
-        for idx, ann in enumerate(raw.annotations):
-            if ann['description'] == 'BAD_EOG_MANUAL':
-                ann_to_del.append(idx)
-        raw.annotations.delete(ann_to_del)
-        # clean up
-        del raws, first_samps, last_samps, events_list
-        # epoch
-        event_dict = dict(ps=5, kt=7)
-        tmax = subdivide_epochs if subdivide_epochs else trial_dur
-        epochs = mne.Epochs(raw, events, event_dict, tmin=0, tmax=tmax,
-                            baseline=None, proj=True,
-                            reject_by_annotation=True, preload=True)
-        # trim last sample from epochs so our FFT bins come out nicely spaced
-        epochs.crop(tmax=tmax, include_tmax=False)
-        assert len(epochs.times) % 10 == 0
+            raw = mne.io.read_raw_fif(raw_path, preload=True)
+            # downsample
+            raw, events = raw.resample(sfreq=resamp_sfreq, events=events,
+                                       n_jobs='cuda')
+            # remove the `BAD_EOG_MANUAL` annotations (we don't want to reject
+            # based on those, but do want to reject on, e.g., `BAD_ACQ_SKIP`)
+            ann_to_del = list()
+            for idx, ann in enumerate(raw.annotations):
+                if ann['description'] == 'BAD_EOG_MANUAL':
+                    ann_to_del.append(idx)
+            raw.annotations.delete(ann_to_del)
+            # epoch
+            epo = mne.Epochs(raw, events, event_dict, tmin=0, tmax=tmax,
+                             baseline=None, proj=True,
+                             reject_by_annotation=True, preload=True)
+            # trim last samp from epochs so our FFT bins come out nicely spaced
+            epo.crop(tmax=tmax, include_tmax=False)
+            assert len(epo.times) % 10 == 0
+            epochs_list.append(epo)
+        # combine runs (if there are multiple)
+        epochs = mne.concatenate_epochs(epochs_list)
         # save epochs
-        fname = f'{s}-{timepoint}_camp-pskt{subdiv}-epo.fif'
+        fname = f'{s}-{timepoint}_camp-pskt-epo.fif'
         epochs.save(os.path.join(epo_dir, fname), fmt='double', overwrite=True)

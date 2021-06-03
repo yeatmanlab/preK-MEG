@@ -38,8 +38,6 @@ for _dir in (fig_dir,):
 
 # config other
 timepoints = ('pre', 'post')
-subdivide_epochs = 5
-subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 
 # load fsaverage source space
 fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
@@ -49,7 +47,7 @@ fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
 # average the SNR data across pre/post timepoints
 avg_stc = None
 for timepoint in timepoints:
-    fname = f'{cohort}-GrandAvg-{timepoint}_camp-pskt{subdiv}-all-fft-snr'
+    fname = f'{cohort}-GrandAvg-{timepoint}_camp-pskt-all-fft-snr'
     fpath = os.path.join(stc_dir, fname)
     stc = mne.read_source_estimate(fpath, subject='fsaverage')
     if avg_stc is None:
@@ -86,7 +84,7 @@ for threshold in np.linspace(1.5, 2.5, 11):
     # add labels to brain
     for hemi in ('lh', 'rh'):
         brain.add_label(labels[hemi], borders=False, color='c')
-    fname = (f'GrandAvg-pre_and_post_camp-pskt{subdiv}-fft-snr-'
+    fname = ('GrandAvg-pre_and_post_camp-pskt-fft-snr-'
              f'{chosen_constraints}-{hz}-thresh_{threshold:3.1f}.png')
     fpath = os.path.join(fig_dir, fname)
     brain.save_image(fpath)

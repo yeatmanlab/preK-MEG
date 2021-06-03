@@ -53,8 +53,6 @@ mne.set_cache_dir(cache_dir)
 # config other
 timepoints = ('pre', 'post')
 conditions = ('all', 'ps', 'kt')
-subdivide_epochs = 5
-subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 rng = np.random.RandomState(seed=15485863)  # the one millionth prime
 cluster_sigma = 0.001
 
@@ -68,7 +66,7 @@ adjacency = mne.spatial_src_adjacency(fsaverage_src)
 file_prefix = 'all' if cohort == 'pooled' else cohort
 stc_path = os.path.join(
     results_dir, 'pskt', 'group-level', 'stc', chosen_constraints,
-    f'{file_prefix}-GrandAvg-post_camp-pskt-5_sec-all-fft-amp-stc.h5')
+    f'{file_prefix}-GrandAvg-post_camp-pskt-all-fft-amp-stc.h5')
 stc = mne.read_source_estimate(stc_path)
 all_freqs = stc.times
 del stc

@@ -33,8 +33,6 @@ estim_types = ('magnitude',)  # 'vector' 'normal')
 # config other
 timepoints = ('pre', 'post')
 trial_dur = 20
-subdivide_epochs = 5
-subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 conditions = ('ps', 'kt', 'all')
 
 # loop over cortical estimate orientation constraints
@@ -64,7 +62,7 @@ for constr in constraints:
                     abs_data = 0.
                     snr_data = 0.
                     for s in members:
-                        fname = (f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-'
+                        fname = (f'{s}FSAverage-{timepoint}_camp-pskt-'
                                  f'{condition}-fft-stc.h5')
                         fpath = os.path.join(in_dir, out_dir, fname)
                         stc = mne.read_source_estimate(
@@ -81,6 +79,6 @@ for constr in constraints:
                         this_stc.data = _data / len(members)
                         # save stc
                         fname = (f'{cohort}-{group}-{timepoint}_camp-pskt'
-                                 f'{subdiv}-{condition}-fft-{kind}')
+                                 f'-{condition}-fft-{kind}')
                         fpath = os.path.join(stc_dir, out_dir, fname)
                         this_stc.save(fpath, ftype='h5')
