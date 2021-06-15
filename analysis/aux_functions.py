@@ -158,7 +158,8 @@ def get_stc_from_conditions(method, timepoint, condition, subject):
 
     timepoint : 'pre' | 'post'
 
-    condition : 'words' | 'faces' | 'cars' | 'aliens'
+    condition : 'words' | 'faces' | 'cars' | 'aliens' | 'ps' | 'kt' | 'all'
+        Note that "all" means "ps" + "kt".
 
     subject : str
         Can be a subject identifier ('prek_1103'), a group name ('language',
@@ -179,18 +180,26 @@ def get_stc_from_conditions(method, timepoint, condition, subject):
     fname = f'{subject}FSAverage_{timepoint}Camp_{method}_{condition}'
     if subject in group_map.values():
         folder = os.path.join(results_dir, 'group_averages')
-    else:
+    elif condition in ('words', 'faces', 'cars', 'aliens'):
         folder = os.path.join(data_root, f'{timepoint}_camp', 'twa_hp', 'erp',
                               subject, 'stc')
+    else:
+        fname = f'{subject}FSAverage-{timepoint}_camp-pskt-{condition}-fft-stc'
+        chosen_constraints = ('{orientation_constraint}-{estimate_type}'
+                              ).format_map(load_inverse_params())
+        folder = os.path.join(results_dir, 'pskt', 'stc',
+                              'morphed-to-fsaverage', chosen_constraints)
     stc_path = os.path.join(folder, fname)
     stc = read_source_estimate(stc_path)
+    if method == 'snr':
+        stc.data = div_by_adj_bins(np.abs(stc.data))
     return stc
 
 
 def get_dataframe_from_label(label, src, methods=('dSPM', 'MNE'),
                              timepoints=('pre', 'post'),
                              conditions=('words', 'faces', 'cars', 'aliens'),
-                             subjects=None):
+                             subjects=None, unit='time'):
     """Get average timecourse within label across all subjects."""
     from pandas import DataFrame, concat, melt
     from mne import Label, extract_label_time_course
@@ -232,7 +241,7 @@ def get_dataframe_from_label(label, src, methods=('dSPM', 'MNE'),
                 # convert dict of each subj's time series to DataFrame
                 df = DataFrame(time_courses[method][timept][cond],
                                index=range(len(stc.times)))
-                df['time'] = stc.times
+                df[unit] = stc.times
                 time_courses[method][timept][cond] = df
                 # store current "condition" in a column before exiting loop
                 time_courses[method][timept][cond]['condition'] = cond
@@ -262,7 +271,7 @@ def get_dataframe_from_label(label, src, methods=('dSPM', 'MNE'),
 
 
 def plot_label(label, img_path, alpha=1., **kwargs):
-    from surfer import Brain
+    from mne.viz import Brain
     brain = Brain('fsaverage', surf='inflated', **kwargs)
     brain.add_label(label, alpha=alpha)
     brain.save_image(img_path)
@@ -271,7 +280,7 @@ def plot_label(label, img_path, alpha=1., **kwargs):
 
 def plot_label_and_timeseries(label, img_path, df, method, groups, timepoints,
                               conditions, all_timepoints, all_conditions,
-                              cluster=None, lineplot_kwargs=None):
+                              cluster=None, lineplot_kwargs=None, unit='time'):
     import matplotlib.pyplot as plt
     from matplotlib.image import imread
     import seaborn as sns
@@ -328,17 +337,17 @@ def plot_label_and_timeseries(label, img_path, df, method, groups, timepoints,
                       np.in1d(df['condition'], all_conditions)]
         # draw
         with sns.color_palette(colors):
-            sns.lineplot(x='time', y='value', data=data, ax=ax,
+            sns.lineplot(x=unit, y='value', data=data, ax=ax,
                          **lineplot_kwargs)
         # indicate temporal span of cluster signif. difference
         if group in groups and cluster is not None:
             temporal_idxs, _ = cluster
-            times = np.sort(df['time'].unique())
+            times = np.sort(df[unit].unique())
             xmin = times[temporal_idxs.min()]
             xmax = times[temporal_idxs.max()]
             ax.fill_betweenx((0, 4), xmin, xmax, color='k', alpha=0.1)
         # garnish
-        ymax = dict(MNE=1e-10, dSPM=4, sLORETA=2)[method]
+        ymax = dict(MNE=1e-10, dSPM=4, sLORETA=2, fft=300, snr=8)[method]
         ax.set_ylim(0, ymax)
         ax.set_title(title_dict[group])
         # suppress x-axis label on upper panel

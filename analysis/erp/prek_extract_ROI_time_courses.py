@@ -25,6 +25,8 @@ n_jobs = 10
 
 # load params
 brain_plot_kwargs, movie_kwargs, subjects, cohort = load_params()
+for kwarg in ('time_viewer', 'show_traces'):
+    del brain_plot_kwargs[kwarg]  # not used in Brain.__init__
 inverse_params = load_inverse_params()
 method = inverse_params['method']
 chosen_constraints = ('{orientation_constraint}-{estimate_type}'
@@ -57,17 +59,22 @@ for region_number in range(6):
     label.color = to_rgba(roi_colors[region_number])
     rois[f'ventral_{region_number}'] = label
 # load SNR-based labels
-for freq in (2, 4):
+for freq in (4,):
     for ix, snr in enumerate(snr_thresholds):
         slug = f'{freq}_Hz-SNR_{snr:.1f}'
         fname = f'{chosen_constraints}-{slug}-lh.label'
         fpath = os.path.join(roi_dir, fname)
         label = mne.read_label(fpath)
-        # skip empty labels
+        # include only non-empty labels
         if len(label.values):
             label.subject = 'fsaverage'
             label.color = to_rgba(roi_colors[ix % len(roi_colors)])
             rois[slug] = label
+# add custom label
+fname = '2Hz_LetterKnowledge.lh.label'
+fpath = os.path.join(roi_dir, fname)
+label = mne.read_label(fpath)
+rois['2_Hz-LetterKnowledge'] = label
 
 
 all_conditions = ('words', 'faces', 'cars')
