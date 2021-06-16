@@ -56,17 +56,6 @@ postcamp_fname = 'DataMinusNoise1samp-post_camp'
 median_split_fname = 'UpperVsLowerKnowledge-pre_camp'
 intervention_fname = 'LetterVsLanguageIntervention-PostMinusPre_camp'
 
-# get some params from group-level STC
-stc_fname = f'{cohort}-GrandAvg-pre_camp-pskt-all-fft-snr'
-stc_fpath = os.path.join(results_dir, 'pskt', 'group-level', 'stc',
-                         chosen_constraints, stc_fname)
-stc = mne.read_source_estimate(stc_fpath)
-all_freqs = stc.times
-vertices = stc.vertices
-stc_tstep_hz = stc.tstep  # in hertz
-stc_dur = stc.times[-1] - stc.times[0]
-del stc
-
 # prepare to plot
 lineplot_kwargs = dict(hue='condition', hue_order=conditions,
                        style='timepoint', style_order=timepoints)
