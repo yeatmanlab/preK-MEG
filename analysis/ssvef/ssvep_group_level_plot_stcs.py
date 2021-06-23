@@ -27,8 +27,8 @@ brain_plot_kwargs.update(time_label='freq=%0.2f Hz')
 # load groups
 intervention_group, letter_knowledge_group = load_cohorts()
 groups = dict(GrandAvg=subjects)
-# groups.update(intervention_group)  # TODO need to restore
-# groups.update(letter_knowledge_group)
+groups.update(intervention_group)
+groups.update(letter_knowledge_group)
 
 # inverse params
 constraints = ('free',)  # ('free', 'loose', 'fixed')
@@ -37,8 +37,6 @@ estim_types = ('magnitude',)  # ('vector', 'magnitude', 'normal')
 # config other
 timepoints = ('pre', 'post')
 trial_dur = 20
-subdivide_epochs = 5
-subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 conditions = ('ps', 'kt', 'all')
 
 # loop over cortical estimate orientation constraints
@@ -56,12 +54,12 @@ for constr in constraints:
         # loop over trial types
         for condition in conditions:
             print(f'    {condition}')
-            # load in all individual subject data first, to get colormap limits.
+            # load in all individual subject data first, to get colormap lims.
             # Not very memory efficient but shouldn't be too bad
             all_data = list()
             for s in groups['GrandAvg']:
                 for timepoint in timepoints:
-                    fname = (f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-'
+                    fname = (f'{s}FSAverage-{timepoint}_camp-pskt-'
                              f'{condition}-fft-stc.h5')
                     fpath = os.path.join(in_dir, out_dir, fname)
                     stc = mne.read_source_estimate(fpath, subject='fsaverage')
@@ -90,7 +88,7 @@ for constr in constraints:
                                           [abs_lims, snr_lims]):
                         # load stc
                         fname = (f'{cohort}-{group}-{timepoint}_camp-pskt'
-                                 f'{subdiv}-{condition}-fft-{kind}')
+                                 f'-{condition}-fft-{kind}')
                         fpath = os.path.join(stc_dir, out_dir, fname)
                         stc = mne.read_source_estimate(
                             fpath, subject='fsaverage')

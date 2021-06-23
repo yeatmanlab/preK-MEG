@@ -30,8 +30,6 @@ for _dir in (npz_dir,):
 
 # config other
 timepoints = ('pre', 'post')
-subdivide_epochs = 5
-subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 conditions = ('ps', 'kt', 'all')
 
 # load in all the data
@@ -42,7 +40,7 @@ for condition in conditions:
     for s in subjects:
         print(f'Working on subject {s}.')
         for timepoint in timepoints:
-            stub = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-{condition}-fft'  # noqa E501
+            stub = f'{s}FSAverage-{timepoint}_camp-pskt-{condition}-fft'
             stc = mne.read_source_estimate(
                 os.path.join(in_dir, f'{stub}-stc.h5'), subject='fsaverage')
             # compute magnitude (signal) & avg of adjacent bins on either side

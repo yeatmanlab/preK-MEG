@@ -28,14 +28,12 @@ for _dir in (evk_dir, fft_dir):
 
 # config other
 timepoints = ('pre', 'post')
-subdivide_epochs = 5
-subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 
 # loop over subjects
 for s in subjects:
     # loop over timepoints
     for timepoint in timepoints:
-        stub = f'{s}-{timepoint}_camp-pskt{subdiv}'
+        stub = f'{s}-{timepoint}_camp-pskt'
         # load epochs
         fname = f'{stub}-epo.fif'
         epochs = mne.read_epochs(os.path.join(in_dir, fname), proj=True)

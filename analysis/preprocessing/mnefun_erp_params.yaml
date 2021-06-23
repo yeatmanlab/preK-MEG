@@ -1,9 +1,0 @@
-preprocessing:
-    epoching:
-        in_names: [words, faces, cars, aliens]
-        in_numbers: [10, 20, 30, 40]
-        analyses: [All, Conditions]
-        out_names: [[All], [words, faces, cars, aliens]]
-        out_numbers: [[10, 10, 10, 10],  # Combine all trials
-                      [10, 20, 30, 40]]  # Separate trials
-        must_match: [[], []]

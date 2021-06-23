@@ -1,15 +1,15 @@
 #!/bin/bash
 
 # loop over raw files
-# run separately for /mnt/scratch/prek/pre_camp/twa_hp/*/*/raw_fif/*_pre_raw.fif
-#                and /mnt/scratch/prek/post_camp/twa_hp/*/*/raw_fif/*_post_raw.fif
-for raw in $(ls /data/prek/pre_camp/twa_hp/*/*/raw_fif/*_pre_raw.fif); do
+# note: original cohort only!     change to prek_2* for replication cohort.
+#                                           ↓↓↓↓↓↓↓
+for raw in $(ls /data/prek/p*_camp/twa_hp/*/prek_1*/raw_fif/*_post_raw.fif); do
     # set name of annotation file
     ann=${raw%.fif}"-custom-annot.fif"
     # get the subject ID
     bname=$(basename $raw .fif)
     subj=${bname%_pre_raw}
-    echo "processing subject $subj..."
+    echo -e "\nprocessing subject $subj..."
     # what to do if already exists?
     # note: last 2 args of python script are booleans: rerun & save
     if [ -f $ann ]; then

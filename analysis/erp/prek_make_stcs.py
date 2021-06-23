@@ -51,7 +51,7 @@ for s in subjects:
         print(f'processing {s} {prepost}_camp')
         # paths for this subject / timepoint
         this_subj = os.path.join(data_root,
-                                 f'{prepost}_camp', 'twa_hp', 'erp', s)
+                                 f'{prepost}_camp', 'twa_hp', 'combined', s)
         inv_path = os.path.join(this_subj, 'inverse',
                                 f'{s}-{lp_cut}-sss-meg{constr}-inv.fif')
         evk_path = os.path.join(this_subj, 'inverse',

@@ -23,8 +23,6 @@ os.makedirs(fig_dir, exist_ok=True)
 
 # config other
 timepoints = ('pre', 'post')
-subdivide_epochs = 5
-subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 
 
 # loop over subjects
@@ -32,7 +30,7 @@ for subj in subjects:
     # loop over timepoints
     for timepoint in timepoints:
         for condition in ('ps', 'kt', 'all'):
-            stub = f'{subj}-{timepoint}_camp-pskt{subdiv}'
+            stub = f'{subj}-{timepoint}_camp-pskt'
             fname = f'{stub}-{condition}-fft-ave.fif'
             evoked_spect = mne.read_evokeds(os.path.join(fft_dir, fname))
             assert len(evoked_spect) == 1

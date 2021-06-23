@@ -29,8 +29,6 @@ brain_plot_kwargs.update(time_label='freq=%0.2f Hz')
 
 # config other
 timepoints = ('pre', 'post')
-subdivide_epochs = 5
-subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 conditions = ('ps', 'kt', 'all')
 
 # inverse params
@@ -52,7 +50,7 @@ for timepoint in timepoints:
                         continue  # not implemented
                     # load this subject's STC
                     fsavg = 'FSAverage' if morphed else ''
-                    fname = f'{s}{fsavg}-{timepoint}_camp-pskt{subdiv}-{condition}-fft'  # noqa E501
+                    fname = f'{s}{fsavg}-{timepoint}_camp-pskt-{condition}-fft'
                     fpath = os.path.join(in_dir, f'{constr}-{estim_type}',
                                          fname)
                     stc = mne.read_source_estimate(fpath)

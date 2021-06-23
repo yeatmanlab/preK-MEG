@@ -45,7 +45,7 @@ intervention_fname = 'LetterVsLanguageIntervention-PostMinusPre_camp'
 for condition in conditions:
     print(f'Plotting t-vals for {condition}')
     # load an STC as a template
-    fname = f'{cohort}-GrandAvg-pre_camp-pskt-5_sec-{condition}-fft-amp'
+    fname = f'{cohort}-GrandAvg-pre_camp-pskt-{condition}-fft-amp'
     stc = mne.read_source_estimate(os.path.join(stc_dir, fname))
 
     for prefix in (precamp_fname,
@@ -62,7 +62,7 @@ for condition in conditions:
         if prefix.startswith('GrandAvg'):
             check_fname = os.path.join(
                 stc_dir,
-                f'original-{prefix}-pskt-5_sec-{condition}-fft-snr-stc.h5')
+                f'original-{prefix}-pskt-{condition}-fft-snr-stc.h5')
             check_stc = mne.read_source_estimate(check_fname)
             msg = '\n'.join((check_fname, '≠', os.path.join(tval_dir, fname)))
             np.testing.assert_allclose(check_stc.data, tvals, err_msg=msg)

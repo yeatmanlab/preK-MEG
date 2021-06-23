@@ -30,8 +30,6 @@ for _dir in (out_dir,):
 # config other
 timepoints = ('pre', 'post')
 conditions = ('ps', 'kt', 'all')
-subdivide_epochs = 5
-subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 
 # loop over trial types
 for condition in conditions:
@@ -41,7 +39,7 @@ for condition in conditions:
     for timepoint in timepoints:
         # loop over cohort groups
         for s in subjects:
-            fname = (f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-'
+            fname = (f'{s}FSAverage-{timepoint}_camp-pskt-'
                      f'{condition}-fft-stc.h5')
             stc = mne.read_source_estimate(os.path.join(in_dir, fname),
                                            subject='fsaverage')

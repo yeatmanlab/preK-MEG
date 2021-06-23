@@ -26,11 +26,11 @@ n_jobs = 10
 threshold = None        # or dict(start=0, step=0.2) for TFCE
 
 
-def do_clustering(X, label, connectivity, groups=1):
+def do_clustering(X, label, adjacency, groups=1):
     fun = (spatio_temporal_cluster_1samp_test if groups == 1 else
            spatio_temporal_cluster_test)
     cluster_results = fun(X, spatial_exclude=label.vertices,
-                          connectivity=connectivity,
+                          adjacency=adjacency,
                           threshold=threshold, n_permutations=1024,
                           n_jobs=n_jobs, seed=rng, buffer_size=1024)
     stats = prep_cluster_stats(cluster_results)
@@ -79,7 +79,7 @@ groups = dict(GrandAvg=subjects)
 groups.update(intervention_group)
 groups.update(letter_knowledge_group)
 
-# load fsaverage source space to get connectivity matrix
+# load fsaverage source space to get adjacency matrix
 fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
                                   'fsaverage-ico-5-src.fif')
 fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
@@ -157,7 +157,7 @@ for hemi in spatial_limits['hemi']:
                 for s in group_members:
                     this_subj = os.path.join(data_root,
                                              f'{timepoint[:-4]}_camp',
-                                             'twa_hp', 'erp', s, 'stc')
+                                             'twa_hp', 'combined', s, 'stc')
                     fname = f'{s}FSAverage_{timepoint}_{method}_{cond}'
                     stc_path = os.path.join(this_subj, fname)
                     stc = mne.read_source_estimate(stc_path)

@@ -61,7 +61,7 @@ for prepost in ('pre', 'post'):
             # make cross-subject average
             for s in group_members:
                 this_subj = os.path.join(data_root, f'{prepost}_camp',
-                                         'twa_hp', 'erp', s)
+                                         'twa_hp', 'combined', s)
                 fname = f'{s}FSAverage_{prepost}Camp_{method}_{cond}'
                 stc_path = os.path.join(this_subj, 'stc', fname)
                 avg += mne.read_source_estimate(stc_path)

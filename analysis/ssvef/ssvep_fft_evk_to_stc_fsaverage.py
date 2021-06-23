@@ -32,8 +32,6 @@ timepoints = ('pre', 'post')
 snr = 3.
 lambda2 = 1. / snr ** 2
 smoothing_steps = 10
-subdivide_epochs = 5
-subdiv = f'-{subdivide_epochs}_sec' if subdivide_epochs else ''
 
 # inverse params
 constraints = ('-free', '', '-fixed')     # empty string == loose
@@ -51,7 +49,7 @@ for s in subjects:
     # loop over timepoints
     for timepoint in timepoints:
         for condition in ('ps', 'kt', 'all'):
-            stub = f'{s}-{timepoint}_camp-pskt{subdiv}'
+            stub = f'{s}-{timepoint}_camp-pskt'
             fname = f'{stub}-{condition}-fft-ave.fif'
             evoked_spect = mne.read_evokeds(os.path.join(fft_dir, fname))
             assert len(evoked_spect) == 1
@@ -95,7 +93,7 @@ for s in subjects:
                         has_morph = True
                     # morph to fsaverage & save
                     morphed_stc = morph.apply(stc)
-                    fname = f'{s}FSAverage-{timepoint}_camp-pskt{subdiv}-{condition}-fft'  # noqa E501
+                    fname = f'{s}FSAverage-{timepoint}_camp-pskt-{condition}-fft'  # noqa E501
                     fpath = os.path.join(morph_dir, out_dir, fname)
                     print('Saving stc to %s' % fpath)
                     morphed_stc.save(fpath, ftype='h5')
