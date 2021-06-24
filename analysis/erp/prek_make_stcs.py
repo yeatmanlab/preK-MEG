@@ -10,7 +10,7 @@ import os
 import mne
 from mne.minimum_norm import apply_inverse, read_inverse_operator
 from analysis.aux_functions import (load_paths, load_params, yamload,
-                                    load_inverse_params)
+                                    load_inverse_params, PREPROCESS_JOINTLY)
 
 # load params
 *_, subjects, cohort = load_params()
@@ -25,6 +25,7 @@ ori = ori if ori in ('vector', 'normal') else None  # None == 'magnitude'
 
 # config paths
 data_root, subjects_dir, _ = load_paths()
+subfolder = 'combined' if PREPROCESS_JOINTLY else 'erp'
 
 # config other
 conditions = ['words', 'faces', 'cars', 'aliens']
@@ -51,7 +52,7 @@ for s in subjects:
         print(f'processing {s} {prepost}_camp')
         # paths for this subject / timepoint
         this_subj = os.path.join(data_root,
-                                 f'{prepost}_camp', 'twa_hp', 'combined', s)
+                                 f'{prepost}_camp', 'twa_hp', subfolder, s)
         inv_path = os.path.join(this_subj, 'inverse',
                                 f'{s}-{lp_cut}-sss-meg{constr}-inv.fif')
         evk_path = os.path.join(this_subj, 'inverse',

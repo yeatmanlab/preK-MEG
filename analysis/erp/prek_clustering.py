@@ -18,7 +18,7 @@ from mne.stats import (spatio_temporal_cluster_1samp_test,
                        spatio_temporal_cluster_test)
 from analysis.aux_functions import (load_paths, load_params, load_cohorts,
                                     prep_cluster_stats, define_labels,
-                                    load_inverse_params)
+                                    load_inverse_params, PREPROCESS_JOINTLY)
 
 mne.cuda.init_cuda()
 rng = np.random.RandomState(seed=15485863)  # the one millionth prime
@@ -59,6 +59,7 @@ method = inverse_params['method']
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
+subfolder = 'combined' if PREPROCESS_JOINTLY else 'erp'
 
 # set cache dir
 cache_dir = os.path.join(data_root, 'cache')
@@ -157,7 +158,7 @@ for hemi in spatial_limits['hemi']:
                 for s in group_members:
                     this_subj = os.path.join(data_root,
                                              f'{timepoint[:-4]}_camp',
-                                             'twa_hp', 'combined', s, 'stc')
+                                             'twa_hp', subfolder, s, 'stc')
                     fname = f'{s}FSAverage_{timepoint}_{method}_{cond}'
                     stc_path = os.path.join(this_subj, fname)
                     stc = mne.read_source_estimate(stc_path)

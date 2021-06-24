@@ -11,6 +11,8 @@ yamload = partial(yaml.load, Loader=yaml.FullLoader)
 with open(os.path.join(paramdir, 'current_cohort.yaml'), 'r') as f:
     cohort = yamload(f)
 
+PREPROCESS_JOINTLY = False  # controls folder path
+
 
 def load_params(skip=True):
     """Load experiment parameters from YAML files."""

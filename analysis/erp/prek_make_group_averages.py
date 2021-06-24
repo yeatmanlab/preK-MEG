@@ -10,7 +10,7 @@ import os
 from mayavi import mlab
 import mne
 from analysis.aux_functions import (load_paths, load_params, load_cohorts,
-                                    load_inverse_params)
+                                    load_inverse_params, PREPROCESS_JOINTLY)
 
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
@@ -20,12 +20,15 @@ overwrite = False
 brain_plot_kwargs, movie_kwargs, subjects, cohort = load_params()
 inverse_params = load_inverse_params()
 method = inverse_params['method']
+
+# config paths
 data_root, _, results_dir = load_paths()
 groupavg_path = os.path.join(results_dir, 'group_averages')
 mov_path = os.path.join(results_dir, 'movies')
 for _dir in (groupavg_path, mov_path):
     if not os.path.isdir(_dir):
         os.makedirs(_dir, exist_ok=True)
+subfolder = 'combined' if PREPROCESS_JOINTLY else 'erp'
 
 # config other
 conditions = ('words', 'faces', 'cars', 'aliens')
@@ -61,7 +64,7 @@ for prepost in ('pre', 'post'):
             # make cross-subject average
             for s in group_members:
                 this_subj = os.path.join(data_root, f'{prepost}_camp',
-                                         'twa_hp', 'combined', s)
+                                         'twa_hp', subfolder, s)
                 fname = f'{s}FSAverage_{prepost}Camp_{method}_{cond}'
                 stc_path = os.path.join(this_subj, 'stc', fname)
                 avg += mne.read_source_estimate(stc_path)
