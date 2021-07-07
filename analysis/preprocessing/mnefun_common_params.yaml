@@ -85,7 +85,7 @@ preprocessing:
 
     inverse:
         inv_names: ['%s']
-        inv_runs: [0, 1]
+        inv_runs: [[0, 1]]
 
 report:
     bem: true
