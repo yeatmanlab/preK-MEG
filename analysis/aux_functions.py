@@ -274,7 +274,9 @@ def get_dataframe_from_label(label, src, methods=('dSPM', 'MNE'),
 
 def plot_label(label, img_path, alpha=1., **kwargs):
     from mne.viz import Brain
-    brain = Brain('fsaverage', surf='inflated', **kwargs)
+    defaults = dict(surf='inflated')
+    defaults.update(kwargs)
+    brain = Brain('fsaverage', **defaults)
     brain.add_label(label, alpha=alpha)
     brain.save_image(img_path)
     return img_path
