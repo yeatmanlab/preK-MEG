@@ -43,11 +43,13 @@ preprocessing:
         veog_channel: EOG062
         veog_t_lims: [-0.22, 0.22]
         veog_f_lims: [0.5, 2.0]
-        proj_nums: [[1, 1, 0],  # ECG: grad/mag/eeg
-                    [0, 0, 0],  # EOG  (combined saccade and blink events)
-                    [0, 0, 0],  # Continuous (from ERM)
-                    [0, 0, 0],  # HEOG (focus on saccades)
-                    [1, 1, 0]]  # VEOG  (focus on blinks)
+        proj_nums: {
+            '__default__': [[1, 1, 0],   # ECG: grad/mag/eeg
+                            [0, 0, 0],   # EOG  (combined saccade and blink events)
+                            [0, 0, 0],   # Continuous (from ERM)
+                            [0, 0, 0],   # HEOG (focus on saccades)
+                            [0, 0, 0]],  # VEOG  (focus on blinks)
+            }
         ssp_ecg_reject:
             grad: 1500.0e-13  # mne-python default is 4000 fT/cm
             mag: 4500.0e-15   # mne-python default is 4000 fT
