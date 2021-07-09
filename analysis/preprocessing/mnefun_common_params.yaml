@@ -57,6 +57,7 @@ preprocessing:
             grad: 2000.0e-13
             mag: 6000.0e-15
         get_projs_from: [0, 1]
+        plot_drop_logs: False
 
     epoching:
         tmin: -0.1
@@ -94,8 +95,8 @@ preprocessing:
         inv_runs: [[0, 1]]
 
 report:
-    bem: true
-    psd: false
+    bem: True
+    psd: False
     sensor: []
     snr: []
     source: []
