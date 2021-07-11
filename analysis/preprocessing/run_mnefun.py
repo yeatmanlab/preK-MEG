@@ -9,7 +9,7 @@ import mnefun
 from analysis.aux_functions import load_paths, load_params
 from prek_score import prek_score
 
-mne.viz.set_3d_backend('mayavi')
+# mne.viz.set_3d_backend('mayavi')
 
 # load general params
 data_root, subjects_dir, _ = load_paths()
@@ -28,7 +28,7 @@ params.dates = [(2013, 0, 00)] * len(params.subjects)
 # loop over pre/post intervention recordings, and over head pos transforms
 for prepost in ('pre', 'post'):
     for headpos in ('twa', 'fixed'):
-        for experiment in ('pskt', 'erp'):  # XXX or ('combined',)
+        for experiment in ('pskt',):  # XXX ('pskt', 'erp') or ('combined',)
             # set variable-contingent params
             params.work_dir = os.path.join(data_root, f'{prepost}_camp',
                                            f'{headpos}_hp', experiment)
