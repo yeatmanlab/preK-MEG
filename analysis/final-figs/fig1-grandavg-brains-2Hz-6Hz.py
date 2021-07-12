@@ -9,7 +9,8 @@ Plot group-level frequency-domain STCs.
 import os
 import numpy as np
 import mne
-from analysis.aux_functions import (load_paths, load_params, div_by_adj_bins)
+from analysis.aux_functions import (load_paths, load_params, div_by_adj_bins,
+                                    set_brain_view_distance)
 
 # config paths
 _, _, results_dir = load_paths()
@@ -65,13 +66,10 @@ for condition in conditions:
         brain = stc.plot(subject='fsaverage', clim=clim, **brain_plot_kwargs)
         for freq in (2, 6):
             brain.set_time(freq)
-            # zoom out so the brains aren't cut off or overlapping
-            views = np.tile(['lat', 'med', 'ven'], (2, 1)).T.tolist()
-            distance = 700  # trial-and-error
-            for row in range(3):
-                for col in range(2):
-                    brain.show_view(views[row][col], row=row, col=col,
-                                    distance=distance)
+            set_brain_view_distance(brain,
+                                    views=brain_plot_kwargs['views'],
+                                    hemi=brain_plot_kwargs['hemi'],
+                                    distance=400)  # trial-and-error
             fname = (f'fig1-{cohort}-GrandAvg-pre_and_post_camp-pskt'
                      f'-{condition}-fft-{kind}-{freq:02}_Hz.png')
             brain.save_image(fname)

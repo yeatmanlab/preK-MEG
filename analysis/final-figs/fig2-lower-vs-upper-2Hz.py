@@ -11,7 +11,7 @@ import numpy as np
 import mne
 from mne.stats import ttest_ind_no_p
 from analysis.aux_functions import (load_paths, load_params, load_cohorts,
-                                    div_by_adj_bins)
+                                    div_by_adj_bins, set_brain_view_distance)
 
 # config paths
 _, _, results_dir = load_paths()
@@ -62,21 +62,25 @@ for condition in conditions:
         abs_stc.data = abs_data.mean(axis=0)
         del stc
         # plot untransformed data & SNR data
-        # for kind, lims, stc in zip(
-        #         ['amp', 'snr'], [abs_lims, snr_lims], [abs_stc, snr_stc]):
-        #     metric = 'SNR' if kind == 'snr' else 'dSPM'
-        #     brain_plot_kwargs.update(time_label=f'{metric} (%0.2f Hz)')
-        #     # plot stc
-        #     clim = dict(kind='value', lims=lims)
-        #     brain = stc.plot(subject='fsaverage', clim=clim,
-        #                      **brain_plot_kwargs)
-        #     freq = 2
-        #     brain.set_time(freq)
-        #     fname = (f'fig2-{cohort}-{subgroup}-pre_camp-pskt'
-        #              f'-{condition}-fft-{kind}-{freq:02}_Hz.png')
-        #     brain.save_image(fname)
-        #     brain.close()
-        #     del brain
+        for kind, lims, stc in zip(
+                ['amp', 'snr'], [abs_lims, snr_lims], [abs_stc, snr_stc]):
+            metric = 'SNR' if kind == 'snr' else 'dSPM'
+            brain_plot_kwargs.update(time_label=f'{metric} (%0.2f Hz)')
+            # plot stc
+            clim = dict(kind='value', lims=lims)
+            brain = stc.plot(subject='fsaverage', clim=clim,
+                             **brain_plot_kwargs)
+            freq = 2
+            brain.set_time(freq)
+            set_brain_view_distance(brain,
+                                    views=brain_plot_kwargs['views'],
+                                    hemi=brain_plot_kwargs['hemi'],
+                                    distance=400)  # trial-and-error
+            fname = (f'fig2-{cohort}-{subgroup}-pre_camp-pskt'
+                     f'-{condition}-fft-{kind}-{freq:02}_Hz.png')
+            brain.save_image(fname)
+            brain.close()
+            del brain
 
 # recompute t-test data, just to make sure
 # planned comparison: group split on pre-intervention letter awareness test
@@ -102,6 +106,10 @@ for kind in ('abs', 'snr'):
     brain = tval_stc.plot(subject='fsaverage', clim=clim, **brain_plot_kwargs)
     freq = 2
     brain.set_time(freq)
+    set_brain_view_distance(brain,
+                            views=brain_plot_kwargs['views'],
+                            hemi=brain_plot_kwargs['hemi'],
+                            distance=400)  # trial-and-error
     fname = (f'fig2-{cohort}-Lower_vs_Upper_ttest-pre_camp-pskt'
              f'-{condition}-fft-{kind}-{freq:02}_Hz.png')
     brain.save_image(fname)

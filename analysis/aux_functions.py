@@ -272,6 +272,18 @@ def get_dataframe_from_label(label, src, methods=('dSPM', 'MNE'),
     return time_courses
 
 
+def set_brain_view_distance(brain, views, hemi, distance):
+    # zoom out so the brains aren't cut off or overlapping
+    if hemi == 'split':
+        views = np.tile(views, (2, 1)).T
+    else:
+        views = np.atleast_2d(views).T
+    distance = 400  # trial-and-error
+    for rix, row in enumerate(views):
+        for cix, view in enumerate(row):
+            brain.show_view(view, row=rix, col=cix, distance=distance)
+
+
 def plot_label(label, img_path, alpha=1., **kwargs):
     from mne.viz import Brain
     defaults = dict(surf='inflated')
