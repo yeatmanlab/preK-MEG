@@ -69,17 +69,25 @@ preprocessing:
             grad: 1.0e-13
             mag: 1.0e-15
         reject_epochs_by_annot: "(BAD|EDGE).*(?<!MANUAL)$"  # ignore manual EOG annotations
-        # in_names: [words, faces, cars, aliens, ps, kt]
-        # in_numbers: [10, 20, 30, 40, 60, 70]
-        in_names: [ps, kt]
-        in_numbers: [60, 70]
         analyses: [All, Conditions]
         must_match: [[], []]
-        #out_names: [[ERP, PSKT], [words, faces, cars, aliens, ps, kt]]
-        #out_numbers: [[10, 10, 10, 10, 60, 60],  # Combine all trials
-        #              [10, 20, 30, 40, 60, 70]]  # Separate trials
-        out_names: [[PSKT], [ps, kt]]
-        out_numbers: [[60, 60], [60, 70]]
+        # XXX XXX FOR JOINT PREPROCESSING XXX XXX
+        # in_names: [words, faces, cars, aliens, ps, kt]
+        # in_numbers: [10, 20, 30, 40, 60, 70]
+        # out_names: [[ERP, PSKT], [words, faces, cars, aliens, ps, kt]]
+        # out_numbers: [[10, 10, 10, 10, 60, 60],  # Combine all trials
+        #               [10, 20, 30, 40, 60, 70]]  # Separate trials
+        # XXX XXX FOR SEPARATE PREPROCESSING (ERP) XXX XXX
+        in_names: [words, faces, cars, aliens]
+        in_numbers: [10, 20, 30, 40]
+        out_names: [[ERP], [words, faces, cars, aliens]]
+        out_numbers: [[10, 10, 10, 10],  # Combine all trials
+                      [10, 20, 30, 40]]  # Separate trials
+        # XXX XXX FOR SEPARATE PREPROCESSING (PSKT) XXX XXX
+        # in_names: [ps, kt]
+        # in_numbers: [60, 70]
+        # out_names: [[PSKT], [ps, kt]]
+        # out_numbers: [[60, 60], [60, 70]]
 
     covariance:
         cov_method: shrunk

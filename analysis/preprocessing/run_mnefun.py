@@ -28,7 +28,10 @@ params.dates = [(2013, 0, 00)] * len(params.subjects)
 # loop over pre/post intervention recordings, and over head pos transforms
 for prepost in ('pre', 'post'):
     for headpos in ('twa', 'fixed'):
-        for experiment in ('pskt',):  # XXX ('pskt', 'erp') or ('combined',)
+        for experiment in ('erp',):  # XXX ('pskt', 'erp') or ('combined',)
+            # skip what we don't care about
+            if headpos == 'fixed' and experiment == 'erp':
+                continue
             # set variable-contingent params
             params.work_dir = os.path.join(data_root, f'{prepost}_camp',
                                            f'{headpos}_hp', experiment)
@@ -62,7 +65,7 @@ for prepost in ('pre', 'post'):
             mnefun.do_processing(
                 params,
                 fetch_raw=False,      # go get the Raw files
-                do_sss=True,          # tSSS / maxwell filtering
+                do_sss=False,         # tSSS / maxwell filtering
                 do_score=True,        # run scoring function to extract events
                 gen_ssp=True,         # create SSP projectors
                 apply_ssp=True,       # apply SSP projectors
