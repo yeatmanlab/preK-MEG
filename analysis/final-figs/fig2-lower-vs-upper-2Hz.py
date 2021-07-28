@@ -44,26 +44,26 @@ for condition in conditions:
     # split the groups
     data_dict = dict()
     for subgroup in ('Lower', 'Upper'):
-        all_data = list()
+        fft_data = list()
         for s in groups[f'{subgroup}Knowledge']:
             fname = (f'{s}FSAverage-{timepoint}_camp-pskt-'
                      f'{condition}-fft-stc.h5')
             fpath = os.path.join(in_dir, out_dir, fname)
             stc = mne.read_source_estimate(fpath, subject='fsaverage')
-            all_data.append(stc.data)
-        abs_data = np.abs(all_data)
-        snr_data = div_by_adj_bins(abs_data)
-        data_dict[f'{subgroup}-abs'] = abs_data
+            fft_data.append(stc.data)
+        fft_data = np.array(fft_data)
+        snr_data = div_by_adj_bins(fft_data)
+        data_dict[f'{subgroup}-fft'] = fft_data
         data_dict[f'{subgroup}-snr'] = snr_data
         # create within-group grand average STC
         snr_stc = stc.copy()
-        abs_stc = stc.copy()
+        fft_stc = stc.copy()
         snr_stc.data = snr_data.mean(axis=0)
-        abs_stc.data = abs_data.mean(axis=0)
+        fft_stc.data = fft_data.mean(axis=0)
         del stc
         # plot untransformed data & SNR data
         for kind, lims, stc in zip(
-                ['amp', 'snr'], [abs_lims, snr_lims], [abs_stc, snr_stc]):
+                ['fft', 'snr'], [abs_lims, snr_lims], [fft_stc, snr_stc]):
             metric = 'SNR' if kind == 'snr' else 'dSPM'
             brain_plot_kwargs.update(time_label=f'{metric} (%0.2f Hz)')
             # plot stc
@@ -86,7 +86,7 @@ for condition in conditions:
 # planned comparison: group split on pre-intervention letter awareness test
 # 2-sample t-test on differences between SNRs
 sigma = 1e-3  # hat adjustment for low variance
-for kind in ('abs', 'snr'):
+for kind in ('fft', 'snr'):
     median_split = list()
     for group in ('Upper', 'Lower'):
         this_data = data_dict[f'{group}-{kind}']
@@ -95,7 +95,7 @@ for kind in ('abs', 'snr'):
         ttest_ind_no_p(a, b, sigma=sigma) for a, b in zip(
             median_split[0].transpose(2, 0, 1),
             median_split[1].transpose(2, 0, 1))]).T
-    tval_stc = abs_stc.copy()
+    tval_stc = fft_stc.copy()
     tval_stc.data = median_split_tvals
     # config
     tval_lims = (2, 2.8, 3.8)  # (1.75, 2, 3.25)
