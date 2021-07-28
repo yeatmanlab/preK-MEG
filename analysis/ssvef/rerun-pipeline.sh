@@ -13,8 +13,8 @@ python ssvep_group_level_aggregate_stcs.py && \
 python ssvep_prep_data_for_stats.py && \
 python ssvep_calc_tvals.py && \
 python ssvep_plot_tvals.py && \
+python ssvep_to_dataframe.py && \
+python ssvep_make_roi.py && \
 python ssvep_clustering.py && \
 python ssvep_plot_clusters.py && \
-python ssvep_to_dataframe.py && \
-python ssvep_make_roi.py
 echo "finished"
