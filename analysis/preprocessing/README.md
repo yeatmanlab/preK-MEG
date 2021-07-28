@@ -12,5 +12,9 @@
   but this sets the mnefun "work_dir" so that the intermediate files end up in
   the right place).
 
+- in `../analysis/aux_functions.py` check the function `load_paths()` to see
+  where the results dir will be (to make sure you're not overwriting past
+  results, if that's not what you intend).
+
 - check `../../params/current_cohort.yml` to see if you're set up to
   run the original group, replication group, or both together ('pooled').
