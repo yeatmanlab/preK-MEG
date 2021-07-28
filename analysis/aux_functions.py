@@ -278,7 +278,6 @@ def set_brain_view_distance(brain, views, hemi, distance):
         views = np.tile(views, (2, 1)).T
     else:
         views = np.atleast_2d(views).T
-    distance = 400  # trial-and-error
     for rix, row in enumerate(views):
         for cix, view in enumerate(row):
             brain.show_view(view, row=rix, col=cix, distance=distance)
