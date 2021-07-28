@@ -85,7 +85,8 @@ for condition in conditions:
         assert snr_.dtype == np.float64
         assert data.dtype == np.float64
         assert nois.dtype == np.float64
-        x = data[:, :, 30] - nois[:, :, 30]  # 6 Hz
+        freq_ix = np.nonzero(freqs == 6.)[0]  # 6 Hz
+        x = data[:, :, freq_ix] - nois[:, :, freq_ix]
         bad = np.where(np.percentile(x, 75, axis=-1) < 0)[0]
         if len(bad):
             bad = '\n'.join(groups['GrandAvg'][si] for si in bad)
