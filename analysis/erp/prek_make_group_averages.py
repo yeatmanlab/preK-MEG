@@ -7,12 +7,10 @@ Make average Source Time Course across all subjects, for each condition
 """
 
 import os
-from mayavi import mlab
 import mne
 from analysis.aux_functions import (load_paths, load_params, load_cohorts,
                                     load_inverse_params, PREPROCESS_JOINTLY)
 
-mlab.options.offscreen = True
 mne.cuda.init_cuda()
 overwrite = False
 

@@ -10,7 +10,6 @@ and subjects.
 import os
 import numpy as np
 import mne
-from mayavi import mlab
 from matplotlib import rcParams
 from matplotlib.colors import to_rgba
 from analysis.aux_functions import (load_paths, load_params,
@@ -19,7 +18,6 @@ from analysis.aux_functions import (load_paths, load_params,
                                     plot_label_and_timeseries)
 
 # flags
-mlab.options.offscreen = True
 mne.cuda.init_cuda()
 n_jobs = 10
 
