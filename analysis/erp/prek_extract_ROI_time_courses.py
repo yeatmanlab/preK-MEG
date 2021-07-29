@@ -70,12 +70,13 @@ for freq in (4,):
             label.subject = 'fsaverage'
             label.color = to_rgba(roi_colors[ix % len(roi_colors)])
             rois[slug] = label
-# add custom label
-fname = '2Hz_LetterKnowledge.lh.label'
-fpath = os.path.join(roi_dir, fname)
-label = mne.read_label(fpath)
-rois['2_Hz-LetterKnowledge'] = label
-
+# add custom labels
+fnames = ('2Hz_LetterKnowledge.lh.label', 'MPM_IOS_IOG_lh.label', 'MPM_pOTS_lh.label')
+for fname in fnames:
+    fpath = os.path.join(roi_dir, fname)
+    label = mne.read_label(fpath)
+    key = fname.split('.')[0]
+    rois[key] = label
 
 all_conditions = ('words', 'faces', 'cars')
 all_timepoints = ('post', 'pre')
