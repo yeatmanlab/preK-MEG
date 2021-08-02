@@ -75,6 +75,9 @@ for fname in fnames:
     label = mne.read_label(fpath)
     key = fname.split('.')[0]
     rois[key] = label
+# combine the two MPM labels
+rois['MPM_IOS_IOG_pOTS_lh'] = (rois['MPM_IOS_IOG_lh'] +
+                               rois['MPM_pOTS_lh'])
 
 all_conditions = ('words', 'faces', 'cars')
 all_timepoints = ('post', 'pre')
