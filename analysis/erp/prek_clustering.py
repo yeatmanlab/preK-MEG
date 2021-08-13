@@ -29,7 +29,11 @@ threshold = None        # or dict(start=0, step=0.2) for TFCE
 def do_clustering(X, label, adjacency, groups=1):
     fun = (spatio_temporal_cluster_1samp_test if groups == 1 else
            spatio_temporal_cluster_test)
-    cluster_results = fun(X, spatial_exclude=label.vertices,
+    if isinstance(label, mne.BiHemiLabel):
+        raise NotImplementedError()
+    else:
+        spatial_exclude = label.vertices
+    cluster_results = fun(X, spatial_exclude=spatial_exclude,
                           adjacency=adjacency,
                           threshold=threshold, n_permutations=1024,
                           n_jobs=n_jobs, seed=rng, buffer_size=1024)
@@ -50,7 +54,7 @@ def do_clustering(X, label, adjacency, groups=1):
 #
 # See the define_labels() function for region definitions. Hemi should be a
 # list of strings, containing one or more of ("lh", "rh", "both").
-spatial_limits = dict(action='exclude', region='medial-wall', hemi=['both'])
+spatial_limits = dict(action='include', region='VOTC', hemi=['lh'])
 
 # load params
 _, _, subjects, cohort = load_params()
@@ -103,7 +107,11 @@ for hemi in spatial_limits['hemi']:
                           action=spatial_limits['action'],
                           hemi=hemi, subjects_dir=subjects_dir)
     # make sure label vertex density matches source space density
-    label.restrict(fsaverage_src)
+    if isinstance(label, mne.BiHemiLabel):
+        label.lh.restrict(fsaverage_src)
+        label.rh.restrict(fsaverage_src)
+    else:
+        label.restrict(fsaverage_src)
     # if label is region to *include*, get complement of vertices to use as
     # *exclusion* set
     if spatial_limits['action'] == 'include':
