@@ -12,9 +12,9 @@ import pandas as pd
 import seaborn as sns
 
 # config label
-region = '2_Hz-LetterKnowledge'
+region = 'IOS_IOG_pOTS'
 # load data
-df = pd.read_csv('pskt-in-label.csv')
+df = pd.read_csv(f'pskt-in-label-{region}.csv')
 # config plot
 methods = ('fft', 'snr')  # vary by row
 sns.set_style('white')
