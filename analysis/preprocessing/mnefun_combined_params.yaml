@@ -1,0 +1,8 @@
+preprocessing:
+    epoching:
+        reject: null
+        in_names: [words, faces, cars, aliens, ps, kt]
+        in_numbers: [10, 20, 30, 40, 60, 70]
+        out_names: [[ERP, PSKT], [words, faces, cars, aliens, ps, kt]]
+        out_numbers: [[10, 10, 10, 10, 60, 60],  # Combine all trials
+                      [10, 20, 30, 40, 60, 70]]  # Separate trials
