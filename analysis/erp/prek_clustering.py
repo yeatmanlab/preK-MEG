@@ -18,7 +18,7 @@ from mne.stats import (spatio_temporal_cluster_1samp_test,
                        spatio_temporal_cluster_test)
 from analysis.aux_functions import (load_paths, load_params, load_cohorts,
                                     prep_cluster_stats, define_labels,
-                                    load_inverse_params)
+                                    load_inverse_params, PREPROCESS_JOINTLY)
 
 mne.cuda.init_cuda()
 rng = np.random.RandomState(seed=15485863)  # the one millionth prime
@@ -29,7 +29,11 @@ threshold = None        # or dict(start=0, step=0.2) for TFCE
 def do_clustering(X, label, adjacency, groups=1):
     fun = (spatio_temporal_cluster_1samp_test if groups == 1 else
            spatio_temporal_cluster_test)
-    cluster_results = fun(X, spatial_exclude=label.vertices,
+    if isinstance(label, mne.BiHemiLabel):
+        raise NotImplementedError()
+    else:
+        spatial_exclude = label.vertices
+    cluster_results = fun(X, spatial_exclude=spatial_exclude,
                           adjacency=adjacency,
                           threshold=threshold, n_permutations=1024,
                           n_jobs=n_jobs, seed=rng, buffer_size=1024)
@@ -59,6 +63,7 @@ method = inverse_params['method']
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
+subfolder = 'combined' if PREPROCESS_JOINTLY else 'erp'
 
 # set cache dir
 cache_dir = os.path.join(data_root, 'cache')
@@ -102,7 +107,11 @@ for hemi in spatial_limits['hemi']:
                           action=spatial_limits['action'],
                           hemi=hemi, subjects_dir=subjects_dir)
     # make sure label vertex density matches source space density
-    label.restrict(fsaverage_src)
+    if isinstance(label, mne.BiHemiLabel):
+        label.lh.restrict(fsaverage_src)
+        label.rh.restrict(fsaverage_src)
+    else:
+        label.restrict(fsaverage_src)
     # if label is region to *include*, get complement of vertices to use as
     # *exclusion* set
     if spatial_limits['action'] == 'include':
@@ -157,7 +166,7 @@ for hemi in spatial_limits['hemi']:
                 for s in group_members:
                     this_subj = os.path.join(data_root,
                                              f'{timepoint[:-4]}_camp',
-                                             'twa_hp', 'combined', s, 'stc')
+                                             'twa_hp', subfolder, s, 'stc')
                     fname = f'{s}FSAverage_{timepoint}_{method}_{cond}'
                     stc_path = os.path.join(this_subj, fname)
                     stc = mne.read_source_estimate(stc_path)
@@ -199,25 +208,15 @@ for hemi in spatial_limits['hemi']:
     keys = {g: f'{g}N{n_subj[g]}FSAverage'
             for g in letter_knowledge_group}
     for con in conditions:
-        # XXX HACK: THIS NAIVELY DISCARDS SUBJECTS FROM END OF ARRAY
-        # IF THE COHORT SIZES MISMATCH.
-        n_upper = data_dict[keys['UpperKnowledge']][timepoint][con].shape[0]
-        n_lower = data_dict[keys['LowerKnowledge']][timepoint][con].shape[0]
-        size = min(n_upper, n_lower)  # XXX END OF HACK
-        X = (data_dict[keys['UpperKnowledge']][timepoint][con][:size] -
-             data_dict[keys['LowerKnowledge']][timepoint][con][:size])
+        X = [data_dict[keys['UpperKnowledge']][timepoint][con],
+             data_dict[keys['LowerKnowledge']][timepoint][con]]
         data_dict[group][timepoint][con] = X
-        do_clustering(X, label, adj_matrix)
+        do_clustering(X, label, adj_matrix, groups=2)
     for con, (contr_0, contr_1) in contrasts.items():
-        # XXX HACK: THIS NAIVELY DISCARDS SUBJECTS FROM END OF ARRAY
-        # IF THE COHORT SIZES MISMATCH.
-        n_upper = data_dict[keys['UpperKnowledge']][timepoint][con].shape[0]
-        n_lower = data_dict[keys['LowerKnowledge']][timepoint][con].shape[0]
-        size = min(n_upper, n_lower)  # XXX END OF HACK
-        X = (data_dict[keys['UpperKnowledge']][timepoint][contr_0][:size] -
-             data_dict[keys['LowerKnowledge']][timepoint][contr_1][:size])
+        X = [data_dict[keys['UpperKnowledge']][timepoint][contr_0],
+             data_dict[keys['LowerKnowledge']][timepoint][contr_1]]
         data_dict[group][timepoint][con] = X
-        do_clustering(X, label, adj_matrix)
+        do_clustering(X, label, adj_matrix, groups=2)
 
     # CONTRAST EFFECT OF INTERVENTION ON COHORTS
     # this uses a different stat function, and takes a list of arrays for X

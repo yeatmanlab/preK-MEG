@@ -9,7 +9,8 @@ Load frequency-domain SSVEP evokeds, apply inverse, & morph to FSAverage.
 import os
 import numpy as np
 import mne
-from analysis.aux_functions import load_paths, load_params, load_inverse_params
+from analysis.aux_functions import (load_paths, load_params, load_inverse_params,
+                                    yamload)
 
 # flags
 mne.cuda.init_cuda()
@@ -26,6 +27,13 @@ for _dir in (stc_dir, morph_dir):
 *_, subjects, cohort = load_params()
 inverse_params = load_inverse_params()
 inverse_method = inverse_params['method']
+ori = inverse_params['orientation_constraint']
+estim = inverse_params['estimate_type']
+paramfile = os.path.join('..', 'preprocessing', 'mnefun_common_params.yaml')
+with open(paramfile, 'r') as f:
+    params = yamload(f)
+lp_cut = params['preprocessing']['filtering']['lp_cut']
+del params
 
 # config other
 timepoints = ('pre', 'post')
@@ -34,8 +42,10 @@ lambda2 = 1. / snr ** 2
 smoothing_steps = 10
 
 # inverse params
-constraints = ('-free', '', '-fixed')     # empty string == loose
-estim_types = ('vector', None, 'normal')  # None == vector magnitude
+# constraints = ('-free', '', '-fixed')  # empty string == loose
+# estim_types = ('vector', None, 'normal')  # None == vector magnitude
+constraints = ('' if ori == 'loose' else f'-{ori}',)
+estim_types = (None if estim == 'magnitude' else estim,)
 
 # for morph to fsaverage
 fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
@@ -57,11 +67,10 @@ for s in subjects:
             # loop over cortical estimate orientation constraints
             for constr in constraints:
                 constr_dir = constr.lstrip('-') if len(constr) else 'loose'
-                # load inverse operator. it is only located in the ERP folder
-                # tree, not in PSKT (TODO: this may change at some point)
+                # load inverse operator
                 inv_path = os.path.join(data_root, f'{timepoint}_camp',
-                                        'twa_hp', 'erp', s, 'inverse',
-                                        f'{s}-30-sss-meg{constr}-inv.fif')
+                                        'twa_hp', 'pskt', s, 'inverse',
+                                        f'{s}-{lp_cut}-sss-meg{constr}-inv.fif')
                 inverse = mne.minimum_norm.read_inverse_operator(inv_path)
                 # loop over estimate types
                 for estim_type in estim_types:

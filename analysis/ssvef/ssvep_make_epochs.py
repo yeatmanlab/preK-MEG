@@ -9,7 +9,8 @@ Extract SSVEP epochs, downsample, and save to disk.
 import os
 import numpy as np
 import mne
-from analysis.aux_functions import load_paths, load_params, yamload
+from analysis.aux_functions import (load_paths, load_params,
+                                    PREPROCESS_JOINTLY, yamload)
 
 mne.cuda.init_cuda()
 
@@ -22,6 +23,7 @@ plot_topomaps = True
 data_root, subjects_dir, results_dir = load_paths()
 epo_dir = os.path.join(results_dir, 'pskt', 'epochs')
 os.makedirs(epo_dir, exist_ok=True)
+subfolder = 'combined' if PREPROCESS_JOINTLY else 'pskt'
 
 # load params
 _, _, subjects, cohort = load_params()
@@ -41,7 +43,7 @@ event_dict = dict(ps=60, kt=70)
 for s in subjects:
     for timepoint in timepoints:
         this_subj = os.path.join(data_root, f'{timepoint}_camp', 'twa_hp',
-                                 'combined', s)
+                                 subfolder, s)
         epochs_list = list()
         for run in runs:
             # read events from file made by the score func during preprocessing

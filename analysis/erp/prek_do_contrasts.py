@@ -10,14 +10,11 @@ movies for each.
 
 import os
 from itertools import combinations
-from mayavi import mlab
 import mne
 from analysis.aux_functions import (load_paths, load_params, load_cohorts,
                                     load_inverse_params)
 
-mlab.options.offscreen = True
 mne.cuda.init_cuda()
-mne.viz.set_3d_backend('mayavi')
 overwrite = False
 
 # load params

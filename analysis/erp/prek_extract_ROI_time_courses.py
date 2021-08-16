@@ -10,7 +10,6 @@ and subjects.
 import os
 import numpy as np
 import mne
-from mayavi import mlab
 from matplotlib import rcParams
 from matplotlib.colors import to_rgba
 from analysis.aux_functions import (load_paths, load_params,
@@ -19,7 +18,6 @@ from analysis.aux_functions import (load_paths, load_params,
                                     plot_label_and_timeseries)
 
 # flags
-mlab.options.offscreen = True
 mne.cuda.init_cuda()
 n_jobs = 10
 
@@ -70,12 +68,18 @@ for freq in (4,):
             label.subject = 'fsaverage'
             label.color = to_rgba(roi_colors[ix % len(roi_colors)])
             rois[slug] = label
-# add custom label
-fname = '2Hz_LetterKnowledge.lh.label'
-fpath = os.path.join(roi_dir, fname)
-label = mne.read_label(fpath)
-rois['2_Hz-LetterKnowledge'] = label
-
+# add custom labels
+fnames = ('2Hz_LetterKnowledge.lh.label',
+          'MPM_IOS_IOG_lh.label',
+          'MPM_pOTS_lh.label')
+for fname in fnames:
+    fpath = os.path.join(roi_dir, fname)
+    label = mne.read_label(fpath)
+    key = fname.split('.')[0]
+    rois[key] = label
+# combine the two MPM labels
+rois['MPM_IOS_IOG_pOTS_lh'] = (rois['MPM_IOS_IOG_lh'] +
+                               rois['MPM_pOTS_lh'])
 
 all_conditions = ('words', 'faces', 'cars')
 all_timepoints = ('post', 'pre')

@@ -11,6 +11,8 @@ yamload = partial(yaml.load, Loader=yaml.FullLoader)
 with open(os.path.join(paramdir, 'current_cohort.yaml'), 'r') as f:
     cohort = yamload(f)
 
+PREPROCESS_JOINTLY = False  # controls folder path
+
 
 def load_params(skip=True):
     """Load experiment parameters from YAML files."""
@@ -74,7 +76,7 @@ def load_paths():
     with open(os.path.join(paramdir, 'paths.yaml'), 'r') as f:
         paths = yamload(f)
     paths['results_dir'] = os.path.join(
-        paths['results_dir'], f'{cohort}-joint')
+        paths['results_dir'], f'{cohort}-final')
     return paths['data_root'], paths['subjects_dir'], paths['results_dir']
 
 
@@ -270,9 +272,22 @@ def get_dataframe_from_label(label, src, methods=('dSPM', 'MNE'),
     return time_courses
 
 
+def set_brain_view_distance(brain, views, hemi, distance):
+    # zoom out so the brains aren't cut off or overlapping
+    if hemi == 'split':
+        views = np.tile(views, (2, 1)).T
+    else:
+        views = np.atleast_2d(views).T
+    for rix, row in enumerate(views):
+        for cix, view in enumerate(row):
+            brain.show_view(view, row=rix, col=cix, distance=distance)
+
+
 def plot_label(label, img_path, alpha=1., **kwargs):
     from mne.viz import Brain
-    brain = Brain('fsaverage', surf='inflated', **kwargs)
+    defaults = dict(surf='inflated')
+    defaults.update(kwargs)
+    brain = Brain('fsaverage', **defaults)
     brain.add_label(label, alpha=alpha)
     brain.save_image(img_path)
     return img_path

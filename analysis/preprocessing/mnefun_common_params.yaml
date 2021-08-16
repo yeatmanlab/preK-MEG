@@ -43,11 +43,13 @@ preprocessing:
         veog_channel: EOG062
         veog_t_lims: [-0.22, 0.22]
         veog_f_lims: [0.5, 2.0]
-        proj_nums: [[1, 1, 0],  # ECG: grad/mag/eeg
-                    [0, 0, 0],  # EOG  (combined saccade and blink events)
-                    [0, 0, 0],  # Continuous (from ERM)
-                    [0, 0, 0],  # HEOG (focus on saccades)
-                    [1, 1, 0]]  # VEOG  (focus on blinks)
+        proj_nums: {
+            '__default__': [[1, 1, 0],   # ECG: grad/mag/eeg
+                            [0, 0, 0],   # EOG  (combined saccade and blink events)
+                            [0, 0, 0],   # Continuous (from ERM)
+                            [0, 0, 0],   # HEOG (focus on saccades)
+                            [0, 0, 0]],  # VEOG  (focus on blinks)
+            }
         ssp_ecg_reject:
             grad: 1500.0e-13  # mne-python default is 4000 fT/cm
             mag: 4500.0e-15   # mne-python default is 4000 fT
@@ -55,6 +57,7 @@ preprocessing:
             grad: 2000.0e-13
             mag: 6000.0e-15
         get_projs_from: [0, 1]
+        plot_drop_logs: False
 
     epoching:
         tmin: -0.1
@@ -66,13 +69,25 @@ preprocessing:
             grad: 1.0e-13
             mag: 1.0e-15
         reject_epochs_by_annot: "(BAD|EDGE).*(?<!MANUAL)$"  # ignore manual EOG annotations
-        in_names: [words, faces, cars, aliens, ps, kt]
-        in_numbers: [10, 20, 30, 40, 60, 70]
         analyses: [All, Conditions]
         must_match: [[], []]
-        out_names: [[ERP, PSKT], [words, faces, cars, aliens, ps, kt]]
-        out_numbers: [[10, 10, 10, 10, 60, 60],  # Combine all trials
-                      [10, 20, 30, 40, 60, 70]]  # Separate trials
+        # XXX XXX FOR JOINT PREPROCESSING XXX XXX
+        # in_names: [words, faces, cars, aliens, ps, kt]
+        # in_numbers: [10, 20, 30, 40, 60, 70]
+        # out_names: [[ERP, PSKT], [words, faces, cars, aliens, ps, kt]]
+        # out_numbers: [[10, 10, 10, 10, 60, 60],  # Combine all trials
+        #               [10, 20, 30, 40, 60, 70]]  # Separate trials
+        # XXX XXX FOR SEPARATE PREPROCESSING (ERP) XXX XXX
+        in_names: [words, faces, cars, aliens]
+        in_numbers: [10, 20, 30, 40]
+        out_names: [[ERP], [words, faces, cars, aliens]]
+        out_numbers: [[10, 10, 10, 10],  # Combine all trials
+                      [10, 20, 30, 40]]  # Separate trials
+        # XXX XXX FOR SEPARATE PREPROCESSING (PSKT) XXX XXX
+        # in_names: [ps, kt]
+        # in_numbers: [60, 70]
+        # out_names: [[PSKT], [ps, kt]]
+        # out_numbers: [[60, 60], [60, 70]]
 
     covariance:
         cov_method: shrunk
@@ -85,11 +100,11 @@ preprocessing:
 
     inverse:
         inv_names: ['%s']
-        inv_runs: [0, 1]
+        inv_runs: [[0, 1]]
 
 report:
-    bem: true
-    psd: false
+    bem: True
+    psd: False
     sensor: []
     snr: []
     source: []

@@ -9,16 +9,13 @@ Define ROI based on 2 Hz SNR averaged across all subjects.
 import os
 import yaml
 import numpy as np
-from mayavi import mlab
 import mne
 from analysis.aux_functions import load_paths, load_params, load_inverse_params
 
 
 # flags
-mlab.options.offscreen = True
 mne.cuda.init_cuda()
-mne.viz.set_3d_backend('mayavi')
-roi_freq = 4
+roi_freq = 2
 
 # load params
 brain_plot_kwargs, *_, cohort = load_params()
