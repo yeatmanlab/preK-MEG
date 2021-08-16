@@ -20,13 +20,10 @@ conditions = ('ps', 'kt')
 timepoints = ('post', 'pre')
 
 # load label
-fname = '2Hz_LetterKnowledge.lh.label'
-fpath = os.path.join(roi_dir, fname)
-region = '2_Hz-LetterKnowledge'
-label = mne.read_label(fpath)
-# "that label was made based on the peak differences between High vs Low letter
-# knowledge correcting for multiple comparisons based on FDR"
-
+fnames = ('MPM_IOS_IOG_lh.label', 'MPM_pOTS_lh.label')
+labels = [mne.read_label(os.path.join(roi_dir, fname)) for fname in fnames]
+label = labels[0] + labels[1]  # combine the two MPM labels
+region = 'IOS_IOG_pOTS'
 
 # load fsaverage source space
 fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
@@ -39,4 +36,4 @@ df = get_dataframe_from_label(label, fsaverage_src, methods=methods,
                               conditions=conditions, unit='freq')
 df['roi'] = region
 
-df.to_csv('pskt-in-label.csv', index=False)
+df.to_csv(f'pskt-in-label-{region}.csv', index=False)
