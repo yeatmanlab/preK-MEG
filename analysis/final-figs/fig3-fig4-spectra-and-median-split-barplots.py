@@ -31,7 +31,7 @@ def garnish(ax, method, title, xlabel, legend=True):
     spec = ax.get_subplotspec()
     xlabel = xlabel if spec.is_last_row() else ''
     ylabel = method.upper() if spec.is_first_col() else ''
-    ymax = dict(fft=200, snr=4.5)[method]
+    ymax = dict(fft=200, snr=4.99)[method]
     ax.set(ylim=(0, ymax), xlabel=xlabel, ylabel=ylabel)
     if spec.is_first_row():
         ax.set(title=title)
@@ -66,10 +66,11 @@ xticks = [0, 2, 4, 6, 12, 18, 24, 30, 36]
 xticklabels = list(map(str, xticks))
 for ix, label in enumerate(xticklabels):
     if label == '2':
-        xticklabels[ix] += '\n(oddball)'
+        xticklabels[ix] += '\n(odd-\nball)'
     elif label == '6':
         xticklabels[ix] += '\n(stim)'
 ax.set(xticks=xticks, xticklabels=xticklabels, xlim=(-1, 40))
+ax.xaxis.labelpad = -12
 # save
 fig.subplots_adjust(left=0.08, right=0.95, bottom=0.1, top=0.95, hspace=0.05)
 fig.align_labels()
