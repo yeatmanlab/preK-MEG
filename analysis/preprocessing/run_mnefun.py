@@ -4,26 +4,17 @@ mnefun preprocessing of both PRE-K cohorts (original & replication).
 """
 
 import os
-import mne
+import yaml
 import mnefun
+from mnefun._yaml import _flat_params_read
 from analysis.aux_functions import load_paths, load_params
 from prek_score import prek_score
-
-# mne.viz.set_3d_backend('mayavi')
 
 # load general params
 data_root, subjects_dir, _ = load_paths()
 *_, subjects, cohort = load_params()
-
-# load mnefun params from YAML
-params = mnefun.read_params('mnefun_common_params.yaml')
-# set additional params: general
-params.subjects_dir = subjects_dir
-params.score = prek_score
-params.subjects = subjects
-params.subject_indices = list(range(len(params.subjects)))
-params.structurals = [s.upper() for s in params.subjects]
-params.dates = [(2013, 0, 00)] * len(params.subjects)
+_params = _flat_params_read('mnefun_common_params.yaml')
+tmpfile = 'temp.yaml'
 
 # loop over pre/post intervention recordings, and over head pos transforms
 for prepost in ('pre', 'post'):
@@ -32,6 +23,22 @@ for prepost in ('pre', 'post'):
             # skip what we don't care about
             if headpos == 'fixed' and experiment == 'erp':
                 continue
+            # load the (common and experiment-specific) mnefun params
+            exp_params = _flat_params_read(f'mnefun_{experiment}_params.yaml')
+            _params.update(exp_params)
+            # hack: mnefun only reads params from file, not from dict, so
+            # write a tempfile
+            with open(tmpfile, 'w') as f:
+                yaml.dump(_params, f)
+            params = mnefun.read_params(tmpfile)
+            os.remove(tmpfile)
+            # set general params
+            params.subjects_dir = subjects_dir
+            params.score = prek_score
+            params.subjects = subjects
+            params.subject_indices = list(range(len(params.subjects)))
+            params.structurals = [s.upper() for s in params.subjects]
+            params.dates = [(2013, 0, 00)] * len(params.subjects)
             # set variable-contingent params
             params.work_dir = os.path.join(data_root, f'{prepost}_camp',
                                            f'{headpos}_hp', experiment)
@@ -66,13 +73,13 @@ for prepost in ('pre', 'post'):
                 params,
                 fetch_raw=False,      # go get the Raw files
                 do_sss=False,         # tSSS / maxwell filtering
-                do_score=True,        # run scoring function to extract events
-                gen_ssp=True,         # create SSP projectors
-                apply_ssp=True,       # apply SSP projectors
-                write_epochs=True,    # epoching & filtering
+                do_score=False,        # run scoring function to extract events
+                gen_ssp=False,         # create SSP projectors
+                apply_ssp=False,       # apply SSP projectors
+                write_epochs=False,    # epoching & filtering
                 gen_covs=True,        # make covariance
                 gen_fwd=True,         # generate fwd model
                 gen_inv=True,         # generate inverse
-                gen_report=True,      # print report
-                print_status=True     # show status
+                gen_report=False,      # print report
+                print_status=False     # show status
             )
