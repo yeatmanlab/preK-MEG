@@ -22,7 +22,7 @@ mne.cuda.init_cuda()
 n_jobs = 10
 
 # load params
-brain_plot_kwargs, movie_kwargs, subjects, cohort = load_params()
+brain_plot_kwargs, _, subjects, cohort = load_params(experiment='erp')
 for kwarg in ('time_viewer', 'show_traces'):
     del brain_plot_kwargs[kwarg]  # not used in Brain.__init__
 inverse_params = load_inverse_params()
@@ -93,7 +93,7 @@ for region, label in rois.items():
     lineplot_kwargs = dict(hue='condition', hue_order=all_conditions,
                            style='timepoint', style_order=all_timepoints)
     # get dataframe
-    df = get_dataframe_from_label(label, fsaverage_src)
+    df = get_dataframe_from_label(label, fsaverage_src, experiment='erp')
     df['roi'] = region
     # plot
     for groups in group_lists:

@@ -26,7 +26,7 @@ os.makedirs(epo_dir, exist_ok=True)
 subfolder = 'combined' if PREPROCESS_JOINTLY else 'pskt'
 
 # load params
-_, _, subjects, cohort = load_params()
+*_, subjects, cohort = load_params(experiment='pskt')
 paramfile = os.path.join('..', 'preprocessing', 'mnefun_common_params.yaml')
 with open(paramfile, 'r') as f:
     params = yamload(f)

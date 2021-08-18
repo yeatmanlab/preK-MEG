@@ -13,7 +13,7 @@ from analysis.aux_functions import (load_paths, load_params, yamload,
                                     load_inverse_params, PREPROCESS_JOINTLY)
 
 # load params
-*_, subjects, cohort = load_params()
+*_, subjects, cohort = load_params(experiment='erp')
 
 # inverse params
 inverse_params = load_inverse_params()

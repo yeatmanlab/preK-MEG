@@ -12,7 +12,6 @@ from prek_score import prek_score
 
 # load general params
 data_root, subjects_dir, _ = load_paths()
-*_, subjects, cohort = load_params()
 _params = _flat_params_read('mnefun_common_params.yaml')
 tmpfile = 'temp.yaml'
 
@@ -23,6 +22,8 @@ for prepost in ('pre', 'post'):
             # skip what we don't care about
             if headpos == 'fixed' and experiment == 'erp':
                 continue
+            # load subjects
+            *_, subjects, cohort = load_params(experiment=experiment)
             # load the (common and experiment-specific) mnefun params
             exp_params = _flat_params_read(f'mnefun_{experiment}_params.yaml')
             _params.update(exp_params)

@@ -13,7 +13,7 @@ from analysis.aux_functions import (load_paths, load_params, div_by_adj_bins,
                                     load_inverse_params)
 
 # load params
-brain_plot_kwargs, _, subjects, cohort = load_params()
+brain_plot_kwargs, _, subjects, cohort = load_params(experiment='pskt')
 inverse_params = load_inverse_params()
 
 # config paths

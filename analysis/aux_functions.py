@@ -14,17 +14,17 @@ with open(os.path.join(paramdir, 'current_cohort.yaml'), 'r') as f:
 PREPROCESS_JOINTLY = False  # controls folder path
 
 
-def load_params(skip=True):
+def load_params(skip=True, experiment=None):
     """Load experiment parameters from YAML files."""
     with open(os.path.join(paramdir, 'brain_plot_params.yaml'), 'r') as f:
         brain_plot_kwargs = yamload(f)
     with open(os.path.join(paramdir, 'movie_params.yaml'), 'r') as f:
         movie_kwargs = yamload(f)
-    subjects = load_subjects(cohort)
+    subjects = load_subjects(cohort, experiment, skip)
     return brain_plot_kwargs, movie_kwargs, subjects, cohort
 
 
-def load_subjects(cohort, skip=True):
+def load_subjects(cohort, experiment=None, skip=True):
     with open(os.path.join(paramdir, 'subjects.yaml'), 'r') as f:
         subjects_dict = yamload(f)
     if cohort == 'pooled':
@@ -33,9 +33,20 @@ def load_subjects(cohort, skip=True):
         subjects = list(subjects_dict[cohort])
     # skip bad subjects
     if skip:
-        with open(os.path.join(paramdir, 'skip_subjects.yaml'), 'r') as f:
-            skips = yamload(f)
-        subjects = sorted(set(subjects) - set(skips))
+        all_experiments = ('erp', 'pskt')
+        if experiment in all_experiments:
+            experiment = (experiment,)
+        elif experiment == 'combined':
+            experiment = all_experiments
+        elif experiment is None:
+            raise ValueError('must pass "experiment" when skipping subjects')
+        skips = set()
+        for exp in experiment:
+            fname = f'skip_subjects_{exp}.yaml'
+            with open(os.path.join(paramdir, fname), 'r') as f:
+                new_skips = yamload(f)
+                skips = skips.union(new_skips)
+        subjects = sorted(set(subjects) - skips)
     return subjects
 
 
@@ -201,7 +212,8 @@ def get_stc_from_conditions(method, timepoint, condition, subject):
 def get_dataframe_from_label(label, src, methods=('dSPM', 'MNE'),
                              timepoints=('pre', 'post'),
                              conditions=('words', 'faces', 'cars', 'aliens'),
-                             subjects=None, unit='time'):
+                             subjects=None, unit='time',
+                             experiment=None):
     """Get average timecourse within label across all subjects."""
     from pandas import DataFrame, concat, melt
     from mne import Label, extract_label_time_course
@@ -210,7 +222,7 @@ def get_dataframe_from_label(label, src, methods=('dSPM', 'MNE'),
         label = [label]
     # load subjects list
     if subjects is None:
-        _, _, subjects, _ = load_params()
+        _, _, subjects, _ = load_params(experiment=experiment)
     elif isinstance(subjects, str):
         subjects = [subjects]
     # load cohort information

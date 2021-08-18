@@ -19,7 +19,7 @@ fig_dir = os.path.join(results_dir, 'pskt', 'fig', 'phase')
 os.makedirs(fig_dir, exist_ok=True)
 
 # load params
-*_, subjects, cohort = load_params()
+*_, subjects, cohort = load_params(experiment='pskt')
 
 # config other
 timepoints = ('pre', 'post')

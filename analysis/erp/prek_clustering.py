@@ -57,7 +57,7 @@ def do_clustering(X, label, adjacency, groups=1):
 spatial_limits = dict(action='include', region='VOTC', hemi=['lh'])
 
 # load params
-_, _, subjects, cohort = load_params()
+*_, subjects, cohort = load_params(experiment='erp')
 inverse_params = load_inverse_params()
 method = inverse_params['method']
 

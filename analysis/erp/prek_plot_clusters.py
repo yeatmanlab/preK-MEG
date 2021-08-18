@@ -19,7 +19,7 @@ mne.cuda.init_cuda()
 n_jobs = 10
 
 # load params
-brain_plot_kwargs, movie_kwargs, subjects, cohort = load_params()
+brain_plot_kwargs, _, subjects, cohort = load_params(experiment='erp')
 inverse_params = load_inverse_params()
 method = inverse_params['method']
 

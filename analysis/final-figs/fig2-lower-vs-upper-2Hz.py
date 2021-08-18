@@ -18,7 +18,7 @@ _, _, results_dir = load_paths()
 in_dir = os.path.join(results_dir, 'pskt', 'stc', 'morphed-to-fsaverage')
 
 # load params
-brain_plot_kwargs, movie_kwargs, subjects, cohort = load_params()
+brain_plot_kwargs, _, subjects, cohort = load_params(experiment='pskt')
 brain_plot_kwargs.update(time_label='freq=%0.2f Hz', surface='white',
                          background='white', size=(1000, 1400))
 

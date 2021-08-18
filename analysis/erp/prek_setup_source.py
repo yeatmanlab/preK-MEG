@@ -15,7 +15,7 @@ from analysis.aux_functions import load_paths, load_params
 
 # load params
 _, subjects_dir, _ = load_paths()
-*_, subjects, cohort = load_params()
+*_, subjects, cohort = load_params(experiment='erp')
 surf_names = ['inner_skull', 'outer_skull', 'outer_skin']
 
 print(f'running {cohort} cohort')

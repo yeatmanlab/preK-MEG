@@ -15,7 +15,7 @@ data_root, subjects_dir, results_dir = load_paths()
 roi_dir = os.path.join('..', 'ROIs')
 
 # config other
-brain_plot_kwargs, *_ = load_params()
+brain_plot_kwargs, *_ = load_params(experiment='erp')
 for kwarg in ('time_viewer', 'show_traces'):
     del brain_plot_kwargs[kwarg]  # not used in Brain.__init__
 brain_plot_kwargs.update(views='ven', hemi='lh', surf='inflated',

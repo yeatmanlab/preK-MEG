@@ -21,7 +21,7 @@ mne.cuda.init_cuda()
 n_jobs = 10
 
 # load params
-brain_plot_kwargs, _, subjects, cohort = load_params()
+brain_plot_kwargs, _, subjects, cohort = load_params(experiment='erp')
 inverse_params = load_inverse_params()
 method = inverse_params['method']
 # config paths
@@ -198,7 +198,8 @@ def make_cluster_stc(cluster_fname):
             all_conditions = ('words', 'faces', 'cars')
             all_timepoints = ('post', 'pre')
             df = get_dataframe_from_label(label, fsaverage_src, [method],
-                                          all_timepoints, all_conditions)
+                                          all_timepoints, all_conditions,
+                                          experiment='erp')
             # plot
             lineplot_kwargs = dict(hue='condition', hue_order=all_conditions,
                                    style='timepoint',

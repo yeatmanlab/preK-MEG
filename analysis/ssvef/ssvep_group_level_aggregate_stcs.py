@@ -20,7 +20,7 @@ for _dir in (stc_dir,):
     os.makedirs(_dir, exist_ok=True)
 
 # load params
-*_, subjects, cohort = load_params()
+*_, subjects, cohort = load_params(experiment='pskt')
 intervention_group, letter_knowledge_group = load_cohorts()
 groups = dict(GrandAvg=subjects)
 groups.update(intervention_group)
