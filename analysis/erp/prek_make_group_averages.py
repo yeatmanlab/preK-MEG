@@ -33,7 +33,7 @@ conditions = ('words', 'faces', 'cars', 'aliens')
 
 
 # load cohort info (keys Language/LetterIntervention and Lower/UpperKnowledge)
-intervention_group, letter_knowledge_group = load_cohorts()
+intervention_group, letter_knowledge_group = load_cohorts(experiment='erp')
 
 # assemble groups to iterate over
 groups = dict(GrandAvg=subjects)

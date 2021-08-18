@@ -17,7 +17,7 @@ from analysis.aux_functions import (load_paths, load_params, load_cohorts,
 # load params
 brain_plot_kwargs, _, subjects, cohort = load_params(experiment='pskt')
 inverse_params = load_inverse_params()
-intervention_group, letter_knowledge_group = load_cohorts()
+intervention_group, letter_knowledge_group = load_cohorts(experiment='pskt')
 groups = dict(GrandAvg=subjects)
 groups.update(intervention_group)
 groups.update(letter_knowledge_group)

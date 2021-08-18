@@ -33,21 +33,26 @@ def load_subjects(cohort, experiment=None, skip=True):
         subjects = list(subjects_dict[cohort])
     # skip bad subjects
     if skip:
-        all_experiments = ('erp', 'pskt')
-        if experiment in all_experiments:
-            experiment = (experiment,)
-        elif experiment == 'combined':
-            experiment = all_experiments
-        elif experiment is None:
-            raise ValueError('must pass "experiment" when skipping subjects')
-        skips = set()
-        for exp in experiment:
-            fname = f'skip_subjects_{exp}.yaml'
-            with open(os.path.join(paramdir, fname), 'r') as f:
-                new_skips = yamload(f)
-                skips = skips.union(new_skips)
+        skips = _get_skips(experiment)
         subjects = sorted(set(subjects) - skips)
     return subjects
+
+
+def _get_skips(experiment):
+    all_experiments = ('erp', 'pskt')
+    if experiment in all_experiments:
+        experiment = (experiment,)
+    elif experiment == 'combined':
+        experiment = all_experiments
+    elif experiment is None:
+        raise ValueError('must pass "experiment" when skipping subjects')
+    skips = set()
+    for exp in experiment:
+        fname = f'skip_subjects_{exp}.yaml'
+        with open(os.path.join(paramdir, fname), 'r') as f:
+            new_skips = yamload(f)
+            skips = skips.union(new_skips)
+    return skips
 
 
 def load_psd_params():
@@ -64,21 +69,20 @@ def load_inverse_params():
     return inverse_params
 
 
-def load_cohorts():
+def load_cohorts(experiment=None):
     """load intervention and knowledge groups."""
     with open(os.path.join(paramdir, 'intervention_cohorts.yaml'), 'r') as f:
         intervention_groups = yamload(f)[cohort]
     with open(os.path.join(paramdir, 'letter_knowledge_cohorts.yaml'),
               'r') as f:
         letter_knowledge_groups = yamload(f)[cohort]
-    with open(os.path.join(paramdir, 'skip_subjects.yaml'), 'r') as f:
-        skips = yamload(f)
+    skips = _get_skips(experiment)
     for _dict in (intervention_groups, letter_knowledge_groups):
         for _group in _dict:
             # convert 1103 → 'prek_1103'
             _dict[_group] = [f'prek_{num}' for num in _dict[_group]]
             # remove anyone in skip_subjects.yaml from the cohorts
-            _dict[_group] = sorted(set(_dict[_group]) - set(skips))
+            _dict[_group] = sorted(set(_dict[_group]) - skips)
     return intervention_groups, letter_knowledge_groups
 
 
@@ -87,7 +91,7 @@ def load_paths():
     with open(os.path.join(paramdir, 'paths.yaml'), 'r') as f:
         paths = yamload(f)
     paths['results_dir'] = os.path.join(
-        paths['results_dir'], f'{cohort}-final')
+        paths['results_dir'], f'{cohort}-epo-rej')
     return paths['data_root'], paths['subjects_dir'], paths['results_dir']
 
 
@@ -226,7 +230,7 @@ def get_dataframe_from_label(label, src, methods=('dSPM', 'MNE'),
     elif isinstance(subjects, str):
         subjects = [subjects]
     # load cohort information
-    intervention_group, letter_knowledge_group = load_cohorts()
+    intervention_group, letter_knowledge_group = load_cohorts(experiment)
     intervention_map = {subj: group.lower()[:-12]
                         for group, members in intervention_group.items()
                         for subj in members}

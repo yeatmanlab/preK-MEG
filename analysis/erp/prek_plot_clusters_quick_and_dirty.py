@@ -38,7 +38,7 @@ for folder in (img_dir, cluster_stc_dir, timeseries_dir):
     os.makedirs(folder, exist_ok=True)
 
 # load cohort info (keys Language/LetterIntervention and Lower/UpperKnowledge)
-intervention_group, letter_knowledge_group = load_cohorts()
+intervention_group, letter_knowledge_group = load_cohorts(experiment='erp')
 
 # assemble groups info
 groups_dict = dict(grandavg=subjects,

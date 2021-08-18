@@ -23,7 +23,7 @@ brain_plot_kwargs.update(time_label='freq=%0.2f Hz', surface='white',
                          background='white', size=(1000, 1400))
 
 # load groups
-intervention_group, letter_knowledge_group = load_cohorts()
+intervention_group, letter_knowledge_group = load_cohorts(experiment='pskt')
 groups = dict(GrandAvg=subjects)
 groups.update(letter_knowledge_group)
 

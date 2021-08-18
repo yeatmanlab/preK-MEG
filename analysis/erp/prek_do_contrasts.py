@@ -34,7 +34,7 @@ contrasts = {f'{contr[0].capitalize()}Minus{contr[1].capitalize()}': contr
              for contr in list(combinations(conditions[:-1], 2))}
 
 # load cohort info (keys Language/LetterIntervention and Lower/UpperKnowledge)
-intervention_group, letter_knowledge_group = load_cohorts()
+intervention_group, letter_knowledge_group = load_cohorts(experiment='erp')
 
 # assemble groups to iterate over
 
