@@ -16,6 +16,7 @@ from analysis.aux_functions import (load_paths, load_params, load_cohorts,
 
 mne.cuda.init_cuda()
 overwrite = False
+make_movies = False
 
 # load params
 (brain_plot_kwargs, movie_kwargs, subjects,
@@ -119,18 +120,19 @@ if cohort != 'replication':
         stc.save(os.path.join(groupavg_path, fname))
 
 # MAKE THE MOVIES
-for group, timepoint_dict in stc_dict.items():
-    for timepoint, condition_dict in timepoint_dict.items():
-        for con, stc in condition_dict.items():
-            # if the movie already exists and overwrite=False, skip it
-            mov_fname = f'{cohort}_{group}_{timepoint}_{method}_{con}.mov'
-            print(f'making movie {mov_fname}')
-            mov_fpath = os.path.join(mov_path, mov_fname)
-            if os.path.exists(mov_fpath) and not overwrite:
-                print(f'skipping {mov_fname}')
-                continue
-            # make movie
-            brain = stc.plot(subject='fsaverage', **brain_plot_kwargs)
-            brain.save_movie(mov_fpath, **movie_kwargs)
-            # clean up
-            del brain
+if make_movies:
+    for group, timepoint_dict in stc_dict.items():
+        for timepoint, condition_dict in timepoint_dict.items():
+            for con, stc in condition_dict.items():
+                # if the movie already exists and overwrite=False, skip it
+                mov_fname = f'{cohort}_{group}_{timepoint}_{method}_{con}.mov'
+                print(f'making movie {mov_fname}')
+                mov_fpath = os.path.join(mov_path, mov_fname)
+                if os.path.exists(mov_fpath) and not overwrite:
+                    print(f'skipping {mov_fname}')
+                    continue
+                # make movie
+                brain = stc.plot(subject='fsaverage', **brain_plot_kwargs)
+                brain.save_movie(mov_fpath, **movie_kwargs)
+                # clean up
+                del brain
