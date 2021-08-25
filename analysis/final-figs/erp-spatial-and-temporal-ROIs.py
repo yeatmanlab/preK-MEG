@@ -67,7 +67,7 @@ brainfig.subplots_adjust(bottom=0, top=1)
 # add temporal ROI
 ax = linefig.subplots(1, 1)
 sns.lineplot(x='time', y='value', ci=68, ax=ax, data=df,
-             legend=False, linewidth=1,
+             legend=False, linewidth=1, color='#44BB99',
              err_kws=dict(alpha=0.25, edgecolor='none'))
 # fill temporal ROI
 ax.axvspan(*temporal_roi, facecolor='k', alpha=0.1, zorder=-2,
