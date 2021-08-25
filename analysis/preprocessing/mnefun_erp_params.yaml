@@ -1,8 +1,8 @@
 preprocessing:
     epoching:
         reject:
-            grad: 4000.0e-13
-            mag: 4000.0e-15
+            grad: 2600.0e-13
+            mag: 7000.0e-15
         in_names: [words, faces, cars, aliens]
         in_numbers: [10, 20, 30, 40]
         out_names: [[ERP], [words, faces, cars, aliens]]
