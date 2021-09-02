@@ -53,8 +53,8 @@ xticks = np.linspace(0, 1, num=5)
 xticklabels = nice_ticklabels(xticks)
 
 # init figure
-fig = plt.figure(figsize=(6, 3))
-brainfig, linefig = fig.subfigures(1, 2, width_ratios=(1, 3), wspace=0.1)
+fig = plt.figure(figsize=(6.5, 3.25))
+brainfig, linefig = fig.subfigures(1, 2, width_ratios=(1, 4), wspace=0.1)
 axs = fig.subplots(1, 2, sharex=True, sharey=True)
 
 # add brain ROI
@@ -63,7 +63,7 @@ brainax = brainfig.subplots()
 brain_image = imread(img_path)
 brainax.imshow(brain_image, interpolation=None)
 brainax.set_axis_off()
-brainfig.subplots_adjust(bottom=0, top=1)
+brainfig.subplots_adjust(bottom=0, top=1, left=0, right=1)
 
 # add timecourses
 axs = linefig.subplots(1, 2, sharex=True, sharey=True)
@@ -83,7 +83,7 @@ for this_intervention, ax in zip(interventions, axs):
     ax.set(xlabel='', ylabel='', xlim=(-0.1, 1), ylim=(0, ymax),
            yticks=yticks, yticklabels=yticklabels,
            xticks=xticks, xticklabels=xticklabels)
-    ax.set_title(f'{this_intervention.capitalize()} Intervention (post)',
+    ax.set_title(f'{this_intervention.capitalize()} Interv. (post)',
                  loc='left', size='large')
     ax.grid(color='k', alpha=0.1)
     for spine in ax.spines.values():
@@ -101,7 +101,7 @@ linefig.text(0.015, 0.98, 'B', **kwargs)
 # add garnishes
 linefig.supxlabel('time (s)')
 linefig.supylabel('dSPM value')
-linefig.subplots_adjust(left=0.09, bottom=0.12, right=0.97, top=0.93,
+linefig.subplots_adjust(left=0.1, bottom=0.13, right=0.97, top=0.92,
                         wspace=0.1)
 # save
 fig.savefig('lineplot-postcamp.png')
