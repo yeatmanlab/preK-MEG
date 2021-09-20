@@ -77,10 +77,10 @@ for prepost in ('pre', 'post'):
                 do_score=False,        # run scoring function to extract events
                 gen_ssp=False,         # create SSP projectors
                 apply_ssp=False,       # apply SSP projectors
-                write_epochs=False,    # epoching & filtering
+                write_epochs=True,    # epoching & filtering
                 gen_covs=True,        # make covariance
                 gen_fwd=True,         # generate fwd model
                 gen_inv=True,         # generate inverse
-                gen_report=False,      # print report
+                gen_report=True,      # print report
                 print_status=False     # show status
             )
