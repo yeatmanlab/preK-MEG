@@ -17,7 +17,7 @@ import faulthandler
 faulthandler.enable()
 
 # load params
-brain_plot_kwargs, _, subjects, cohort = load_params()
+brain_plot_kwargs, _, subjects, cohort = load_params(experiment='pskt')
 inverse_params = load_inverse_params()
 
 # config paths

@@ -1,0 +1,10 @@
+preprocessing:
+    epoching:
+        reject: null
+            # grad: 2600.0e-13
+            # mag: 7000.0e-15
+        in_names: [words, faces, cars, aliens]
+        in_numbers: [10, 20, 30, 40]
+        out_names: [[ERP], [words, faces, cars, aliens]]
+        out_numbers: [[10, 10, 10, 10],  # Combine all trials
+                      [10, 20, 30, 40]]  # Separate trials

@@ -19,7 +19,7 @@ mne.cuda.init_cuda()
 n_jobs = 10
 
 # load params
-brain_plot_kwargs, movie_kwargs, subjects, cohort = load_params()
+brain_plot_kwargs, _, subjects, cohort = load_params(experiment='erp')
 inverse_params = load_inverse_params()
 method = inverse_params['method']
 
@@ -42,7 +42,7 @@ contrasts = [f'{cond_0.capitalize()}Minus{cond_1.capitalize()}'
              for (cond_0, cond_1) in combinations(conditions, 2)]
 
 # load cohort info (keys Language/LetterIntervention and Lower/UpperKnowledge)
-intervention_group, letter_knowledge_group = load_cohorts()
+intervention_group, letter_knowledge_group = load_cohorts(experiment='erp')
 
 # assemble groups to iterate over
 # groups = dict(GrandAvg=subjects)

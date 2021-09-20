@@ -14,7 +14,7 @@ from analysis.aux_functions import (load_paths, load_params,
                                     plot_label_and_timeseries)
 
 # load params
-brain_plot_kwargs, _, subjects, cohort = load_params()
+brain_plot_kwargs, _, subjects, cohort = load_params(experiment='pskt')
 for kwarg in ('time_viewer', 'show_traces'):
     del brain_plot_kwargs[kwarg]  # not used in Brain.__init__
 inverse_params = load_inverse_params()
@@ -62,7 +62,8 @@ lineplot_kwargs = dict(hue='condition', hue_order=conditions,
 
 # load brain data & restrict to label
 df = get_dataframe_from_label(label, fsaverage_src, methods=methods,
-                              conditions=conditions, unit='freq')
+                              conditions=conditions, unit='freq',
+                              experiment='pskt')
 df['roi'] = region
 df.to_csv(os.path.join(spectrum_dir, f'roi-{region}-frequencies-long.csv'))
 

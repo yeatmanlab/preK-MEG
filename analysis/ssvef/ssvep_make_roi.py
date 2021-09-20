@@ -18,7 +18,7 @@ mne.cuda.init_cuda()
 roi_freq = 2
 
 # load params
-brain_plot_kwargs, *_, cohort = load_params()
+brain_plot_kwargs, *_, cohort = load_params(experiment='pskt')
 inverse_params = load_inverse_params()
 
 # config paths

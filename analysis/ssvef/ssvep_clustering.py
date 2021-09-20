@@ -24,9 +24,9 @@ tfce = True
 n_jobs = 10
 
 # load params
-*_, subjects, cohort = load_params()
+*_, subjects, cohort = load_params(experiment='pskt')
 inverse_params = load_inverse_params()
-intervention_group, letter_knowledge_group = load_cohorts()
+intervention_group, letter_knowledge_group = load_cohorts(experiment='pskt')
 groups = dict(GrandAvg=subjects)
 groups.update(intervention_group)
 groups.update(letter_knowledge_group)

@@ -24,7 +24,7 @@ for _dir in (fig_dir, topo_dir):
     os.makedirs(_dir, exist_ok=True)
 
 # load params
-*_, subjects, cohort = load_params()
+*_, subjects, cohort = load_params(experiment='pskt')
 
 # config other
 timepoints = ('pre', 'post')

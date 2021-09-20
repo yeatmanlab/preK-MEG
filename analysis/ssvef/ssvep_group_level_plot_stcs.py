@@ -21,11 +21,11 @@ for _dir in (stc_dir, fig_dir):
     os.makedirs(_dir, exist_ok=True)
 
 # load params
-brain_plot_kwargs, movie_kwargs, subjects, cohort = load_params()
+brain_plot_kwargs, _, subjects, cohort = load_params(experiment='pskt')
 brain_plot_kwargs.update(time_label='freq=%0.2f Hz')
 
 # load groups
-intervention_group, letter_knowledge_group = load_cohorts()
+intervention_group, letter_knowledge_group = load_cohorts(experiment='pskt')
 groups = dict(GrandAvg=subjects)
 groups.update(intervention_group)
 groups.update(letter_knowledge_group)

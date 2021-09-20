@@ -24,7 +24,7 @@ for _dir in (stc_dir, morph_dir):
     os.makedirs(_dir, exist_ok=True)
 
 # load params
-*_, subjects, cohort = load_params()
+*_, subjects, cohort = load_params(experiment='pskt')
 inverse_params = load_inverse_params()
 inverse_method = inverse_params['method']
 ori = inverse_params['orientation_constraint']

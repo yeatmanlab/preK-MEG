@@ -9,19 +9,17 @@ Plot movies with significant cluster regions highlighted.
 import os
 import re
 import numpy as np
-from mayavi import mlab
 import mne
 from analysis.aux_functions import (load_paths, load_params, load_cohorts,
                                     load_inverse_params,
                                     get_dataframe_from_label,
                                     plot_label_and_timeseries)
 
-mlab.options.offscreen = True
 mne.cuda.init_cuda()
 n_jobs = 10
 
 # load params
-brain_plot_kwargs, _, subjects, cohort = load_params()
+brain_plot_kwargs, _, subjects, cohort = load_params(experiment='erp')
 inverse_params = load_inverse_params()
 method = inverse_params['method']
 # config paths
@@ -38,7 +36,7 @@ for folder in (img_dir, cluster_stc_dir, timeseries_dir):
     os.makedirs(folder, exist_ok=True)
 
 # load cohort info (keys Language/LetterIntervention and Lower/UpperKnowledge)
-intervention_group, letter_knowledge_group = load_cohorts()
+intervention_group, letter_knowledge_group = load_cohorts(experiment='erp')
 
 # assemble groups info
 groups_dict = dict(grandavg=subjects,
@@ -198,7 +196,8 @@ def make_cluster_stc(cluster_fname):
             all_conditions = ('words', 'faces', 'cars')
             all_timepoints = ('post', 'pre')
             df = get_dataframe_from_label(label, fsaverage_src, [method],
-                                          all_timepoints, all_conditions)
+                                          all_timepoints, all_conditions,
+                                          experiment='erp')
             # plot
             lineplot_kwargs = dict(hue='condition', hue_order=all_conditions,
                                    style='timepoint',

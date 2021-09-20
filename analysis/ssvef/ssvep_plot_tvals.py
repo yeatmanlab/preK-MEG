@@ -15,7 +15,7 @@ from analysis.aux_functions import load_paths, load_params, load_inverse_params
 save_movie = False
 
 # load params
-brain_plot_kwargs, movie_kwargs, subjects, cohort = load_params()
+brain_plot_kwargs, _, subjects, cohort = load_params(experiment='pskt')
 inverse_params = load_inverse_params()
 
 # config paths

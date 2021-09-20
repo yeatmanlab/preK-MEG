@@ -18,3 +18,9 @@
 
 - check `../../params/current_cohort.yml` to see if you're set up to
   run the original group, replication group, or both together ('pooled').
+
+# Script sequence
+
+1. `run_mnefun.py`
+2. `find-optimal-reject-thresh.py` → `crossval-results.csv`
+3. `check-epoch-drop-counts.py` → `trial-counts-after-thresholding.csv`, `epoch-rejection-thresholds.yaml`, and `peak-to-peak-hists-and-rejection-thresholds.png`

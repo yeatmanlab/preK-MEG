@@ -33,7 +33,8 @@ fsaverage_src = mne.add_source_space_distances(fsaverage_src, dist_limit=0)
 
 # load brain data & restrict to label
 df = get_dataframe_from_label(label, fsaverage_src, methods=methods,
-                              conditions=conditions, unit='freq')
+                              conditions=conditions, unit='freq',
+                              experiment='pskt')
 df['roi'] = region
 
 df.to_csv(f'pskt-in-label-{region}.csv', index=False)

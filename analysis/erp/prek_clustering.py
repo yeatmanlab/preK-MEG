@@ -57,7 +57,7 @@ def do_clustering(X, label, adjacency, groups=1):
 spatial_limits = dict(action='include', region='VOTC', hemi=['lh'])
 
 # load params
-_, _, subjects, cohort = load_params()
+*_, subjects, cohort = load_params(experiment='erp')
 inverse_params = load_inverse_params()
 method = inverse_params['method']
 
@@ -77,7 +77,7 @@ contrasts = {f'{contr[0].capitalize()}Minus{contr[1].capitalize()}': contr
              for contr in list(combinations(conditions, 2))}
 
 # load cohort info (keys Language/LetterIntervention and Lower/UpperKnowledge)
-intervention_group, letter_knowledge_group = load_cohorts()
+intervention_group, letter_knowledge_group = load_cohorts(experiment='erp')
 
 # assemble groups to iterate over
 groups = dict(GrandAvg=subjects)
