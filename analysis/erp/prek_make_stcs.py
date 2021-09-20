@@ -29,6 +29,7 @@ subfolder = 'combined' if PREPROCESS_JOINTLY else 'erp'
 
 # config other
 conditions = ['words', 'faces', 'cars', 'aliens']
+conditions_that_matter = conditions[:-1]
 snr = 3.
 lambda2 = 1. / snr ** 2
 smoothing_steps = 10
@@ -37,6 +38,11 @@ with open(paramfile, 'r') as f:
     params = yamload(f)
 lp_cut = params['preprocessing']['filtering']['lp_cut']
 del params
+
+# load rejection thresholds
+thresh = os.path.join('..', 'preprocessing', 'epoch-rejection-thresholds.yaml')
+with open(thresh, 'r') as f:
+    reject_thresholds = yamload(f)
 
 # for morph to fsaverage
 fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
@@ -55,16 +61,20 @@ for s in subjects:
                                  f'{prepost}_camp', 'twa_hp', subfolder, s)
         inv_path = os.path.join(this_subj, 'inverse',
                                 f'{s}-{lp_cut}-sss-meg{constr}-inv.fif')
-        evk_path = os.path.join(this_subj, 'inverse',
-                                f'Conditions_{lp_cut}-sss_eq_{s}-ave.fif')
+        epo_path = os.path.join(this_subj, 'epochs',
+                                f'All_{lp_cut}-sss_{s}-epo.fif')
         stc_path = os.path.join(this_subj, 'stc')
         # prepare output dir
         if not os.path.isdir(stc_path):
             os.mkdir(stc_path)
-        # load evoked data and inverse
+        # load epochs, equalize, make evokeds
+        epochs = mne.read_epochs(epo_path)
+        epochs.drop_bad(reject_thresholds)
+        epochs, dropped_indices = epochs.equalize_event_counts(
+            event_ids=conditions_that_matter, method='mintime')
+        evokeds = [epochs[cond].average() for cond in conditions]
+        # load inverse, make STCs and save
         inv = read_inverse_operator(inv_path)
-        evokeds = [mne.read_evokeds(evk_path, condition=c) for c in conditions]
-        # make STCs
         stcs = [apply_inverse(evk, inv, lambda2, method=method,
                               pick_ori=ori) for evk in evokeds]
         # save STCs

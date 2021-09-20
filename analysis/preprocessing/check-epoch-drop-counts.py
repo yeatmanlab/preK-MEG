@@ -1,3 +1,14 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+@author: Daniel McCloy
+
+Extract results from rejection threshold cross-validation and write to YAML;
+compute and plot epoch peak-to-peak histograms and epochs retained per
+condition.
+"""
+
+import yaml
 from collections import Counter
 import pandas as pd
 import seaborn as sns
@@ -15,14 +26,16 @@ with open(paramfile, 'r') as f:
 lp_cut = params['preprocessing']['filtering']['lp_cut']
 del params
 
-# load crossval results
+# load crossval results, extract best thresholds, and write to YAML
 crossval_df = pd.read_csv('crossval-results.csv')
 best_rval_row = (crossval_df.query('rval == rval.max()')
                             .query('mag == mag.max()')
                             .query('grad == grad.max()'))
 thresholds = best_rval_row.drop(columns='rval').to_dict('records')[0]
+with open('epoch-rejection-thresholds.yaml', 'w') as f:
+    yaml.dump(thresholds, f)
 
-
+# prep for iteration
 event_dict = dict(words=10, faces=20, cars=30, aliens=40)
 peak_to_peak_df = pd.DataFrame()
 trial_count_df = pd.DataFrame()
