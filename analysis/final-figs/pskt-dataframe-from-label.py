@@ -8,7 +8,8 @@ Prepare a dataframe from a given label.
 
 import os
 import mne
-from analysis.aux_functions import load_paths, get_dataframe_from_label
+from analysis.aux_functions import (load_paths, get_dataframe_from_label,
+                                    load_fsaverage_src)
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
@@ -26,10 +27,7 @@ label = labels[0] + labels[1]  # combine the two MPM labels
 region = 'IOS_IOG_pOTS'
 
 # load fsaverage source space
-fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
-                                  'fsaverage-ico-5-src.fif')
-fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
-fsaverage_src = mne.add_source_space_distances(fsaverage_src, dist_limit=0)
+fsaverage_src = load_fsaverage_src()
 
 # load brain data & restrict to label
 df = get_dataframe_from_label(label, fsaverage_src, methods=methods,

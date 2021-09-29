@@ -11,7 +11,7 @@ import re
 import numpy as np
 import mne
 from analysis.aux_functions import (load_paths, load_params, load_cohorts,
-                                    load_inverse_params,
+                                    load_inverse_params, load_fsaverage_src,
                                     get_dataframe_from_label,
                                     plot_label_and_timeseries)
 
@@ -50,9 +50,7 @@ for group, members in groups_dict.items():
     groups_dict[group] = [f'prek_{n}' for n in members]
 
 # load fsaverage source space
-fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
-                                  'fsaverage-ico-5-src.fif')
-fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
+fsaverage_src = load_fsaverage_src()
 
 
 # helper function: plot the clusters as pseudo-STC

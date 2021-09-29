@@ -9,6 +9,7 @@ Create ROI labels (adjacent bands along ventral surface of left hemisphere).
 import os
 import yaml
 import mne
+from analysis.aux_functions import load_fsaverage_src
 
 # get subjects_dir
 with open(os.path.join('..', '..', 'params', 'paths.yaml'), 'r') as f:
@@ -18,10 +19,7 @@ with open(os.path.join('..', '..', 'params', 'paths.yaml'), 'r') as f:
 mne.datasets.fetch_aparc_sub_parcellation(subjects_dir)
 
 # load fsaverage source space
-fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
-                                  'fsaverage-ico-5-src.fif')
-fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
-fsaverage_src = mne.add_source_space_distances(fsaverage_src, dist_limit=0)
+fsaverage_src = load_fsaverage_src()
 
 # define which labels comprise each region. Region 0 is a large label covering
 # most of ventral occipitotemporal cortex. Regions 1-5 are sub-bands within

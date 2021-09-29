@@ -17,8 +17,9 @@ import mne
 from mne.stats import (spatio_temporal_cluster_1samp_test,
                        spatio_temporal_cluster_test)
 from analysis.aux_functions import (load_paths, load_params, load_cohorts,
+                                    load_fsaverage_src, load_inverse_params,
                                     prep_cluster_stats, define_labels,
-                                    load_inverse_params, PREPROCESS_JOINTLY)
+                                    PREPROCESS_JOINTLY)
 
 mne.cuda.init_cuda()
 rng = np.random.RandomState(seed=15485863)  # the one millionth prime
@@ -84,10 +85,8 @@ groups = dict(GrandAvg=subjects)
 groups.update(intervention_group)
 groups.update(letter_knowledge_group)
 
-# load fsaverage source space to get adjacency matrix
-fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
-                                  'fsaverage-ico-5-src.fif')
-fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
+# load fsaverage source space
+fsaverage_src = load_fsaverage_src()
 hemi_nverts = len(fsaverage_src[0]['vertno'])
 # make separate source spaces and adjacency matrices for each hemisphere
 lh_src = fsaverage_src.copy()
