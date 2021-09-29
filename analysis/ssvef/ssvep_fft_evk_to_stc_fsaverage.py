@@ -68,9 +68,10 @@ for s in subjects:
             for constr in constraints:
                 constr_dir = constr.lstrip('-') if len(constr) else 'loose'
                 # load inverse operator
+                inv_fname = f'{s}-{lp_cut}-sss-meg{constr}-inv.fif'
                 inv_path = os.path.join(data_root, f'{timepoint}_camp',
                                         'twa_hp', 'pskt', s, 'inverse',
-                                        f'{s}-{lp_cut}-sss-meg{constr}-inv.fif')
+                                        inv_fname)
                 inverse = mne.minimum_norm.read_inverse_operator(inv_path)
                 # loop over estimate types
                 for estim_type in estim_types:
