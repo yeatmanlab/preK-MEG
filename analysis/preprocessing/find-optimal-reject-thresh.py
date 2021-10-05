@@ -95,7 +95,7 @@ def get_rval(mag, grad):
                                     pick_ori=ori)
                 # extract time courses (one from each label)
                 time_courses[prepost][cond] = mne.extract_label_time_course(
-                    stc, morphed_labels, inv['src'], mode='pca_flip')
+                    stc, morphed_labels, inv['src'], mode='mean')
             # just store once; all conds same thanks to equalize_event_counts:
             n_aves[prepost] = evoked.nave
         # compute R values

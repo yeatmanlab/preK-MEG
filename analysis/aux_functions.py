@@ -266,7 +266,7 @@ def get_dataframe_from_label(label, src, methods=('dSPM', 'MNE'),
                     # extract label time course
                     time_courses[method][timept][cond][subj] = np.squeeze(
                         extract_label_time_course(stc, label, src=src,
-                                                  mode='pca_flip'))
+                                                  mode='mean'))
                 # convert dict of each subj's time series to DataFrame
                 df = DataFrame(time_courses[method][timept][cond],
                                index=range(len(stc.times)))
