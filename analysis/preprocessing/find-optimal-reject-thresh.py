@@ -103,19 +103,17 @@ def get_rval(mag, grad):
             for ix, hemi in enumerate(('lh', 'rh')):
                 rval = np.corrcoef(
                     x=time_courses['pre'][cond][ix],
-                    y=time_courses['post'][cond][ix])
+                    y=time_courses['post'][cond][ix])[0, 1]
                 row = pd.DataFrame(dict(subj=[s], hemi=[hemi], cond=[cond],
                                         n_pre=n_aves['pre'],
                                         n_post=n_aves['post'],
-                                        rval=[rval[0, 1]]))
+                                        rval=[rval]))
                 rval_df = pd.concat([rval_df, row], ignore_index=True)
-    rval_df['absr'] = rval_df['rval'].apply(np.abs)
     # save the dataframe for later inspection
     fname = (f'pre-post-correlations-mag{int(mag * 1e15)}fT'
              f'-grad{int(grad * 1e13)}fTcm.csv')
     rval_df.to_csv(os.path.join(csvdir, fname))
-    # print(rval_df['absr'].describe())
-    return rval_df['absr'].mean()
+    return rval_df['rval'].mean()
 
 
 # grid search setup
