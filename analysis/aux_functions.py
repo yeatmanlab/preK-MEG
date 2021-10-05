@@ -441,3 +441,8 @@ def div_by_adj_bins(data, n_bins=2, method='mean', return_noise=False):
         weights /= 2 * n_bins
     noise = convolve1d(data, mode='constant', weights=weights)
     return noise if return_noise else data / noise
+
+
+def nice_ticklabels(ticks, n=2):
+    return list(
+        map(str, [int(t) if t == int(t) else round(t, n) for t in ticks]))
