@@ -98,12 +98,13 @@ def get_rval(mag, grad):
                     stc, morphed_labels, inv['src'], mode='mean')
             # just store once; all conds same thanks to equalize_event_counts:
             n_aves[prepost] = evoked.nave
+            start, end = evoked.time_as_index([0, 0.5])
         # compute R values
         for cond in conditions_that_matter:
             for ix, hemi in enumerate(('lh', 'rh')):
                 rval = np.corrcoef(
-                    x=time_courses['pre'][cond][ix],
-                    y=time_courses['post'][cond][ix])[0, 1]
+                    x=time_courses['pre'][cond][ix][start:end + 1],
+                    y=time_courses['post'][cond][ix][start:end + 1])[0, 1]
                 row = pd.DataFrame(dict(subj=[s], hemi=[hemi], cond=[cond],
                                         n_pre=n_aves['pre'],
                                         n_post=n_aves['post'],
