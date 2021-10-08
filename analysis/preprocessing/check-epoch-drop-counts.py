@@ -126,7 +126,8 @@ melted = merged_df.melt(id_vars=['subj'],
                         value_vars=['rval_lh', 'rval_rh'],
                         value_name='rval')
 rval_distr = melted.groupby('subj').agg('mean').sort_values('rval')
-ax = sns.histplot(rval_distr, x='rval', bins=int(round(len(subjects) // 3)))
+fig, ax = plt.subplots()
+sns.histplot(rval_distr, x='rval', bins=int(round(len(subjects) // 3)), ax=ax)
 ax.set_title('distribution of mean R-values across subjects')
 ax.figure.savefig('rval-distribution.png')
 
