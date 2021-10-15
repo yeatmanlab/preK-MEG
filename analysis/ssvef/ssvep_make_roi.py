@@ -10,7 +10,8 @@ import os
 import yaml
 import numpy as np
 import mne
-from analysis.aux_functions import load_paths, load_params, load_inverse_params
+from analysis.aux_functions import (load_paths, load_params,
+                                    load_fsaverage_src, load_inverse_params)
 
 
 # flags
@@ -37,9 +38,7 @@ for _dir in (fig_dir,):
 timepoints = ('pre', 'post')
 
 # load fsaverage source space
-fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
-                                  'fsaverage-ico-5-src.fif')
-fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
+fsaverage_src = load_fsaverage_src()
 
 # average the SNR data across pre/post timepoints
 avg_stc = None

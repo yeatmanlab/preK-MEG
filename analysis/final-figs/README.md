@@ -18,4 +18,7 @@
    2 × 3 grid of lineplots (pre- vs post-camp for each condition in each
    intervention).
 
+5. `erp-rejection-thresholds.py` generates a supplementary figure showing the
+   results of the epoch rejection threshold grid search.
+
 ## SSVEP analysis

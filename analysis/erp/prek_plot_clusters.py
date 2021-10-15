@@ -12,7 +12,7 @@ import numpy as np
 from mayavi import mlab
 import mne
 from analysis.aux_functions import (load_paths, load_params, load_cohorts,
-                                    load_inverse_params)
+                                    load_inverse_params, load_fsaverage_src)
 
 mlab.options.offscreen = True
 mne.cuda.init_cuda()
@@ -51,9 +51,7 @@ groups = dict()
 groups.update(intervention_group)
 
 # load fsaverage source space
-fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
-                                  'fsaverage-ico-5-src.fif')
-fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
+fsaverage_src = load_fsaverage_src()
 
 
 # workhorse function

@@ -15,7 +15,8 @@ from scipy import stats
 from mne.stats import (permutation_cluster_test, ttest_ind_no_p,
                        permutation_cluster_1samp_test, ttest_1samp_no_p)
 from analysis.aux_functions import (load_paths, load_params, load_cohorts,
-                                    prep_cluster_stats, load_inverse_params)
+                                    prep_cluster_stats, load_inverse_params,
+                                    load_fsaverage_src)
 ppf = stats.t.ppf
 del stats
 
@@ -56,10 +57,8 @@ conditions = ('all', 'ps', 'kt')
 rng = np.random.RandomState(seed=15485863)  # the one millionth prime
 cluster_sigma = 0.001
 
-# load fsaverage source space to get connectivity matrix
-fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
-                                  'fsaverage-ico-5-src.fif')
-fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
+# load fsaverage source space
+fsaverage_src = load_fsaverage_src()
 adjacency = mne.spatial_src_adjacency(fsaverage_src)
 
 # load one STC to get bin centers

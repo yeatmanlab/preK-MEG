@@ -15,12 +15,7 @@ from matplotlib.image import imread
 import pandas as pd
 import seaborn as sns
 
-from analysis.aux_functions import load_paths
-
-
-def nice_ticklabels(ticks):
-    return list(map(str, [int(t) if t == int(t) else t for t in ticks]))
-
+from analysis.aux_functions import load_paths, nice_ticklabels
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()

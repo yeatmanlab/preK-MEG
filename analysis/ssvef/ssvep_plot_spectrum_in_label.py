@@ -9,7 +9,7 @@ Plot SNR spectra for a given label
 import os
 import mne
 from analysis.aux_functions import (load_paths, load_params,
-                                    load_inverse_params,
+                                    load_inverse_params, load_fsaverage_src,
                                     get_dataframe_from_label, plot_label,
                                     plot_label_and_timeseries)
 
@@ -37,10 +37,7 @@ region = '2_Hz-LetterKnowledge'
 label = mne.read_label(fpath)
 
 # load fsaverage source space
-fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
-                                  'fsaverage-ico-5-src.fif')
-fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
-fsaverage_src = mne.add_source_space_distances(fsaverage_src, dist_limit=0)
+fsaverage_src = load_fsaverage_src()
 
 # config other
 methods = ('snr', 'fft')

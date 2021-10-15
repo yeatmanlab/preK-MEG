@@ -4,6 +4,7 @@ import os
 import yaml
 from functools import partial
 import numpy as np
+from mne import read_source_spaces, add_source_space_distances
 
 paramdir = os.path.join('..', '..', 'params')
 yamload = partial(yaml.load, Loader=yaml.FullLoader)
@@ -36,6 +37,16 @@ def load_subjects(cohort, experiment=None, skip=True):
         skips = _get_skips(experiment)
         subjects = sorted(set(subjects) - skips)
     return subjects
+
+
+def load_fsaverage_src():
+    """Load fsaverage source space."""
+    _, subjects_dir, _ = load_paths()
+    fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
+                                      'fsaverage-ico-5-src.fif')
+    fsaverage_src = read_source_spaces(fsaverage_src_path)
+    fsaverage_src = add_source_space_distances(fsaverage_src, dist_limit=0)
+    return fsaverage_src
 
 
 def _get_skips(experiment):
@@ -255,7 +266,7 @@ def get_dataframe_from_label(label, src, methods=('dSPM', 'MNE'),
                     # extract label time course
                     time_courses[method][timept][cond][subj] = np.squeeze(
                         extract_label_time_course(stc, label, src=src,
-                                                  mode='pca_flip'))
+                                                  mode='mean'))
                 # convert dict of each subj's time series to DataFrame
                 df = DataFrame(time_courses[method][timept][cond],
                                index=range(len(stc.times)))
@@ -430,3 +441,8 @@ def div_by_adj_bins(data, n_bins=2, method='mean', return_noise=False):
         weights /= 2 * n_bins
     noise = convolve1d(data, mode='constant', weights=weights)
     return noise if return_noise else data / noise
+
+
+def nice_ticklabels(ticks, n=2):
+    return list(
+        map(str, [int(t) if t == int(t) else round(t, n) for t in ticks]))

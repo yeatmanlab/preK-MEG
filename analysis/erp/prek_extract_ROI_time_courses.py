@@ -13,7 +13,7 @@ import mne
 from matplotlib import rcParams
 from matplotlib.colors import to_rgba
 from analysis.aux_functions import (load_paths, load_params,
-                                    load_inverse_params,
+                                    load_inverse_params, load_fsaverage_src,
                                     get_dataframe_from_label, plot_label,
                                     plot_label_and_timeseries)
 
@@ -39,11 +39,7 @@ for dir in (timeseries_dir, img_dir):
     os.makedirs(dir, exist_ok=True)
 
 # load fsaverage source space
-fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
-                                  'fsaverage-ico-5-src.fif')
-fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
-fsaverage_src = mne.add_source_space_distances(fsaverage_src, dist_limit=0)
-
+fsaverage_src = load_fsaverage_src()
 
 rois = dict()
 roi_colors = rcParams['axes.prop_cycle'].by_key()['color']

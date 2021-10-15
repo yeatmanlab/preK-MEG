@@ -10,7 +10,8 @@ import os
 import mne
 from mne.minimum_norm import apply_inverse, read_inverse_operator
 from analysis.aux_functions import (load_paths, load_params, yamload,
-                                    load_inverse_params, PREPROCESS_JOINTLY)
+                                    load_inverse_params, load_fsaverage_src,
+                                    PREPROCESS_JOINTLY)
 
 # load params
 *_, subjects, cohort = load_params(experiment='erp')
@@ -44,10 +45,8 @@ thresh = os.path.join('..', 'preprocessing', 'epoch-rejection-thresholds.yaml')
 with open(thresh, 'r') as f:
     reject_thresholds = yamload(f)
 
-# for morph to fsaverage
-fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
-                                  'fsaverage-ico-5-src.fif')
-fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
+# load fsaverage source space
+fsaverage_src = load_fsaverage_src()
 fsaverage_vertices = [s['vertno'] for s in fsaverage_src]
 
 # loop over subjects

@@ -49,8 +49,8 @@ colors = dict(words=('#EE99AA',   # light red
 interventions = ('letter', 'language')
 conditions = ('words', 'faces', 'cars')
 timepoints = ('pre', 'post')
-ymax = dict(MNE=1e-10, dSPM=4, sLORETA=2, fft=300, snr=8)[method]
-yticks = np.linspace(0, ymax, num=5)
+ymax = dict(MNE=1e-10, dSPM=3, sLORETA=2, fft=300, snr=8)[method]
+yticks = np.linspace(0, ymax, num=4)
 xticks = np.linspace(0, 1, num=5)
 yticklabels = nice_ticklabels(yticks)
 xticklabels = nice_ticklabels(xticks)

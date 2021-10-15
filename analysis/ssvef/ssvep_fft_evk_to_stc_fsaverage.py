@@ -9,7 +9,8 @@ Load frequency-domain SSVEP evokeds, apply inverse, & morph to FSAverage.
 import os
 import numpy as np
 import mne
-from analysis.aux_functions import (load_paths, load_params, load_inverse_params,
+from analysis.aux_functions import (load_paths, load_params,
+                                    load_fsaverage_src, load_inverse_params,
                                     yamload)
 
 # flags
@@ -48,9 +49,7 @@ constraints = ('' if ori == 'loose' else f'-{ori}',)
 estim_types = (None if estim == 'magnitude' else estim,)
 
 # for morph to fsaverage
-fsaverage_src_path = os.path.join(subjects_dir, 'fsaverage', 'bem',
-                                  'fsaverage-ico-5-src.fif')
-fsaverage_src = mne.read_source_spaces(fsaverage_src_path)
+fsaverage_src = load_fsaverage_src()
 fsaverage_vertices = [s['vertno'] for s in fsaverage_src]
 
 # loop over subjects
@@ -68,9 +67,10 @@ for s in subjects:
             for constr in constraints:
                 constr_dir = constr.lstrip('-') if len(constr) else 'loose'
                 # load inverse operator
+                inv_fname = f'{s}-{lp_cut}-sss-meg{constr}-inv.fif'
                 inv_path = os.path.join(data_root, f'{timepoint}_camp',
                                         'twa_hp', 'pskt', s, 'inverse',
-                                        f'{s}-{lp_cut}-sss-meg{constr}-inv.fif')
+                                        inv_fname)
                 inverse = mne.minimum_norm.read_inverse_operator(inv_path)
                 # loop over estimate types
                 for estim_type in estim_types:

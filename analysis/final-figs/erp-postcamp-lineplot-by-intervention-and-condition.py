@@ -45,8 +45,8 @@ colors = ('#994455',  # dark red
 interventions = ('letter', 'language')
 conditions = ('words', 'faces', 'cars')
 timepoints = ('pre', 'post')
-ymax = dict(MNE=1e-10, dSPM=4, sLORETA=2, fft=300, snr=8)[method]
-yticks = np.linspace(0, ymax, num=5)
+ymax = dict(MNE=1e-10, dSPM=3, sLORETA=2, fft=300, snr=8)[method]
+yticks = np.linspace(0, ymax, num=4)
 yticklabels = nice_ticklabels(yticks)
 # do custom xticks because of ROI
 xticks = np.linspace(0, 1, num=5)
@@ -91,7 +91,7 @@ for this_intervention, ax in zip(interventions, axs):
 
 legend_lines = [Line2D([], [], color=_col, label=_lab.capitalize(),
                 linewidth=1) for _col, _lab in zip(colors, conditions)]
-axs[1].legend(handles=legend_lines, ncol=1, loc='upper right',
+axs[1].legend(handles=legend_lines, ncol=1, loc='lower right',
               labelcolor='linecolor')
 
 # add subfigure labels
