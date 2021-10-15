@@ -140,3 +140,4 @@ cbar_ax.set_ylabel(ylab, labelpad=12)
 heatfig.subplots_adjust(left=0.1, right=0.85, bottom=0.15, top=0.95)
 
 fig.savefig('epoch-rejection-crossval.png')
+fig.savefig('epoch-rejection-crossval.pdf')
