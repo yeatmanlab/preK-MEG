@@ -49,7 +49,7 @@ matrix(c(0, 1, 0, 0, 0, 1), nrow=3, ncol=2, byrow=FALSE,
 formula(value ~ cond_ * tmpt_ * intv_ + (1 + cond_ + tmpt_ + intv_ | subj)
         ) -> form
 # initial fit w/ parametric bootstrapped p-values
-afex::mixed(form, data=modeldata, method="PB", check_contrasts=FALSE) -> mod
+afex::mixed(form, data=modeldata, method="S", check_contrasts=FALSE) -> mod
 # try all optimizers to see if convergence warnings are false alarms
 lme4::lmer(form, data=modeldata, control=lme4::lmerControl(optimizer=NULL)) -> emptymod
 lme4::allFit(emptymod) -> allfit_results
@@ -72,3 +72,24 @@ emmeans::emmeans(mod, "tmpt_", by=c("cond_", "intv_"), type="response",
                  contr="revpairwise") ->
     post_hoc_timepoints
 print(post_hoc_timepoints$contrasts)
+
+# Fit model to pre data
+formula(value ~ cond_ * intv_ + (1 | subj)
+) -> form
+afex::mixed(form, data=filter(modeldata,tmpt_ == 'pre'), method="S", check_contrasts=FALSE) -> mod
+print(mod$anova_table)
+print(summary(mod))
+
+# Fit model to post data
+formula(value ~ cond_ * intv_ + (1 | subj)
+) -> form
+afex::mixed(form, data=filter(modeldata,tmpt_ == 'post'), method="S", check_contrasts=FALSE) -> mod
+print(mod$anova_table)
+print(summary(mod))
+
+# Compare groups on 
+formula(value ~ cond_ * intv_ + (1 | subj)
+) -> form
+afex::mixed(form, data=filter(modeldata,tmpt_ == 'post'), method="S", check_contrasts=FALSE) -> mod
+print(mod$anova_table)
+print(summary(mod))
