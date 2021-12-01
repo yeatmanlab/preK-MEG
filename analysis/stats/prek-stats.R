@@ -48,7 +48,7 @@ matrix(c(0, 1, 0, 0, 0, 1), nrow=3, ncol=2, byrow=FALSE,
 # model
 formula(value ~ cond_ * tmpt_ * intv_ + (1 + cond_ + tmpt_ + intv_ | subj)
         ) -> form
-# initial fit w/ parametric bootstrapped p-values
+# initial fit w/ Satterthwaite p-values
 afex::mixed(form, data=modeldata, method="S", check_contrasts=FALSE) -> mod
 # try all optimizers to see if convergence warnings are false alarms
 lme4::lmer(form, data=modeldata, control=lme4::lmerControl(optimizer=NULL)) -> emptymod
