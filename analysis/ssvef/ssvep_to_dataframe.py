@@ -10,7 +10,7 @@ import os
 import numpy as np
 import pandas as pd
 import mne
-from analysis.aux_functions import load_paths, load_params, load_inverse_params
+from sswef_helpers.aux_functions import load_paths, load_params, load_inverse_params
 
 # load params
 _, _, subjects, cohort = load_params(experiment='pskt')

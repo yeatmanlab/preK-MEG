@@ -10,7 +10,7 @@ import os
 import numpy as np
 from scipy.fft import rfft, rfftfreq
 import mne
-from analysis.aux_functions import load_paths, load_params
+from sswef_helpers.aux_functions import load_paths, load_params
 
 # flags
 mne.cuda.init_cuda()

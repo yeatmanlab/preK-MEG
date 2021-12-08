@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 import mne
-from analysis.aux_functions import load_paths, load_params, yamload
+from sswef_helpers.aux_functions import load_paths, load_params, yamload
 
 # load general params
 data_root, subjects_dir, _ = load_paths()

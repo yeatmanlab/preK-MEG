@@ -11,7 +11,7 @@ import numpy as np
 from nibabel.freesurfer.io import write_morph_data
 import mne
 from mne.stats import ttest_ind_no_p, ttest_1samp_no_p
-from analysis.aux_functions import (load_paths, load_params, load_cohorts,
+from sswef_helpers.aux_functions import (load_paths, load_params, load_cohorts,
                                     load_inverse_params)
 
 # load params

@@ -7,7 +7,7 @@ import os
 import yaml
 import mnefun
 from mnefun._yaml import _flat_params_read
-from analysis.aux_functions import load_paths, load_params
+from sswef_helpers.aux_functions import load_paths, load_params
 from prek_score import prek_score
 
 # load general params

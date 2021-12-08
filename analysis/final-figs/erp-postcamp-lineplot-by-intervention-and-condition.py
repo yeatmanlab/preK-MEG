@@ -14,7 +14,7 @@ from matplotlib.lines import Line2D
 import pandas as pd
 import seaborn as sns
 
-from analysis.aux_functions import load_paths, yamload
+from sswef_helpers.aux_functions import load_paths, yamload
 
 
 def nice_ticklabels(ticks):

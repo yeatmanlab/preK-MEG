@@ -14,8 +14,8 @@ import pandas as pd
 import seaborn as sns
 import mne
 from mne.minimum_norm import apply_inverse, read_inverse_operator
-from analysis.aux_functions import (load_paths, load_params, yamload,
-                                    load_inverse_params, PREPROCESS_JOINTLY)
+from sswef_helpers.aux_functions import (
+    load_paths, load_params, yamload, load_inverse_params, PREPROCESS_JOINTLY)
 
 # load params
 *_, subjects, cohort = load_params(experiment='erp')

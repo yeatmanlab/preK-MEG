@@ -16,7 +16,7 @@ import numpy as np
 import mne
 from mne.stats import (spatio_temporal_cluster_1samp_test,
                        spatio_temporal_cluster_test)
-from analysis.aux_functions import (load_paths, load_params, load_cohorts,
+from sswef_helpers.aux_functions import (load_paths, load_params, load_cohorts,
                                     load_fsaverage_src, load_inverse_params,
                                     prep_cluster_stats, define_labels,
                                     PREPROCESS_JOINTLY)

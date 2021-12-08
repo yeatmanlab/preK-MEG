@@ -11,7 +11,7 @@ import os
 import os.path as op
 from shutil import copyfile
 import mne
-from analysis.aux_functions import load_paths, load_params
+from sswef_helpers.aux_functions import load_paths, load_params
 
 # load params
 _, subjects_dir, _ = load_paths()

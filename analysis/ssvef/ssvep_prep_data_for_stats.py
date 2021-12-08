@@ -9,7 +9,7 @@ aggregate signal and noise data into .npz files.
 import os
 import numpy as np
 import mne
-from analysis.aux_functions import (load_paths, load_params, div_by_adj_bins,
+from sswef_helpers.aux_functions import (load_paths, load_params, div_by_adj_bins,
                                     load_inverse_params)
 
 # load params

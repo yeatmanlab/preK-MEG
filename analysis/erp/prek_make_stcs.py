@@ -9,7 +9,7 @@ Make original and morphed Source Time Course files
 import os
 import mne
 from mne.minimum_norm import apply_inverse, read_inverse_operator
-from analysis.aux_functions import (load_paths, load_params, yamload,
+from sswef_helpers.aux_functions import (load_paths, load_params, yamload,
                                     load_inverse_params, load_fsaverage_src,
                                     PREPROCESS_JOINTLY)
 

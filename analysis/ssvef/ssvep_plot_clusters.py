@@ -12,7 +12,7 @@ import pathlib
 import re
 import numpy as np
 import mne
-from analysis.aux_functions import load_paths, load_params, load_inverse_params
+from sswef_helpers.aux_functions import load_paths, load_params, load_inverse_params
 import faulthandler
 faulthandler.enable()
 

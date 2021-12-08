@@ -10,7 +10,7 @@ import os
 import numpy as np
 import mne
 from mne.stats import ttest_ind_no_p
-from analysis.aux_functions import (load_paths, load_params, load_cohorts,
+from sswef_helpers.aux_functions import (load_paths, load_params, load_cohorts,
                                     div_by_adj_bins, set_brain_view_distance)
 
 # config paths

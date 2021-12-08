@@ -14,7 +14,7 @@ import mne
 from scipy import stats
 from mne.stats import (permutation_cluster_test, ttest_ind_no_p,
                        permutation_cluster_1samp_test, ttest_1samp_no_p)
-from analysis.aux_functions import (load_paths, load_params, load_cohorts,
+from sswef_helpers.aux_functions import (load_paths, load_params, load_cohorts,
                                     prep_cluster_stats, load_inverse_params,
                                     load_fsaverage_src)
 ppf = stats.t.ppf

@@ -8,7 +8,7 @@ Plot a cortical label for a figure.
 
 import os
 import mne
-from analysis.aux_functions import load_paths, load_params, load_fsaverage_src
+from sswef_helpers.aux_functions import load_paths, load_params, load_fsaverage_src
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()

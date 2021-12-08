@@ -7,5 +7,5 @@ setup(name='sswef',
       author='Daniel McCloy',
       author_email='dan@mccloy.info',
       license='MIT',
-      packages=['analysis'],
+      packages=['sswef_helpers'],
       zip_safe=False)

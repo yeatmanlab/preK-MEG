@@ -9,7 +9,7 @@ Load SSVEP epochs and plot PSDs / scalp topographies for each subject.
 import os
 import matplotlib.pyplot as plt
 import mne
-from analysis.aux_functions import load_paths, load_params
+from sswef_helpers.aux_functions import load_paths, load_params
 
 # flags
 plot_psd = True

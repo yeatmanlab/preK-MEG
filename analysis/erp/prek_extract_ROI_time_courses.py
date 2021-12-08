@@ -12,10 +12,9 @@ import numpy as np
 import mne
 from matplotlib import rcParams
 from matplotlib.colors import to_rgba
-from analysis.aux_functions import (load_paths, load_params,
-                                    load_inverse_params, load_fsaverage_src,
-                                    get_dataframe_from_label, plot_label,
-                                    plot_label_and_timeseries)
+from sswef_helpers.aux_functions import (
+    load_paths, load_params, load_inverse_params, load_fsaverage_src,
+    get_dataframe_from_label, plot_label, plot_label_and_timeseries)
 
 # flags
 mne.cuda.init_cuda()

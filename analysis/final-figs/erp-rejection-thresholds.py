@@ -15,7 +15,7 @@ from matplotlib.patches import Rectangle
 import pandas as pd
 import seaborn as sns
 import mne
-from analysis.aux_functions import (load_paths, load_params, yamload,
+from sswef_helpers.aux_functions import (load_paths, load_params, yamload,
                                     nice_ticklabels)
 
 # flags

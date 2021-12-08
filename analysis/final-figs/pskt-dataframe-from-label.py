@@ -8,7 +8,7 @@ Prepare a dataframe from a given label.
 
 import os
 import mne
-from analysis.aux_functions import (load_paths, get_dataframe_from_label,
+from sswef_helpers.aux_functions import (load_paths, get_dataframe_from_label,
                                     load_fsaverage_src)
 
 # config paths

@@ -7,7 +7,7 @@ import pandas as pd
 from sklearn.mixture import GaussianMixture
 import matplotlib.pyplot as plt
 import seaborn as sns
-from analysis.aux_functions import load_subjects
+from sswef_helpers.aux_functions import load_subjects
 
 plt.ion()
 seed = 15485863  # the one millionth prime

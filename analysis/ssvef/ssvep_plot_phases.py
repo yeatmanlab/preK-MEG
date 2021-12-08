@@ -10,7 +10,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import mne
-from analysis.aux_functions import load_paths, load_params, div_by_adj_bins
+from sswef_helpers.aux_functions import load_paths, load_params, div_by_adj_bins
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
