@@ -9,12 +9,11 @@ Plot movies with significant cluster regions highlighted.
 import os
 from itertools import combinations
 import numpy as np
-from mayavi import mlab
 import mne
-from sswef_helpers.aux_functions import (load_paths, load_params, load_cohorts,
-                                    load_inverse_params, load_fsaverage_src)
+from sswef_helpers.aux_functions import (
+    load_paths, load_params, load_cohorts, load_inverse_params,
+    load_fsaverage_src)
 
-mlab.options.offscreen = True
 mne.cuda.init_cuda()
 n_jobs = 10
 
