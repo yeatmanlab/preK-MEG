@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-mnefun preprocessing of both PRE-K cohorts (original & replication).
+mnefun preprocessing of either or both PRE-K cohorts (original & replication).
 """
 
 import os
