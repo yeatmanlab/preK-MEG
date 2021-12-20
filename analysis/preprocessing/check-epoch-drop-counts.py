@@ -11,6 +11,7 @@ condition.
 import os
 import yaml
 from collections import Counter
+import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -46,16 +47,12 @@ for tpt in ('pre', 'post'):
     for subj in subjects:
         # load raw and events, and epoch without any peak-to-peak rejection
         slug = f'/mnt/scratch/prek/{tpt}_camp/twa_hp/erp/{subj}'
-        raw_fname = f'{slug}/sss_pca_fif/{subj}_erp_{tpt}_allclean_fil{lp_cut}_raw_sss.fif'  # noqa E501
-        eve_fname = f'{slug}/lists/ALL_{subj}_erp_{tpt}-eve.lst'
-        try:
-            raw = mne.io.read_raw_fif(raw_fname)
-        except FileNotFoundError:
-            continue
-        events = mne.read_events(eve_fname)
-        epochs = mne.Epochs(raw, events, event_id=event_dict, reject=None,
-                            preload=True)
-        del raw
+        epo_path = os.path.join(slug, 'epochs',
+                                f'All_{lp_cut}-sss_{subj}-epo.fif')
+        # load epochs
+        epochs = mne.read_epochs(epo_path)
+        # make sure there weren't any drops already
+        assert not np.any([len(log) for log in epochs.drop_log])
 
         # tabulate peak-to-peak values for each epoch
         for ch_type in ('mag', 'grad'):
@@ -91,6 +88,12 @@ epoch_df = trial_count_df.melt(
     ).rename(columns=lambda x: f'n_epochs_{x}')
 merged_df = rval_df.merge(
     epoch_df, left_index=True, right_index=True).reset_index()
+
+# save
+peak_to_peak_df.to_csv('unthresholded-epoch-peak-to-peak-amplitudes.csv',
+                       index=False)
+trial_count_df.to_csv('trial-counts-after-thresholding.csv', index=False)
+merged_df.to_csv('trial-counts-and-r-values.csv', index=False)
 
 # plot histogram of peak-to-peak epoch amplitudes
 g = sns.FacetGrid(peak_to_peak_df, row='ch_type', sharex=False)
@@ -131,9 +134,4 @@ sns.histplot(rval_distr, x='rval', bins=int(round(len(subjects) // 3)), ax=ax)
 ax.set_title('distribution of mean R-values across subjects')
 ax.figure.savefig('rval-distribution.png')
 
-# save
-peak_to_peak_df.to_csv('unthresholded-epoch-peak-to-peak-amplitudes.csv',
-                       index=False)
-trial_count_df.to_csv('trial-counts-after-thresholding.csv', index=False)
-merged_df.to_csv('trial-counts-and-r-values.csv', index=False)
 # print(trial_count_df.query('cars<15 or words<15 or faces<15'))
