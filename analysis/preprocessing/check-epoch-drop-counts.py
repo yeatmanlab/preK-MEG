@@ -6,6 +6,9 @@
 Extract results from rejection threshold cross-validation and write to YAML;
 compute and plot epoch peak-to-peak histograms and epochs retained per
 condition.
+
+NOTE: make sure that ../../params/skip_subjects_erp.yaml contains ONLY subjects
+who are rejected on grounds other than epoch counts (e.g., cHPI problems).
 """
 
 import os
@@ -20,7 +23,7 @@ from sswef_helpers.aux_functions import load_paths, load_params, yamload
 
 # load general params
 data_root, subjects_dir, _ = load_paths()
-*_, subjects, cohort = load_params(experiment='erp', skip=False)
+*_, subjects, cohort = load_params(experiment='erp')
 
 # load lowpass
 paramfile = 'mnefun_common_params.yaml'
@@ -72,8 +75,9 @@ for tpt in ('pre', 'post'):
         trial_count_df = pd.concat((trial_count_df, row))
 
 # add in subject-level R-values
-fname = (f'pre-post-correlations-mag{int(thresholds["mag"] * 1e15)}fT'
-         f'-grad{int(thresholds["grad"] * 1e13)}fTcm.csv')
+fname = ('pre-post-correlations'
+         f'-mag{np.rint(thresholds["mag"] * 1e15).astype(int)}fT'
+         f'-grad{np.rint(thresholds["grad"] * 1e13).astype(int)}fTcm.csv')
 fpath = os.path.join('csv', fname)
 subj_crossval_df = pd.read_csv(fpath, index_col=0)
 rval_df = subj_crossval_df.pivot(

@@ -8,7 +8,8 @@ Plot a cortical label for a figure.
 
 import os
 import mne
-from sswef_helpers.aux_functions import load_paths, load_params, load_fsaverage_src
+from sswef_helpers.aux_functions import (load_paths, load_params,
+                                         load_fsaverage_src)
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
@@ -41,6 +42,5 @@ img_path = os.path.join('.', img_fname)
 brain = mne.viz.Brain('fsaverage', **brain_plot_kwargs)
 brain.add_label(label, alpha=0.75, color='#44BB99')  # EE7733 → orange
 brain.add_label(label, alpha=1, color='#44BB99', borders=True)
-brain.show_view(dict(azimuth=240, elevation=150), roll=0)
-brain.plotter.disable_3_lights()
+brain.show_view(azimuth=30, elevation=210, roll=0)
 brain.save_image(img_path)
