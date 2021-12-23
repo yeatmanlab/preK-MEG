@@ -7,11 +7,12 @@ Make original and morphed Source Time Course files
 """
 
 import os
+import numpy as np
 import mne
 from mne.minimum_norm import apply_inverse, read_inverse_operator
-from analysis.aux_functions import (load_paths, load_params, yamload,
-                                    load_inverse_params, load_fsaverage_src,
-                                    PREPROCESS_JOINTLY)
+from sswef_helpers.aux_functions import (
+    load_paths, load_params, yamload, load_inverse_params, load_fsaverage_src,
+    PREPROCESS_JOINTLY)
 
 # load params
 *_, subjects, cohort = load_params(experiment='erp')
@@ -68,6 +69,8 @@ for s in subjects:
             os.mkdir(stc_path)
         # load epochs, equalize, make evokeds
         epochs = mne.read_epochs(epo_path)
+        # make sure there weren't any drops already
+        assert not np.any([len(log) for log in epochs.drop_log])
         epochs.drop_bad(reject_thresholds)
         epochs, dropped_indices = epochs.equalize_event_counts(
             event_ids=conditions_that_matter, method='mintime')

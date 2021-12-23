@@ -8,14 +8,12 @@ Plot frequency-domain STCs.
 
 import os
 import numpy as np
-from mayavi import mlab
 import mne
-from analysis.aux_functions import load_paths, load_params, div_by_adj_bins
+from sswef_helpers.aux_functions import (load_paths, load_params,
+                                         div_by_adj_bins)
 
 # flags
-mlab.options.offscreen = True
 mne.cuda.init_cuda()
-mne.viz.set_3d_backend('mayavi')
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()

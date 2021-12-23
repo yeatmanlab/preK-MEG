@@ -9,8 +9,8 @@ Aggregate frequency-domain STCs across subjects.
 import os
 import numpy as np
 import mne
-from analysis.aux_functions import (load_paths, load_params, load_cohorts,
-                                    div_by_adj_bins)
+from sswef_helpers.aux_functions import (load_paths, load_params, load_cohorts,
+                                         div_by_adj_bins)
 
 # config paths
 _, _, results_dir = load_paths()

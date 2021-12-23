@@ -9,7 +9,7 @@ Create ROI labels (adjacent bands along ventral surface of left hemisphere).
 import os
 import yaml
 import mne
-from analysis.aux_functions import load_fsaverage_src
+from sswef_helpers.aux_functions import load_fsaverage_src
 
 # get subjects_dir
 with open(os.path.join('..', '..', 'params', 'paths.yaml'), 'r') as f:

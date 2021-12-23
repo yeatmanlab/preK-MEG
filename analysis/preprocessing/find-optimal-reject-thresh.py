@@ -11,8 +11,8 @@ import numpy as np
 import pandas as pd
 import mne
 from mne.minimum_norm import apply_inverse, read_inverse_operator
-from analysis.aux_functions import (load_paths, load_params, yamload,
-                                    load_inverse_params, PREPROCESS_JOINTLY)
+from sswef_helpers.aux_functions import (
+    load_paths, load_params, yamload, load_inverse_params, PREPROCESS_JOINTLY)
 
 from joblib import Parallel, delayed
 
@@ -74,6 +74,8 @@ def get_rval(mag, grad):
                                     f'All_{lp_cut}-sss_{s}-epo.fif')
             # load epochs
             epochs = mne.read_epochs(epo_path)
+            # make sure there weren't any drops already
+            assert not np.any([len(log) for log in epochs.drop_log])
             epochs.drop_bad(dict(mag=mag, grad=grad))
             # make sure we have something to work with
             if not len(epochs):

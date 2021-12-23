@@ -15,8 +15,8 @@ from matplotlib.patches import Rectangle
 import pandas as pd
 import seaborn as sns
 import mne
-from analysis.aux_functions import (load_paths, load_params, yamload,
-                                    nice_ticklabels)
+from sswef_helpers.aux_functions import (load_paths, load_params, yamload,
+                                         nice_ticklabels)
 
 # flags
 force_redraw_brain = False
@@ -94,13 +94,18 @@ for (ch_type, _thresholds), ax in zip(gridsearch.items(), axs):
     data = ptp_df.query(f'ch_type == "{ch_type}"').filter(['ptp_ampl'])
     sns.histplot(data, ax=ax, legend=False)
     for _thresh in _thresholds:
-        color = 'C1' if _thresh == thresholds[ch_type] else light_grey
-        lw = 2 if _thresh == thresholds[ch_type] else 1
+        isclose = np.isclose(_thresh, thresholds[ch_type],
+                             rtol=1/scalings[ch_type], atol=0)
+        color = 'C1' if isclose else light_grey
+        lw = 2 if isclose else 1
         ax.axvline(x=_thresh, color=color, linestyle='--', linewidth=lw)
-        xticklabels = nice_ticklabels(
-            np.rint(ax.get_xticks() * scalings[ch_type] / 1e3))
-        ax.set(xlabel=axis_labels[ch_type], ylabel='',
-               xticklabels=[f'{val}k' for val in xticklabels])
+    # exclude extreme outliers
+    ax.set_xlim((0, np.quantile(data, 0.995)))
+    histfig.canvas.draw()
+    xticklabels = nice_ticklabels(
+        np.rint(ax.get_xticks() * scalings[ch_type] / 1e3))
+    ax.set(xlabel=axis_labels[ch_type], ylabel='',
+           xticklabels=[f'{val}k' for val in xticklabels])
 axs[0].set_title('Histograms of epoch peak-to-peak amplitudes', size='medium')
 histfig.subplots_adjust(bottom=0.15, top=0.9, hspace=0.6)
 

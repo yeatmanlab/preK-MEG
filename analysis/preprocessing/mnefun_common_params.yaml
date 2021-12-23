@@ -31,7 +31,7 @@ preprocessing:
         sss_type: python
         sss_regularize: in
         int_order: 8
-        tsss_dur: 4.0
+        tsss_dur: 20.0
         st_correlation: 0.98
 
     filtering:
@@ -48,7 +48,7 @@ preprocessing:
                             [0, 0, 0],   # EOG  (combined saccade and blink events)
                             [0, 0, 0],   # Continuous (from ERM)
                             [0, 0, 0],   # HEOG (focus on saccades)
-                            [0, 0, 0]],  # VEOG  (focus on blinks)
+                            [1, 1, 0]],  # VEOG  (focus on blinks)
             }
         ssp_ecg_reject:
             grad: 1500.0e-13  # mne-python default is 4000 fT/cm
@@ -67,7 +67,7 @@ preprocessing:
         flat:
             grad: 1.0e-13
             mag: 1.0e-15
-        reject_epochs_by_annot: "(BAD|EDGE).*(?<!MANUAL)$"  # ignore manual EOG annotations
+        reject_epochs_by_annot: True
         analyses: [All, Conditions]
         must_match: [[], []]
 

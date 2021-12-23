@@ -9,8 +9,8 @@ Extract SSVEP epochs, downsample, and save to disk.
 import os
 import numpy as np
 import mne
-from analysis.aux_functions import (load_paths, load_params,
-                                    PREPROCESS_JOINTLY, yamload)
+from sswef_helpers.aux_functions import (load_paths, load_params, yamload,
+                                         PREPROCESS_JOINTLY)
 
 mne.cuda.init_cuda()
 

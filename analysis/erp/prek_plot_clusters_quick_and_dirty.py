@@ -10,10 +10,9 @@ import os
 import re
 import numpy as np
 import mne
-from analysis.aux_functions import (load_paths, load_params, load_cohorts,
-                                    load_inverse_params, load_fsaverage_src,
-                                    get_dataframe_from_label,
-                                    plot_label_and_timeseries)
+from sswef_helpers.aux_functions import (
+    load_paths, load_params, load_cohorts, load_inverse_params,
+    load_fsaverage_src, get_dataframe_from_label, plot_label_and_timeseries)
 
 mne.cuda.init_cuda()
 n_jobs = 10

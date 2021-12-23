@@ -9,9 +9,8 @@ Load frequency-domain SSVEP evokeds, apply inverse, & morph to FSAverage.
 import os
 import numpy as np
 import mne
-from analysis.aux_functions import (load_paths, load_params,
-                                    load_fsaverage_src, load_inverse_params,
-                                    yamload)
+from sswef_helpers.aux_functions import (
+    load_paths, load_params, load_fsaverage_src, load_inverse_params, yamload)
 
 # flags
 mne.cuda.init_cuda()

@@ -15,7 +15,7 @@ from matplotlib.image import imread
 import pandas as pd
 import seaborn as sns
 
-from analysis.aux_functions import load_paths, nice_ticklabels
+from sswef_helpers.aux_functions import load_paths, nice_ticklabels
 
 # config paths
 data_root, subjects_dir, results_dir = load_paths()
