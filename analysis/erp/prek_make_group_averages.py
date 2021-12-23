@@ -8,8 +8,9 @@ Make average Source Time Course across all subjects, for each condition
 
 import os
 import mne
-from sswef_helpers.aux_functions import (load_paths, load_params, load_cohorts,
-                                    load_inverse_params, PREPROCESS_JOINTLY)
+from sswef_helpers.aux_functions import (
+    load_paths, load_params, load_cohorts, load_inverse_params,
+    PREPROCESS_JOINTLY)
 
 mne.cuda.init_cuda()
 overwrite = False

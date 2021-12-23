@@ -10,8 +10,8 @@ import os
 import yaml
 import numpy as np
 import mne
-from sswef_helpers.aux_functions import (load_paths, load_params,
-                                    load_fsaverage_src, load_inverse_params)
+from sswef_helpers.aux_functions import (
+    load_paths, load_params, load_fsaverage_src, load_inverse_params)
 
 
 # flags

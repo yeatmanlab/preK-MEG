@@ -9,7 +9,8 @@ Plot uncorrected t-value maps.
 import os
 import numpy as np
 import mne
-from sswef_helpers.aux_functions import load_paths, load_params, load_inverse_params
+from sswef_helpers.aux_functions import (load_paths, load_params,
+                                         load_inverse_params)
 
 # flags
 save_movie = False

@@ -8,10 +8,9 @@ Plot SNR spectra for a given label
 
 import os
 import mne
-from sswef_helpers.aux_functions import (load_paths, load_params,
-                                    load_inverse_params, load_fsaverage_src,
-                                    get_dataframe_from_label, plot_label,
-                                    plot_label_and_timeseries)
+from sswef_helpers.aux_functions import (
+    load_paths, load_params, load_inverse_params, load_fsaverage_src,
+    get_dataframe_from_label, plot_label, plot_label_and_timeseries)
 
 # load params
 brain_plot_kwargs, _, subjects, cohort = load_params(experiment='pskt')

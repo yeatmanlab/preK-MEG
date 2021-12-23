@@ -12,7 +12,7 @@ import os
 from itertools import combinations
 import mne
 from sswef_helpers.aux_functions import (load_paths, load_params, load_cohorts,
-                                    load_inverse_params)
+                                         load_inverse_params)
 
 mne.cuda.init_cuda()
 overwrite = False
