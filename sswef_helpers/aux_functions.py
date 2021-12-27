@@ -102,7 +102,7 @@ def load_paths():
     with open(os.path.join(paramdir, 'paths.yaml'), 'r') as f:
         paths = yamload(f)
     paths['results_dir'] = os.path.join(
-        paths['results_dir'], f'{cohort}-long-tsss')
+        paths['results_dir'], f'{cohort}-long-tsss-no-blink-proj')
     return paths['data_root'], paths['subjects_dir'], paths['results_dir']
 
 
