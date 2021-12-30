@@ -1,7 +1,5 @@
-Fitting 8 (g)lmer() models:
-[........]
-Obtaining 7 p-values:
-[.......]
+Fitting one lmer() model. [DONE]
+Calculating p-values. [DONE]
 
 # # # # ALLFIT RESULTS # # # #
 bobyqa : [OK]
@@ -206,13 +204,13 @@ nloptwrap.NLOPT_LN_BOBYQA                    0.3717425   7.418593e-04
 
 $times
                               user.self sys.self elapsed user.child sys.child
-bobyqa                            0.131    0.001   0.134          0         0
-Nelder_Mead                       0.833    0.003   0.819          0         0
-nlminbwrap                        0.163    0.000   0.165          0         0
-nmkbw                             0.401    0.000   0.397          0         0
-optimx.L-BFGS-B                   0.411    0.040   0.361          0         0
-nloptwrap.NLOPT_LN_NELDERMEAD     0.221    0.000   0.222          0         0
-nloptwrap.NLOPT_LN_BOBYQA         0.084    0.003   0.084          0         0
+bobyqa                            0.134    0.000   0.135          0         0
+Nelder_Mead                       0.823    0.002   0.823          0         0
+nlminbwrap                        0.164    0.000   0.164          0         0
+nmkbw                             0.399    0.003   0.399          0         0
+optimx.L-BFGS-B                   0.417    0.031   0.361          0         0
+nloptwrap.NLOPT_LN_NELDERMEAD     0.217    0.001   0.220          0         0
+nloptwrap.NLOPT_LN_BOBYQA         0.101    0.001   0.099          0         0
 
 $feval
                        bobyqa                   Nelder_Mead 
@@ -228,70 +226,69 @@ attr(,"class")
 [1] "summary.allFit"
 
 # # # # ANOVA TABLE # # # #
-Mixed Model Anova Table (Type 3 tests, PB-method)
+Mixed Model Anova Table (Type 3 tests, KR-method)
 
 Model: value ~ cond_ * tmpt_ * intv_ + (1 + cond_ + tmpt_ | subj)
 Data: modeldata
-                   Chisq Chi Df Pr(>Chisq) Pr(>PB)  
-cond_             0.9850      2    0.61109 0.63892  
-tmpt_             4.0264      1    0.04479 0.04427 *
-intv_             0.0463      1    0.82969 0.86273  
-cond_:tmpt_       0.4909      2    0.78236 0.83816  
-cond_:intv_       0.5874      2    0.74550 0.76224  
-tmpt_:intv_       5.6720      1    0.01724 0.02513 *
-cond_:tmpt_:intv_ 9.0421      2    0.01088 0.02004 *
+                  num Df den Df      F  Pr(>F)  
+cond_                  2     43 0.4653 0.63105  
+tmpt_                  1     44 5.3987 0.02484 *
+intv_                  1     44 0.1252 0.72511  
+cond_:tmpt_            2     88 0.2352 0.79093  
+cond_:intv_            2     43 0.2763 0.75996  
+tmpt_:intv_            1     44 1.8176 0.18449  
+cond_:tmpt_:intv_      2     88 4.4691 0.01417 *
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 # # # # MODEL SUMMARY # # # #
-Linear mixed model fit by maximum likelihood . t-tests use Satterthwaite's
-  method [lmerModLmerTest]
+Linear mixed model fit by REML. t-tests use Satterthwaite's method [
+lmerModLmerTest]
 Formula: value ~ cond_ * tmpt_ * intv_ + (1 + cond_ + tmpt_ | subj)
    Data: data
 
-     AIC      BIC   logLik deviance df.resid 
-   572.6    655.9   -263.3    526.6      253 
+REML criterion at convergence: 553.1
 
 Scaled residuals: 
     Min      1Q  Median      3Q     Max 
--1.7400 -0.6067 -0.1087  0.5135  2.7340 
+-1.7017 -0.5934 -0.1062  0.5022  2.6739 
 
 Random effects:
  Groups   Name        Variance Std.Dev. Corr             
- subj     (Intercept) 0.29927  0.5471                    
-          cond_faces  0.23595  0.4858   -0.78            
-          cond_cars   0.09167  0.3028   -0.75  0.82      
-          tmpt_post   0.05373  0.2318   -0.29  0.53  0.85
- Residual             0.26795  0.5176                    
+ subj     (Intercept) 0.31285  0.5593                    
+          cond_faces  0.24670  0.4967   -0.78            
+          cond_cars   0.09586  0.3096   -0.75  0.82      
+          tmpt_post   0.05617  0.2370   -0.29  0.53  0.85
+ Residual             0.28014  0.5293                    
 Number of obs: 276, groups:  subj, 46
 
 Fixed effects:
                                    Estimate Std. Error         df t value
-(Intercept)                       2.212e+00  9.714e-02  4.618e+01  22.770
-cond_faces                       -8.434e-02  1.048e-01  4.624e+01  -0.805
-cond_cars                        -7.382e-04  8.850e-02  5.428e+01  -0.008
-tmpt_post                        -2.289e-01  1.133e-01  1.478e+02  -2.020
-intv_letter                       4.180e-02  1.943e-01  4.618e+01   0.215
-cond_faces:tmpt_post              7.665e-02  1.528e-01  1.380e+02   0.502
-cond_cars:tmpt_post               1.032e-01  1.528e-01  1.380e+02   0.675
-cond_faces:intv_letter           -1.540e-01  2.095e-01  4.624e+01  -0.735
-cond_cars:intv_letter            -1.097e-01  1.770e-01  5.428e+01  -0.620
-tmpt_post:intv_letter             5.450e-01  2.266e-01  1.478e+02   2.405
-cond_faces:tmpt_post:intv_letter -1.671e-01  3.056e-01  1.380e+02  -0.547
-cond_cars:tmpt_post:intv_letter  -8.795e-01  3.056e-01  1.380e+02  -2.878
+(Intercept)                       2.212e+00  9.932e-02  4.418e+01  22.270
+cond_faces                       -8.434e-02  1.071e-01  4.422e+01  -0.787
+cond_cars                        -7.382e-04  9.050e-02  5.191e+01  -0.008
+tmpt_post                        -2.289e-01  1.159e-01  1.414e+02  -1.976
+intv_letter                       4.180e-02  1.986e-01  4.418e+01   0.210
+cond_faces:tmpt_post              7.665e-02  1.562e-01  1.320e+02   0.491
+cond_cars:tmpt_post               1.032e-01  1.562e-01  1.320e+02   0.660
+cond_faces:intv_letter           -1.540e-01  2.142e-01  4.422e+01  -0.719
+cond_cars:intv_letter            -1.097e-01  1.810e-01  5.191e+01  -0.606
+tmpt_post:intv_letter             5.450e-01  2.317e-01  1.414e+02   2.352
+cond_faces:tmpt_post:intv_letter -1.671e-01  3.124e-01  1.320e+02  -0.535
+cond_cars:tmpt_post:intv_letter  -8.795e-01  3.124e-01  1.320e+02  -2.815
                                  Pr(>|t|)    
 (Intercept)                       < 2e-16 ***
-cond_faces                        0.42492    
-cond_cars                         0.99338    
-tmpt_post                         0.04516 *  
-intv_letter                       0.83060    
-cond_faces:tmpt_post              0.61671    
-cond_cars:tmpt_post               0.50070    
-cond_faces:intv_letter            0.46593    
-cond_cars:intv_letter             0.53809    
-tmpt_post:intv_letter             0.01743 *  
-cond_faces:tmpt_post:intv_letter  0.58540    
-cond_cars:tmpt_post:intv_letter   0.00464 ** 
+cond_faces                        0.43529    
+cond_cars                         0.99352    
+tmpt_post                         0.05012 .  
+intv_letter                       0.83430    
+cond_faces:tmpt_post              0.62451    
+cond_cars:tmpt_post               0.51020    
+cond_faces:intv_letter            0.47591    
+cond_cars:intv_letter             0.54716    
+tmpt_post:intv_letter             0.02007 *  
+cond_faces:tmpt_post:intv_letter  0.59371    
+cond_cars:tmpt_post:intv_letter   0.00563 ** 
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
@@ -320,30 +317,27 @@ cnd_crs:nt_
 tmpt_pst:n_  0.129                     
 cnd_fcs:_:_  0.000     -0.674          
 cnd_crs:_:_  0.000     -0.674  0.500   
-optimizer (nloptwrap) convergence code: 0 (OK)
-boundary (singular) fit: see ?isSingular
-
 
 # # # # POST-HOC COMPARISONS: CONDITIONS # # # #
 tmpt_ = pre, intv_ = language:
  contrast      estimate    SE    df t.ratio p.value
- faces - words  -0.0874 0.183  98.9  -0.477  0.8358
- cars - words   -0.2173 0.165 114.7  -1.314  0.3260
+ faces - words  -0.0874 0.183  90.5  -0.477  0.8358
+ cars - words   -0.2173 0.165 104.9  -1.314  0.3263
 
 tmpt_ = post, intv_ = language:
  contrast      estimate    SE    df t.ratio p.value
- faces - words   0.0728 0.183  98.9   0.397  0.8782
- cars - words    0.3255 0.165 114.7   1.969  0.0955
+ faces - words   0.0728 0.183  90.5   0.397  0.8783
+ cars - words    0.3255 0.165 104.9   1.969  0.0959
 
 tmpt_ = pre, intv_ = letter:
  contrast      estimate    SE    df t.ratio p.value
- faces - words  -0.1579 0.192  98.9  -0.825  0.6196
- cars - words    0.1127 0.173 114.7   0.653  0.7303
+ faces - words  -0.1579 0.192  90.5  -0.825  0.6198
+ cars - words    0.1127 0.173 104.9   0.653  0.7303
 
 tmpt_ = post, intv_ = letter:
  contrast      estimate    SE    df t.ratio p.value
- faces - words  -0.1648 0.192  98.9  -0.861  0.5962
- cars - words   -0.2239 0.173 114.7  -1.296  0.3353
+ faces - words  -0.1648 0.192  90.5  -0.861  0.5964
+ cars - words   -0.2239 0.173 104.9  -1.296  0.3356
 
 Degrees-of-freedom method: kenward-roger 
 P value adjustment: dunnettx method for 2 tests 
@@ -351,71 +345,68 @@ P value adjustment: dunnettx method for 2 tests
 # # # # POST-HOC COMPARISONS: POST-MINUS-PRE # # # #
 cond_ = words, intv_ = language:
  contrast   estimate    SE  df t.ratio p.value
- post - pre  -0.5014 0.160 142  -3.129  0.0021
+ post - pre  -0.5014 0.160 130  -3.129  0.0022
 
 cond_ = faces, intv_ = language:
  contrast   estimate    SE  df t.ratio p.value
- post - pre  -0.3413 0.160 142  -2.129  0.0350
+ post - pre  -0.3413 0.160 130  -2.129  0.0351
 
 cond_ = cars, intv_ = language:
  contrast   estimate    SE  df t.ratio p.value
- post - pre   0.0415 0.160 142   0.259  0.7963
+ post - pre   0.0415 0.160 130   0.259  0.7963
 
 cond_ = words, intv_ = letter:
  contrast   estimate    SE  df t.ratio p.value
- post - pre   0.0435 0.167 142   0.260  0.7951
+ post - pre   0.0435 0.167 130   0.260  0.7952
 
 cond_ = faces, intv_ = letter:
  contrast   estimate    SE  df t.ratio p.value
- post - pre   0.0367 0.167 142   0.219  0.8270
+ post - pre   0.0367 0.167 130   0.219  0.8270
 
 cond_ = cars, intv_ = letter:
  contrast   estimate    SE  df t.ratio p.value
- post - pre  -0.2930 0.167 142  -1.751  0.0822
+ post - pre  -0.2930 0.167 130  -1.751  0.0824
 
 Degrees-of-freedom method: kenward-roger 
 
 # # # # PRE-CAMP ONLY MODEL # # # #
-Fitting 4 (g)lmer() models:
-[....]
-Obtaining 3 p-values:
-[...]
-Mixed Model Anova Table (Type 3 tests, PB-method)
+Fitting one lmer() model. [DONE]
+Calculating p-values. [DONE]
+Mixed Model Anova Table (Type 3 tests, KR-method)
 
 Model: value ~ cond_ * intv_ + (1 | subj)
 Data: filter
 Data: modeldata
 Data: tmpt_ == "pre"
-             Chisq Chi Df Pr(>Chisq) Pr(>PB)
-cond_       0.8953      2    0.63914  0.6753
-intv_       1.2189      1    0.26957  0.2747
-cond_:intv_ 2.6752      2    0.26247  0.2627
-Linear mixed model fit by maximum likelihood . t-tests use Satterthwaite's
-  method [lmerModLmerTest]
+            num Df den Df      F Pr(>F)
+cond_            2     88 0.4303 0.6517
+intv_            1     44 0.9473 0.3357
+cond_:intv_      2     88 1.2982 0.2782
+Linear mixed model fit by REML. t-tests use Satterthwaite's method [
+lmerModLmerTest]
 Formula: value ~ cond_ * intv_ + (1 | subj)
    Data: data
 
-     AIC      BIC   logLik deviance df.resid 
-   305.3    328.7   -144.6    289.3      130 
+REML criterion at convergence: 301.4
 
 Scaled residuals: 
      Min       1Q   Median       3Q      Max 
--1.67599 -0.68908 -0.05052  0.58795  3.01731 
+-1.63915 -0.67393 -0.04941  0.57503  2.95099 
 
 Random effects:
  Groups   Name        Variance Std.Dev.
- subj     (Intercept) 0.1120   0.3347  
- Residual             0.3867   0.6218  
+ subj     (Intercept) 0.1171   0.3422  
+ Residual             0.4043   0.6358  
 Number of obs: 138, groups:  subj, 46
 
 Fixed effects:
                         Estimate Std. Error        df t value Pr(>|t|)    
-(Intercept)              2.32632    0.10422 125.35053  22.321   <2e-16 ***
-cond_faces              -0.12266    0.12979  92.00000  -0.945    0.347    
-cond_cars               -0.05232    0.12979  92.00000  -0.403    0.688    
-intv_letter             -0.23070    0.20845 125.35053  -1.107    0.271    
-cond_faces:intv_letter  -0.07050    0.25957  92.00000  -0.272    0.787    
-cond_cars:intv_letter    0.33006    0.25957  92.00000   1.272    0.207    
+(Intercept)              2.32632    0.10656 119.90051  21.830   <2e-16 ***
+cond_faces              -0.12266    0.13270  88.00000  -0.924    0.358    
+cond_cars               -0.05232    0.13270  88.00000  -0.394    0.694    
+intv_letter             -0.23070    0.21313 119.90051  -1.082    0.281    
+cond_faces:intv_letter  -0.07050    0.26541  88.00000  -0.266    0.791    
+cond_cars:intv_letter    0.33006    0.26541  88.00000   1.244    0.217    
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
@@ -428,48 +419,45 @@ cnd_fcs:nt_ -0.027  0.043  0.022 -0.623
 cnd_crs:nt_ -0.027  0.022  0.043 -0.623  0.500 
 
 # # # # POST-CAMP ONLY MODEL # # # #
-Fitting 4 (g)lmer() models:
-[....]
-Obtaining 3 p-values:
-[...]
-Mixed Model Anova Table (Type 3 tests, PB-method)
+Fitting one lmer() model. [DONE]
+Calculating p-values. [DONE]
+Mixed Model Anova Table (Type 3 tests, KR-method)
 
 Model: value ~ cond_ * intv_ + (1 | subj)
 Data: filter
 Data: modeldata
 Data: tmpt_ == "post"
-             Chisq Chi Df Pr(>Chisq) Pr(>PB)  
-cond_       0.7411      2    0.69036 0.68631  
-intv_       2.5496      1    0.11032 0.12887  
-cond_:intv_ 5.8287      2    0.05424 0.05295 .
+            num Df den Df      F  Pr(>F)  
+cond_            2     88 0.3559 0.70157  
+intv_            1     44 0.1202 0.73043  
+cond_:intv_      2     88 2.8778 0.06157 .
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-Linear mixed model fit by maximum likelihood . t-tests use Satterthwaite's
-  method [lmerModLmerTest]
+Linear mixed model fit by REML. t-tests use Satterthwaite's method [
+lmerModLmerTest]
 Formula: value ~ cond_ * intv_ + (1 | subj)
    Data: data
 
-     AIC      BIC   logLik deviance df.resid 
-   279.8    303.2   -131.9    263.8      130 
+REML criterion at convergence: 277
 
 Scaled residuals: 
     Min      1Q  Median      3Q     Max 
--1.8784 -0.6111 -0.1201  0.4580  2.9604 
+-1.8372 -0.5977 -0.1175  0.4480  2.8953 
 
 Random effects:
  Groups   Name        Variance Std.Dev.
- subj     (Intercept) 0.1500   0.3873  
- Residual             0.2897   0.5382  
+ subj     (Intercept) 0.1568   0.3960  
+ Residual             0.3028   0.5503  
 Number of obs: 138, groups:  subj, 46
 
 Fixed effects:
                         Estimate Std. Error        df t value Pr(>|t|)    
-(Intercept)              2.09738    0.09785 111.94329  21.434   <2e-16 ***
-cond_faces              -0.04601    0.11233  92.00000  -0.410   0.6830    
-cond_cars                0.05084    0.11233  92.00000   0.453   0.6519    
-intv_letter              0.31429    0.19571 111.94329   1.606   0.1111    
-cond_faces:intv_letter  -0.23759    0.22466  92.00000  -1.058   0.2930    
-cond_cars:intv_letter   -0.54941    0.22466  92.00000  -2.446   0.0164 *  
+(Intercept)              2.09738    0.10005 107.07619  20.963   <2e-16 ***
+cond_faces              -0.04601    0.11485  88.00000  -0.401   0.6897    
+cond_cars                0.05084    0.11485  88.00000   0.443   0.6591    
+intv_letter              0.31429    0.20011 107.07619   1.571   0.1192    
+cond_faces:intv_letter  -0.23759    0.22970  88.00000  -1.034   0.3038    
+cond_cars:intv_letter   -0.54941    0.22970  88.00000  -2.392   0.0189 *  
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 

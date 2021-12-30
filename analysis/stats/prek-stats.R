@@ -57,8 +57,8 @@ matrix(c(0, 1, 0, 0, 0, 1), nrow=3, ncol=2, byrow=FALSE,
 formula(value ~ cond_ * tmpt_ * intv_ + (1 + cond_ + tmpt_ | subj)
         ) -> form_full
 sink("results-log.txt")
-# initial fit w/ parametric bootstrapped p-values
-afex::mixed(form_full, data=modeldata, method="PB", check_contrasts=FALSE
+# initial fit w/ Kenward-Roger approximation for ddof
+afex::mixed(form_full, data=modeldata, method="KR", check_contrasts=FALSE
             ) -> fullmod
 # try all optimizers to see if convergence warnings are false alarms
 cat("\n# # # # ALLFIT RESULTS # # # #\n")
@@ -92,17 +92,16 @@ emmeans::emmeans(fullmod, "tmpt_", by=c("cond_", "intv_"), type="response",
 print(post_hoc_timepoints$contrasts)
 
 # Fit model to pre data
-formula(value ~ cond_ * intv_ + (1 | subj)
-        ) -> form
+formula(value ~ cond_ * intv_ + (1 | subj)) -> form
 cat("\n# # # # PRE-CAMP ONLY MODEL # # # #\n")
-afex::mixed(form, data=filter(modeldata, tmpt_=="pre"), method="PB",
+afex::mixed(form, data=filter(modeldata, tmpt_=="pre"), method="KR",
             check_contrasts=FALSE) -> premod
 print(premod$anova_table)
 print(summary(premod))
 
 # Fit model to post data
 cat("\n# # # # POST-CAMP ONLY MODEL # # # #\n")
-afex::mixed(form, data=filter(modeldata, tmpt_=="post"), method="PB",
+afex::mixed(form, data=filter(modeldata, tmpt_=="post"), method="KR",
             check_contrasts=FALSE) -> postmod
 print(postmod$anova_table)
 print(summary(postmod))
