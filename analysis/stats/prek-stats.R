@@ -14,15 +14,15 @@ yaml::read_yaml(file.path("..", "final-figs", "peak-of-grand-mean.yaml")) %>%
     `[[`("temporal_roi") -> temporal_roi
 
 # load data
-yaml::read_yaml(file.path("..", "..", "params", "paths.yaml")) %>%
-    `[[`("results_dir") -> results_dir
-yaml::read_yaml(file.path("..", "..", "params", "results-path-identifier.yaml")
-                ) -> results_path_id
-file.path(results_dir, stringr::str_c("original-", results_path_id), "roi",
-          "time-series", "roi-MPM_IOS_IOG_pOTS_lh-timeseries-long.csv") ->
-          csv_path
-# uncomment if you have a local copy of the data:
-# "roi-MPM_IOS_IOG_pOTS_lh-timeseries-long.csv" -> csv_path
+"roi-MPM_IOS_IOG_pOTS_lh-timeseries-long.csv" -> csv_path
+# # if running on colchuck:
+# yaml::read_yaml(file.path("..", "..", "params", "paths.yaml")) %>%
+#     `[[`("results_dir") -> results_dir
+# yaml::read_yaml(file.path("..", "..", "params", "results-path-identifier.yaml")
+#                 ) -> results_path_id
+# file.path(results_dir, stringr::str_c("original-", results_path_id), "roi",
+#           "time-series", "roi-MPM_IOS_IOG_pOTS_lh-timeseries-long.csv") ->
+#           csv_path
 
 readr::cols_only(subj="c",
                  # pretest="c",
