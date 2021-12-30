@@ -73,8 +73,8 @@ for prepost in ('pre', 'post'):
             mnefun.do_processing(
                 params,
                 fetch_raw=False,      # go get the Raw files
-                do_sss=True,          # tSSS / maxwell filtering
-                do_score=True,        # run scoring function to extract events
+                do_sss=False,          # tSSS / maxwell filtering
+                do_score=False,        # run scoring function to extract events
                 gen_ssp=True,         # create SSP projectors
                 apply_ssp=True,       # apply SSP projectors
                 write_epochs=True,    # epoching & filtering

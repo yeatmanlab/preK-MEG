@@ -1,0 +1,470 @@
+Fitting one lmer() model. [DONE]
+Calculating p-values. [DONE]
+
+# # # # ALLFIT RESULTS # # # #
+bobyqa : [OK]
+Nelder_Mead : [OK]
+nlminbwrap : [OK]
+nmkbw : [OK]
+optimx.L-BFGS-B : [OK]
+nloptwrap.NLOPT_LN_NELDERMEAD : [OK]
+nloptwrap.NLOPT_LN_BOBYQA : [OK]
+$which.OK
+                       bobyqa                   Nelder_Mead 
+                         TRUE                          TRUE 
+                   nlminbwrap                         nmkbw 
+                         TRUE                          TRUE 
+              optimx.L-BFGS-B nloptwrap.NLOPT_LN_NELDERMEAD 
+                         TRUE                          TRUE 
+    nloptwrap.NLOPT_LN_BOBYQA 
+                         TRUE 
+
+$msgs
+$msgs$bobyqa
+[1] "boundary (singular) fit: see ?isSingular"
+
+$msgs$Nelder_Mead
+[1] "Model failed to converge with max|grad| = 2.94091 (tol = 0.002, component 1)"
+
+$msgs$nlminbwrap
+[1] "boundary (singular) fit: see ?isSingular"
+
+$msgs$nmkbw
+[1] "Model failed to converge with max|grad| = 0.00287166 (tol = 0.002, component 1)"
+
+$msgs$`optimx.L-BFGS-B`
+[1] "boundary (singular) fit: see ?isSingular"
+
+$msgs$nloptwrap.NLOPT_LN_NELDERMEAD
+[1] "boundary (singular) fit: see ?isSingular"
+
+$msgs$nloptwrap.NLOPT_LN_BOBYQA
+NULL
+
+
+$fixef
+                              (Intercept)  cond_faces     cond_cars  tmpt_post
+bobyqa                           2.211851 -0.08433797 -0.0007382204 -0.2289473
+Nelder_Mead                      2.211851 -0.08433797 -0.0007382204 -0.2289473
+nlminbwrap                       2.211851 -0.08433797 -0.0007382204 -0.2289473
+nmkbw                            2.211851 -0.08433797 -0.0007382204 -0.2289473
+optimx.L-BFGS-B                  2.211851 -0.08433797 -0.0007382204 -0.2289473
+nloptwrap.NLOPT_LN_NELDERMEAD    2.211851 -0.08433797 -0.0007382204 -0.2289473
+nloptwrap.NLOPT_LN_BOBYQA        2.211851 -0.08433797 -0.0007382204 -0.2289473
+                              intv_letter cond_faces:tmpt_post
+bobyqa                         0.04179942           0.07664738
+Nelder_Mead                    0.04179942           0.07664738
+nlminbwrap                     0.04179942           0.07664738
+nmkbw                          0.04179942           0.07664738
+optimx.L-BFGS-B                0.04179942           0.07664738
+nloptwrap.NLOPT_LN_NELDERMEAD  0.04179942           0.07664738
+nloptwrap.NLOPT_LN_BOBYQA      0.04179942           0.07664738
+                              cond_cars:tmpt_post cond_faces:intv_letter
+bobyqa                                  0.1031573             -0.1540421
+Nelder_Mead                             0.1031573             -0.1540421
+nlminbwrap                              0.1031573             -0.1540421
+nmkbw                                   0.1031573             -0.1540421
+optimx.L-BFGS-B                         0.1031573             -0.1540421
+nloptwrap.NLOPT_LN_NELDERMEAD           0.1031573             -0.1540421
+nloptwrap.NLOPT_LN_BOBYQA               0.1031573             -0.1540421
+                              cond_cars:intv_letter tmpt_post:intv_letter
+bobyqa                                   -0.1096788             0.5449899
+Nelder_Mead                              -0.1096788             0.5449899
+nlminbwrap                               -0.1096788             0.5449899
+nmkbw                                    -0.1096788             0.5449899
+optimx.L-BFGS-B                          -0.1096788             0.5449899
+nloptwrap.NLOPT_LN_NELDERMEAD            -0.1096788             0.5449899
+nloptwrap.NLOPT_LN_BOBYQA                -0.1096788             0.5449899
+                              cond_faces:tmpt_post:intv_letter
+bobyqa                                              -0.1670864
+Nelder_Mead                                         -0.1670864
+nlminbwrap                                          -0.1670864
+nmkbw                                               -0.1670864
+optimx.L-BFGS-B                                     -0.1670864
+nloptwrap.NLOPT_LN_NELDERMEAD                       -0.1670864
+nloptwrap.NLOPT_LN_BOBYQA                           -0.1670864
+                              cond_cars:tmpt_post:intv_letter
+bobyqa                                             -0.8794709
+Nelder_Mead                                        -0.8794709
+nlminbwrap                                         -0.8794709
+nmkbw                                              -0.8794709
+optimx.L-BFGS-B                                    -0.8794709
+nloptwrap.NLOPT_LN_NELDERMEAD                      -0.8794709
+nloptwrap.NLOPT_LN_BOBYQA                          -0.8794709
+
+$llik
+                       bobyqa                   Nelder_Mead 
+                    -276.5470                     -279.8557 
+                   nlminbwrap                         nmkbw 
+                    -276.5470                     -276.5470 
+              optimx.L-BFGS-B nloptwrap.NLOPT_LN_NELDERMEAD 
+                    -276.5470                     -276.5470 
+    nloptwrap.NLOPT_LN_BOBYQA 
+                    -276.5470 
+
+$sdcor
+                              subj.(Intercept) subj.cond_faces.(Intercept)
+bobyqa                               0.5593593                   0.4966874
+Nelder_Mead                          0.5732686                   0.5923997
+nlminbwrap                           0.5593611                   0.4966874
+nmkbw                                0.5592749                   0.4966540
+optimx.L-BFGS-B                      0.5593509                   0.4966979
+nloptwrap.NLOPT_LN_NELDERMEAD        0.5593590                   0.4966864
+nloptwrap.NLOPT_LN_BOBYQA            0.5593268                   0.4966844
+                              subj.cond_cars.(Intercept)
+bobyqa                                         0.3095984
+Nelder_Mead                                    0.4095589
+nlminbwrap                                     0.3095958
+nmkbw                                          0.3095850
+optimx.L-BFGS-B                                0.3096168
+nloptwrap.NLOPT_LN_NELDERMEAD                  0.3095972
+nloptwrap.NLOPT_LN_BOBYQA                      0.3096093
+                              subj.tmpt_post.(Intercept) subj.cond_faces
+bobyqa                                         0.2370020      -0.7772733
+Nelder_Mead                                    0.3601709      -0.6237046
+nlminbwrap                                     0.2370108      -0.7772712
+nmkbw                                          0.2369814      -0.7772164
+optimx.L-BFGS-B                                0.2369935      -0.7772537
+nloptwrap.NLOPT_LN_NELDERMEAD                  0.2369965      -0.7772774
+nloptwrap.NLOPT_LN_BOBYQA                      0.2370087      -0.7773227
+                              subj.cond_cars.cond_faces
+bobyqa                                       -0.7515185
+Nelder_Mead                                  -0.5080932
+nlminbwrap                                   -0.7515203
+nmkbw                                        -0.7514274
+optimx.L-BFGS-B                              -0.7515354
+nloptwrap.NLOPT_LN_NELDERMEAD                -0.7515176
+nloptwrap.NLOPT_LN_BOBYQA                    -0.7515544
+                              subj.tmpt_post.cond_faces subj.cond_cars
+bobyqa                                       -0.2917791      0.8185130
+Nelder_Mead                                  -0.1042683      0.7437316
+nlminbwrap                                   -0.2917617      0.8185132
+nmkbw                                        -0.2917767      0.8185907
+optimx.L-BFGS-B                              -0.2917650      0.8185141
+nloptwrap.NLOPT_LN_NELDERMEAD                -0.2917814      0.8185148
+nloptwrap.NLOPT_LN_BOBYQA                    -0.2919150      0.8185951
+                              subj.tmpt_post.cond_cars subj.tmpt_post     sigma
+bobyqa                                       0.5255896      0.8482413 0.5292700
+Nelder_Mead                                  0.5099894      0.7613334 0.4853565
+nlminbwrap                                   0.5255657      0.8482290 0.5292686
+nmkbw                                        0.5255147      0.8482784 0.5292825
+optimx.L-BFGS-B                              0.5255546      0.8482170 0.5292701
+nloptwrap.NLOPT_LN_NELDERMEAD                0.5255918      0.8482433 0.5292710
+nloptwrap.NLOPT_LN_BOBYQA                    0.5257219      0.8482839 0.5292832
+
+$theta
+                              subj.(Intercept) subj.cond_faces.(Intercept)
+bobyqa                                1.056850                  -0.7294233
+Nelder_Mead                           1.181129                  -0.7612598
+nlminbwrap                            1.056857                  -0.7294231
+nmkbw                                 1.056666                  -0.7293037
+optimx.L-BFGS-B                       1.056835                  -0.7294202
+nloptwrap.NLOPT_LN_NELDERMEAD         1.056848                  -0.7294243
+nloptwrap.NLOPT_LN_BOBYQA             1.056763                  -0.7294471
+                              subj.cond_cars.(Intercept)
+bobyqa                                        -0.4396035
+Nelder_Mead                                   -0.4287449
+nlminbwrap                                    -0.4396020
+nmkbw                                         -0.4395208
+optimx.L-BFGS-B                               -0.4396394
+nloptwrap.NLOPT_LN_NELDERMEAD                 -0.4396004
+nloptwrap.NLOPT_LN_BOBYQA                     -0.4396290
+                              subj.tmpt_post.(Intercept) subj.cond_faces
+bobyqa                                       -0.13065587       0.5904309
+Nelder_Mead                                  -0.07737487       0.9540518
+nlminbwrap                                   -0.13065330       0.5904349
+nmkbw                                        -0.13064038       0.5904433
+optimx.L-BFGS-B                              -0.13064486       0.5904662
+nloptwrap.NLOPT_LN_NELDERMEAD                -0.13065360       0.5904239
+nloptwrap.NLOPT_LN_BOBYQA                    -0.13071718       0.5903554
+                              subj.cond_cars.cond_faces
+bobyqa                                        0.2179087
+Nelder_Mead                                   0.4607805
+nlminbwrap                                    0.2179069
+nmkbw                                         0.2180475
+optimx.L-BFGS-B                               0.2179157
+nloptwrap.NLOPT_LN_NELDERMEAD                 0.2179086
+nloptwrap.NLOPT_LN_BOBYQA                     0.2179479
+                              subj.tmpt_post.cond_faces subj.cond_cars
+bobyqa                                        0.2126613      0.3184891
+Nelder_Mead                                   0.4224231      0.5620589
+nlminbwrap                                    0.2126619      0.3184862
+nmkbw                                         0.2125739      0.3184364
+optimx.L-BFGS-B                               0.2126324      0.3184984
+nloptwrap.NLOPT_LN_NELDERMEAD                 0.2126571      0.3184872
+nloptwrap.NLOPT_LN_BOBYQA                     0.2126915      0.3184381
+                              subj.tmpt_post.cond_cars subj.tmpt_post
+bobyqa                                       0.3717801   0.000000e+00
+Nelder_Mead                                  0.4428680   4.124501e-01
+nlminbwrap                                   0.3718021   0.000000e+00
+nmkbw                                        0.3717709   1.937544e-03
+optimx.L-BFGS-B                              0.3717811   0.000000e+00
+nloptwrap.NLOPT_LN_NELDERMEAD                0.3717697   4.010739e-05
+nloptwrap.NLOPT_LN_BOBYQA                    0.3717425   7.418593e-04
+
+$times
+                              user.self sys.self elapsed user.child sys.child
+bobyqa                            0.134    0.000   0.135          0         0
+Nelder_Mead                       0.823    0.002   0.823          0         0
+nlminbwrap                        0.164    0.000   0.164          0         0
+nmkbw                             0.399    0.003   0.399          0         0
+optimx.L-BFGS-B                   0.417    0.031   0.361          0         0
+nloptwrap.NLOPT_LN_NELDERMEAD     0.217    0.001   0.220          0         0
+nloptwrap.NLOPT_LN_BOBYQA         0.101    0.001   0.099          0         0
+
+$feval
+                       bobyqa                   Nelder_Mead 
+                          431                          3666 
+                   nlminbwrap                         nmkbw 
+                           NA                          1188 
+              optimx.L-BFGS-B nloptwrap.NLOPT_LN_NELDERMEAD 
+                           40                           973 
+    nloptwrap.NLOPT_LN_BOBYQA 
+                          175 
+
+attr(,"class")
+[1] "summary.allFit"
+
+# # # # ANOVA TABLE # # # #
+Mixed Model Anova Table (Type 3 tests, KR-method)
+
+Model: value ~ cond_ * tmpt_ * intv_ + (1 + cond_ + tmpt_ | subj)
+Data: modeldata
+                  num Df den Df      F  Pr(>F)  
+cond_                  2     43 0.4653 0.63105  
+tmpt_                  1     44 5.3987 0.02484 *
+intv_                  1     44 0.1252 0.72511  
+cond_:tmpt_            2     88 0.2352 0.79093  
+cond_:intv_            2     43 0.2763 0.75996  
+tmpt_:intv_            1     44 1.8176 0.18449  
+cond_:tmpt_:intv_      2     88 4.4691 0.01417 *
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+# # # # MODEL SUMMARY # # # #
+Linear mixed model fit by REML. t-tests use Satterthwaite's method [
+lmerModLmerTest]
+Formula: value ~ cond_ * tmpt_ * intv_ + (1 + cond_ + tmpt_ | subj)
+   Data: data
+
+REML criterion at convergence: 553.1
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.7017 -0.5934 -0.1062  0.5022  2.6739 
+
+Random effects:
+ Groups   Name        Variance Std.Dev. Corr             
+ subj     (Intercept) 0.31285  0.5593                    
+          cond_faces  0.24670  0.4967   -0.78            
+          cond_cars   0.09586  0.3096   -0.75  0.82      
+          tmpt_post   0.05617  0.2370   -0.29  0.53  0.85
+ Residual             0.28014  0.5293                    
+Number of obs: 276, groups:  subj, 46
+
+Fixed effects:
+                                   Estimate Std. Error         df t value
+(Intercept)                       2.212e+00  9.932e-02  4.418e+01  22.270
+cond_faces                       -8.434e-02  1.071e-01  4.422e+01  -0.787
+cond_cars                        -7.382e-04  9.050e-02  5.191e+01  -0.008
+tmpt_post                        -2.289e-01  1.159e-01  1.414e+02  -1.976
+intv_letter                       4.180e-02  1.986e-01  4.418e+01   0.210
+cond_faces:tmpt_post              7.665e-02  1.562e-01  1.320e+02   0.491
+cond_cars:tmpt_post               1.032e-01  1.562e-01  1.320e+02   0.660
+cond_faces:intv_letter           -1.540e-01  2.142e-01  4.422e+01  -0.719
+cond_cars:intv_letter            -1.097e-01  1.810e-01  5.191e+01  -0.606
+tmpt_post:intv_letter             5.450e-01  2.317e-01  1.414e+02   2.352
+cond_faces:tmpt_post:intv_letter -1.671e-01  3.124e-01  1.320e+02  -0.535
+cond_cars:tmpt_post:intv_letter  -8.795e-01  3.124e-01  1.320e+02  -2.815
+                                 Pr(>|t|)    
+(Intercept)                       < 2e-16 ***
+cond_faces                        0.43529    
+cond_cars                         0.99352    
+tmpt_post                         0.05012 .  
+intv_letter                       0.83430    
+cond_faces:tmpt_post              0.62451    
+cond_cars:tmpt_post               0.51020    
+cond_faces:intv_letter            0.47591    
+cond_cars:intv_letter             0.54716    
+tmpt_post:intv_letter             0.02007 *  
+cond_faces:tmpt_post:intv_letter  0.59371    
+cond_cars:tmpt_post:intv_letter   0.00563 ** 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) cnd_fc cnd_cr tmpt_p intv_l cnd_fcs:t_ cnd_crs:t_ cnd_fcs:n_
+cond_faces  -0.729                                                             
+cond_cars   -0.655  0.598                                                      
+tmpt_post   -0.073  0.109  0.129                                               
+intv_letter  0.043 -0.032 -0.028 -0.003                                        
+cnd_fcs:tm_  0.000  0.000  0.000 -0.674  0.000                                 
+cnd_crs:tm_  0.000  0.000  0.000 -0.674  0.000  0.500                          
+cnd_fcs:nt_ -0.032  0.043  0.026  0.005 -0.729  0.000      0.000               
+cnd_crs:nt_ -0.028  0.026  0.043  0.006 -0.655  0.000      0.000      0.598    
+tmpt_pst:n_ -0.003  0.005  0.006  0.043 -0.073 -0.029     -0.029      0.109    
+cnd_fcs:_:_  0.000  0.000  0.000 -0.029  0.000  0.043      0.022      0.000    
+cnd_crs:_:_  0.000  0.000  0.000 -0.029  0.000  0.022      0.043      0.000    
+            cnd_crs:n_ tmp_:_ cnd_f:_:_
+cond_faces                             
+cond_cars                              
+tmpt_post                              
+intv_letter                            
+cnd_fcs:tm_                            
+cnd_crs:tm_                            
+cnd_fcs:nt_                            
+cnd_crs:nt_                            
+tmpt_pst:n_  0.129                     
+cnd_fcs:_:_  0.000     -0.674          
+cnd_crs:_:_  0.000     -0.674  0.500   
+
+# # # # POST-HOC COMPARISONS: CONDITIONS # # # #
+tmpt_ = pre, intv_ = language:
+ contrast      estimate    SE    df t.ratio p.value
+ faces - words  -0.0874 0.183  90.5  -0.477  0.8358
+ cars - words   -0.2173 0.165 104.9  -1.314  0.3263
+
+tmpt_ = post, intv_ = language:
+ contrast      estimate    SE    df t.ratio p.value
+ faces - words   0.0728 0.183  90.5   0.397  0.8783
+ cars - words    0.3255 0.165 104.9   1.969  0.0959
+
+tmpt_ = pre, intv_ = letter:
+ contrast      estimate    SE    df t.ratio p.value
+ faces - words  -0.1579 0.192  90.5  -0.825  0.6198
+ cars - words    0.1127 0.173 104.9   0.653  0.7303
+
+tmpt_ = post, intv_ = letter:
+ contrast      estimate    SE    df t.ratio p.value
+ faces - words  -0.1648 0.192  90.5  -0.861  0.5964
+ cars - words   -0.2239 0.173 104.9  -1.296  0.3356
+
+Degrees-of-freedom method: kenward-roger 
+P value adjustment: dunnettx method for 2 tests 
+
+# # # # POST-HOC COMPARISONS: POST-MINUS-PRE # # # #
+cond_ = words, intv_ = language:
+ contrast   estimate    SE  df t.ratio p.value
+ post - pre  -0.5014 0.160 130  -3.129  0.0022
+
+cond_ = faces, intv_ = language:
+ contrast   estimate    SE  df t.ratio p.value
+ post - pre  -0.3413 0.160 130  -2.129  0.0351
+
+cond_ = cars, intv_ = language:
+ contrast   estimate    SE  df t.ratio p.value
+ post - pre   0.0415 0.160 130   0.259  0.7963
+
+cond_ = words, intv_ = letter:
+ contrast   estimate    SE  df t.ratio p.value
+ post - pre   0.0435 0.167 130   0.260  0.7952
+
+cond_ = faces, intv_ = letter:
+ contrast   estimate    SE  df t.ratio p.value
+ post - pre   0.0367 0.167 130   0.219  0.8270
+
+cond_ = cars, intv_ = letter:
+ contrast   estimate    SE  df t.ratio p.value
+ post - pre  -0.2930 0.167 130  -1.751  0.0824
+
+Degrees-of-freedom method: kenward-roger 
+
+# # # # PRE-CAMP ONLY MODEL # # # #
+Fitting one lmer() model. [DONE]
+Calculating p-values. [DONE]
+Mixed Model Anova Table (Type 3 tests, KR-method)
+
+Model: value ~ cond_ * intv_ + (1 | subj)
+Data: filter
+Data: modeldata
+Data: tmpt_ == "pre"
+            num Df den Df      F Pr(>F)
+cond_            2     88 0.4303 0.6517
+intv_            1     44 0.9473 0.3357
+cond_:intv_      2     88 1.2982 0.2782
+Linear mixed model fit by REML. t-tests use Satterthwaite's method [
+lmerModLmerTest]
+Formula: value ~ cond_ * intv_ + (1 | subj)
+   Data: data
+
+REML criterion at convergence: 301.4
+
+Scaled residuals: 
+     Min       1Q   Median       3Q      Max 
+-1.63915 -0.67393 -0.04941  0.57503  2.95099 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ subj     (Intercept) 0.1171   0.3422  
+ Residual             0.4043   0.6358  
+Number of obs: 138, groups:  subj, 46
+
+Fixed effects:
+                        Estimate Std. Error        df t value Pr(>|t|)    
+(Intercept)              2.32632    0.10656 119.90051  21.830   <2e-16 ***
+cond_faces              -0.12266    0.13270  88.00000  -0.924    0.358    
+cond_cars               -0.05232    0.13270  88.00000  -0.394    0.694    
+intv_letter             -0.23070    0.21313 119.90051  -1.082    0.281    
+cond_faces:intv_letter  -0.07050    0.26541  88.00000  -0.266    0.791    
+cond_cars:intv_letter    0.33006    0.26541  88.00000   1.244    0.217    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) cnd_fc cnd_cr intv_l cnd_f:_
+cond_faces  -0.623                             
+cond_cars   -0.623  0.500                      
+intv_letter  0.043 -0.027 -0.027               
+cnd_fcs:nt_ -0.027  0.043  0.022 -0.623        
+cnd_crs:nt_ -0.027  0.022  0.043 -0.623  0.500 
+
+# # # # POST-CAMP ONLY MODEL # # # #
+Fitting one lmer() model. [DONE]
+Calculating p-values. [DONE]
+Mixed Model Anova Table (Type 3 tests, KR-method)
+
+Model: value ~ cond_ * intv_ + (1 | subj)
+Data: filter
+Data: modeldata
+Data: tmpt_ == "post"
+            num Df den Df      F  Pr(>F)  
+cond_            2     88 0.3559 0.70157  
+intv_            1     44 0.1202 0.73043  
+cond_:intv_      2     88 2.8778 0.06157 .
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+Linear mixed model fit by REML. t-tests use Satterthwaite's method [
+lmerModLmerTest]
+Formula: value ~ cond_ * intv_ + (1 | subj)
+   Data: data
+
+REML criterion at convergence: 277
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.8372 -0.5977 -0.1175  0.4480  2.8953 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ subj     (Intercept) 0.1568   0.3960  
+ Residual             0.3028   0.5503  
+Number of obs: 138, groups:  subj, 46
+
+Fixed effects:
+                        Estimate Std. Error        df t value Pr(>|t|)    
+(Intercept)              2.09738    0.10005 107.07619  20.963   <2e-16 ***
+cond_faces              -0.04601    0.11485  88.00000  -0.401   0.6897    
+cond_cars                0.05084    0.11485  88.00000   0.443   0.6591    
+intv_letter              0.31429    0.20011 107.07619   1.571   0.1192    
+cond_faces:intv_letter  -0.23759    0.22970  88.00000  -1.034   0.3038    
+cond_cars:intv_letter   -0.54941    0.22970  88.00000  -2.392   0.0189 *  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) cnd_fc cnd_cr intv_l cnd_f:_
+cond_faces  -0.574                             
+cond_cars   -0.574  0.500                      
+intv_letter  0.043 -0.025 -0.025               
+cnd_fcs:nt_ -0.025  0.043  0.022 -0.574        
+cnd_crs:nt_ -0.025  0.022  0.043 -0.574  0.500 

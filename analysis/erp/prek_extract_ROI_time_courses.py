@@ -8,6 +8,7 @@ and subjects.
 """
 
 import os
+import shutil
 import numpy as np
 import mne
 from matplotlib import rcParams
@@ -111,3 +112,8 @@ for region, label in rois.items():
                                       all_conditions=all_conditions,
                                       cluster=None,
                                       lineplot_kwargs=lineplot_kwargs)
+
+fname = 'roi-MPM_IOS_IOG_pOTS_lh-timeseries-long.csv'
+src = os.path.join(timeseries_dir, fname)
+dest = os.path.join('..', 'stats', fname)
+shutil.copy(src, dest)
