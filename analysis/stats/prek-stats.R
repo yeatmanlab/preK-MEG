@@ -73,23 +73,21 @@ emmeans::emmeans(mod, "tmpt_", by=c("cond_", "intv_"), type="response",
     post_hoc_timepoints
 print(post_hoc_timepoints$contrasts)
 
+# Just examine word response and compare changes between intervention groups
+formula(value ~ tmpt_ * intv_ + (1 | subj)) -> form
+afex::mixed(form, data=filter(modeldata,cond_ == 'words'), method="S", check_contrasts=FALSE) -> mod
+print(mod$anova_table)
+print(summary(mod))
+
 # Fit model to pre data
-formula(value ~ cond_ * intv_ + (1 | subj)
-) -> form
+formula(value ~ cond_ * intv_ + (1 | subj)) -> form
 afex::mixed(form, data=filter(modeldata,tmpt_ == 'pre'), method="S", check_contrasts=FALSE) -> mod
 print(mod$anova_table)
 print(summary(mod))
 
 # Fit model to post data
-formula(value ~ cond_ * intv_ + (1 | subj)
-) -> form
+formula(value ~ cond_ * intv_ + (1 | subj)) -> form
 afex::mixed(form, data=filter(modeldata,tmpt_ == 'post'), method="S", check_contrasts=FALSE) -> mod
 print(mod$anova_table)
 print(summary(mod))
 
-# Compare groups on 
-formula(value ~ cond_ * intv_ + (1 | subj)
-) -> form
-afex::mixed(form, data=filter(modeldata,tmpt_ == 'post'), method="S", check_contrasts=FALSE) -> mod
-print(mod$anova_table)
-print(summary(mod))
