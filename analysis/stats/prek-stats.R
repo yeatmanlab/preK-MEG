@@ -11,6 +11,7 @@ deviation_coding <- function(x, levs=NULL) {
 
 
 # read temporal ROI value
+setwd('~/git/SSWEF/analysis/stats')
 yaml::read_yaml(file.path("..", "final-figs", "peak-of-grand-mean.yaml")) %>%
     `[[`("temporal_roi") -> temporal_roi
 
@@ -40,6 +41,7 @@ rawdata %>%
     group_by(cond_, tmpt_, intv_, subj) %>%
     summarise(value=mean(value), .groups="keep") ->
     modeldata
+
 
 matrix(c(0, 1, 0, 0, 0, 1), nrow=3, ncol=2, byrow=FALSE,
        dimnames=list(c("words", "faces", "cars"), c("faces", "cars"))) ->
@@ -90,4 +92,40 @@ formula(value ~ cond_ * intv_ + (1 | subj)) -> form
 afex::mixed(form, data=filter(modeldata,tmpt_ == 'post'), method="S", check_contrasts=FALSE) -> mod
 print(mod$anova_table)
 print(summary(mod))
+
+# Loop over timepoints and fit model for each timepoint between 130 and 40 ms 
+# averaging within 20ms time windows
+tp = unique(rawdata$time)
+tp1 = tp[seq(47,103, by=4)]
+formula(value ~ cond_ * tmpt_ * intv_ + (1 + cond_ + tmpt_| subj)
+) -> form3way
+tpanova = data.frame()
+
+for (ii in 1:(length(tp1)-1)){
+  
+  # Filter to specific time window
+  rawdata %>%
+    filter(method %in% "dSPM",
+           roi %in% "MPM_IOS_IOG_pOTS_lh",
+           condition %in% c("words", "faces", "cars"),
+           tp1[ii] <= time,
+           tp1[ii+1] >= time) %>%
+    mutate(cond_=factor(condition, levels=c("words", "faces", "cars")),
+           tmpt_=deviation_coding(.$timepoint, levs=c("pre", "post")),
+           intv_=deviation_coding(.$intervention, levs=c("language", "letter"))) %>%
+    group_by(cond_, tmpt_, intv_, subj) %>%
+    summarise(value=mean(value), .groups="keep") ->
+    timedata
+  
+  
+  matrix(c(0, 1, 0, 0, 0, 1), nrow=3, ncol=2, byrow=FALSE,
+         dimnames=list(c("words", "faces", "cars"), c("faces", "cars"))) ->
+    contrasts(timedata$cond_)
+  
+  afex::mixed(form3way, data=timedata, method="S", check_contrasts=FALSE) -> mod
+  tpanova <- rbind(tpanova,mod$anova_table$`Pr(>F)`)
+  
+}
+rownames(tpanova) <-tp1[1:(length(tp1)-1)]
+
 
