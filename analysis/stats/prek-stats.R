@@ -1,4 +1,5 @@
 library(dplyr)
+library(ggplot2)
 
 ## function for factor coding
 deviation_coding <- function(x, levs=NULL) {
@@ -91,3 +92,55 @@ afex::mixed(form, data=filter(modeldata,tmpt_ == 'post'), method="S", check_cont
 print(mod$anova_table)
 print(summary(mod))
 
+# Run a separate model at each time instant
+formula(value ~ cond_ * tmpt_ * intv_ + (1 + cond_ + tmpt_ | subj)) -> form
+
+rawdata %>%
+    filter(method %in% "dSPM",
+           roi %in% "MPM_IOS_IOG_pOTS_lh",
+           condition %in% c("words", "faces", "cars")) %>%
+    mutate(cond_=factor(condition, levels=c("words", "faces", "cars")),
+           tmpt_=deviation_coding(.$timepoint, levs=c("pre", "post")),
+           intv_=deviation_coding(.$intervention, levs=c("language", "letter"))) ->
+    modeldata
+
+# actually run the models
+modeldata %>%
+    nest_by(time) %>%
+    mutate(model=list(afex::lmer_alt(formula=form, data=data, method="S", check_contrasts=FALSE))) %>%
+    summarise(broom.mixed::tidy(model)) %>%
+    tidyr::unnest() ->
+    mod
+
+# reduce the dataframe to just coef and p-value of fixed effects
+mod %>%
+    filter(effect == "fixed") %>%
+    select(time, term, estimate, p.value) %>%
+    rename(p=p.value, coef=estimate) %>%
+    mutate(neglogp=-log10(p)) ->
+    mod_short
+
+# make faceted plots for each fixed effect, of the p-values at each time instant
+mod_short %>%
+    filter(!term %in% "(Intercept)") %>%
+    ggplot(mapping=aes(x=time, y=neglogp)) +
+    facet_wrap(vars(term)) +
+    geom_vline(xintercept=0, col='gray60') +
+    geom_line() +
+    labs(y="-log₁₀(p)", x="time (s)") ->
+    gg
+
+# add horizontal reference lines corresponding to interesting p-values
+list(red=0.05, blue=0.01, brown=0.001) -> pvals
+for (i in seq_along(pvals)) {
+    pvals[[i]] -> p
+    -log10(p) -> thresh
+    names(pvals)[i] -> color
+    gg +
+        geom_hline(yintercept=thresh, linetype="dotted", col=color) +
+        annotate("text", x=1, y=thresh, label=stringr::str_c("p=", p), hjust=1, vjust=-0.5, col=color, size=6/.pt) ->
+        gg
+
+}
+
+ggsave(filename="mixmod-by-timepoint-pvals.png", plot=gg)
