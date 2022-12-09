@@ -10,11 +10,6 @@ deviation_coding <- function(x, levs=NULL) {
     x
 }
 
-
-# read temporal ROI value
-yaml::read_yaml(file.path("..", "final-figs", "peak-of-grand-mean.yaml")) %>%
-    `[[`("temporal_roi") -> temporal_roi
-
 # load data
 readr::cols_only(subj="c",
                  # pretest="c",
