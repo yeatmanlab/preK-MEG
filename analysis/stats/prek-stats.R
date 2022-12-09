@@ -112,7 +112,7 @@ rawdata %>%
 # actually run the models
 formula(value ~ cond_ * tmpt_ * intv_ + (1 + cond_ + tmpt_ | subj)) -> form
 modeldata %>%
-    nest_by(time_) %>%
+    nest_by(time) %>%
     mutate(model=list(afex::lmer_alt(formula=form, data=data, method="S",
                                      check_contrasts=FALSE))) %>%
     summarise(broom.mixed::tidy(model)) %>%
@@ -122,8 +122,8 @@ modeldata %>%
 # reduce the dataframe to just coef and p-value of fixed effects
 mod %>%
     filter(effect == "fixed") %>%
-    select(time, term, estimate, p.value) %>%
-    rename(p=p.value, coef=estimate) %>%
+    select(time, term, estimate, statistic, p.value) %>%
+    rename(t=statistic, p=p.value, coef=estimate) %>%
     mutate(neglogp=-log10(p)) ->
     mod_short
 
