@@ -122,6 +122,7 @@ modeldata %>%
     summarise(broom.mixed::tidy(model)) %>%
     tidyr::unnest(cols=c()) ->
     mod
+readr::write_csv(mod, file="full-model-results.csv")
 
 # reduce the dataframe to just coef and p-value of fixed effects
 mod %>%
@@ -130,29 +131,40 @@ mod %>%
     rename(t=statistic, p=p.value, coef=estimate) %>%
     mutate(neglogp=-log10(p)) ->
     mod_short
+readr::write_csv(mod_short, file="short-model-results.csv")
 
-# make faceted plots for each fixed effect, of the p-values at each time instant
-mod_short %>%
-    filter(!term %in% "(Intercept)") %>%
-    ggplot(mapping=aes(x=time, y=neglogp)) +
-    facet_wrap(vars(term)) +
-    geom_vline(xintercept=0, col="gray60") +
-    geom_line() +
-    labs(y="-log₁₀(p)", x="time (s)") ->
-    gg
+# run one model at t=0 in case we need to inspect the model object
+afex::lmer_alt(formula=form, data=filter(modeldata, time == 0.0), method="S",
+               check_contrasts=FALSE) ->
+    one_model
 
-# add horizontal reference lines corresponding to interesting p-values
-list(red=0.05, blue=0.01, brown=0.001) -> pvals
-for (i in seq_along(pvals)) {
-    pvals[[i]] -> p
-    -log10(p) -> thresh
-    names(pvals)[i] -> color
-    gg +
-        geom_hline(yintercept=thresh, linetype="dotted", col=color) +
-        annotate("text", x=1, y=thresh, label=stringr::str_c("p=", p), hjust=1,
-                 vjust=-0.5, col=color, size=6/.pt) ->
-        gg
 
-}
+# # # # # # #
+# PLOTTING  #
+# # # # # # #
 
-ggsave(filename="mixmod-by-timepoint-pvals.png", plot=gg)
+# # make faceted plots for each fixed effect, of the p-values at each time instant
+# mod_short %>%
+#     filter(!term %in% "(Intercept)") %>%
+#     ggplot(mapping=aes(x=time, y=neglogp)) +
+#     facet_wrap(vars(term)) +
+#     geom_vline(xintercept=0, col="gray60") +
+#     geom_line() +
+#     labs(y="-log₁₀(p)", x="time (s)") ->
+#     gg
+#
+# # add horizontal reference lines corresponding to interesting p-values
+# list(red=0.05, blue=0.01, brown=0.001) -> pvals
+# for (i in seq_along(pvals)) {
+#     pvals[[i]] -> p
+#     -log10(p) -> thresh
+#     names(pvals)[i] -> color
+#     gg +
+#         geom_hline(yintercept=thresh, linetype="dotted", col=color) +
+#         annotate("text", x=1, y=thresh, label=stringr::str_c("p=", p), hjust=1,
+#                  vjust=-0.5, col=color, size=6/.pt) ->
+#         gg
+#
+# }
+#
+# ggsave(filename="mixmod-by-timepoint-pvals.png", plot=gg)
