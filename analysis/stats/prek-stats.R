@@ -3,7 +3,7 @@ library(ggplot2)
 
 ## function for factor coding
 deviation_coding <- function(x, levs=NULL) {
-    if(is.null(levs)) levs <- unique(x)
+    if (is.null(levs)) levs <- unique(x)
     x <- factor(x, levels=levs)
     dnames <- list(levels(x), levels(x)[2])
     contrasts(x) <- matrix(c(-0.5, 0.5), nrow=2, dimnames=dnames)
@@ -37,7 +37,8 @@ rawdata %>%
            temporal_roi[2] >= time) %>%
     mutate(cond_=factor(condition, levels=c("words", "faces", "cars")),
            tmpt_=deviation_coding(.$timepoint, levs=c("pre", "post")),
-           intv_=deviation_coding(.$intervention, levs=c("language", "letter"))) %>%
+           intv_=deviation_coding(.$intervention,
+                                  levs=c("language", "letter"))) %>%
     group_by(cond_, tmpt_, intv_, subj) %>%
     summarise(value=mean(value), .groups="keep") ->
     modeldata
@@ -52,7 +53,8 @@ formula(value ~ cond_ * tmpt_ * intv_ + (1 + cond_ + tmpt_ + intv_ | subj)
 # initial fit w/ Satterthwaite p-values
 afex::mixed(form, data=modeldata, method="S", check_contrasts=FALSE) -> mod
 # try all optimizers to see if convergence warnings are false alarms
-lme4::lmer(form, data=modeldata, control=lme4::lmerControl(optimizer=NULL)) -> emptymod
+lme4::lmer(form, data=modeldata,
+           control=lme4::lmerControl(optimizer=NULL)) -> emptymod
 lme4::allFit(emptymod) -> allfit_results
 print(summary(allfit_results))  # all optimizers agree on fixed effect coefs.
 
@@ -62,13 +64,15 @@ print(mod$anova_table)
 # show the individual coefficients
 print(summary(mod))
 
-# this will give post-hoc faces-minus-words & cars-minus-words for each timepoint and intervention group
+# this will give post-hoc faces-minus-words & cars-minus-words for each
+# timepoint and intervention group
 emmeans::emmeans(mod, "cond_", by=c("tmpt_", "intv_"), type="response",
                  contr="trt.vs.ctrl") ->
     post_hoc_conds
 print(post_hoc_conds$contrasts)
 
-# this will give post-hoc post-minus-pre for each condition in each intervention group
+# this will give post-hoc post-minus-pre for each condition in each
+# intervention group
 emmeans::emmeans(mod, "tmpt_", by=c("cond_", "intv_"), type="response",
                  contr="revpairwise") ->
     post_hoc_timepoints
@@ -76,40 +80,48 @@ print(post_hoc_timepoints$contrasts)
 
 # Just examine word response and compare changes between intervention groups
 formula(value ~ tmpt_ * intv_ + (1 | subj)) -> form
-afex::mixed(form, data=filter(modeldata,cond_ == 'words'), method="S", check_contrasts=FALSE) -> mod
+afex::mixed(form, data=filter(modeldata, cond_ == "words"), method="S",
+            check_contrasts=FALSE) -> mod
 print(mod$anova_table)
 print(summary(mod))
 
 # Fit model to pre data
 formula(value ~ cond_ * intv_ + (1 | subj)) -> form
-afex::mixed(form, data=filter(modeldata,tmpt_ == 'pre'), method="S", check_contrasts=FALSE) -> mod
+afex::mixed(form, data=filter(modeldata, tmpt_ == "pre"), method="S",
+            check_contrasts=FALSE) -> mod
 print(mod$anova_table)
 print(summary(mod))
 
 # Fit model to post data
 formula(value ~ cond_ * intv_ + (1 | subj)) -> form
-afex::mixed(form, data=filter(modeldata,tmpt_ == 'post'), method="S", check_contrasts=FALSE) -> mod
+afex::mixed(form, data=filter(modeldata, tmpt_ == "post"), method="S",
+            check_contrasts=FALSE) -> mod
 print(mod$anova_table)
 print(summary(mod))
 
-# Run a separate model at each time instant
-formula(value ~ cond_ * tmpt_ * intv_ + (1 + cond_ + tmpt_ | subj)) -> form
+# # # # # # # # # # # # # # # # # # # # # # #
+# Run a separate model at each time instant #
+# # # # # # # # # # # # # # # # # # # # # # #
 
+# prepare dataframe for modeling (subsetting, factor coding, etc)
 rawdata %>%
     filter(method %in% "dSPM",
            roi %in% "MPM_IOS_IOG_pOTS_lh",
            condition %in% c("words", "faces", "cars")) %>%
     mutate(cond_=factor(condition, levels=c("words", "faces", "cars")),
            tmpt_=deviation_coding(.$timepoint, levs=c("pre", "post")),
-           intv_=deviation_coding(.$intervention, levs=c("language", "letter"))) ->
+           intv_=deviation_coding(.$intervention,
+                                  levs=c("language", "letter"))) ->
     modeldata
 
 # actually run the models
+formula(value ~ cond_ * tmpt_ * intv_ + (1 + cond_ + tmpt_ | subj)) -> form
 modeldata %>%
-    nest_by(time) %>%
-    mutate(model=list(afex::lmer_alt(formula=form, data=data, method="S", check_contrasts=FALSE))) %>%
+    nest_by(time_) %>%
+    mutate(model=list(afex::lmer_alt(formula=form, data=data, method="S",
+                                     check_contrasts=FALSE))) %>%
     summarise(broom.mixed::tidy(model)) %>%
-    tidyr::unnest() ->
+    tidyr::unnest(cols=c()) ->
     mod
 
 # reduce the dataframe to just coef and p-value of fixed effects
@@ -125,7 +137,7 @@ mod_short %>%
     filter(!term %in% "(Intercept)") %>%
     ggplot(mapping=aes(x=time, y=neglogp)) +
     facet_wrap(vars(term)) +
-    geom_vline(xintercept=0, col='gray60') +
+    geom_vline(xintercept=0, col="gray60") +
     geom_line() +
     labs(y="-log₁₀(p)", x="time (s)") ->
     gg
@@ -138,7 +150,8 @@ for (i in seq_along(pvals)) {
     names(pvals)[i] -> color
     gg +
         geom_hline(yintercept=thresh, linetype="dotted", col=color) +
-        annotate("text", x=1, y=thresh, label=stringr::str_c("p=", p), hjust=1, vjust=-0.5, col=color, size=6/.pt) ->
+        annotate("text", x=1, y=thresh, label=stringr::str_c("p=", p), hjust=1,
+                 vjust=-0.5, col=color, size=6/.pt) ->
         gg
 
 }
