@@ -109,6 +109,10 @@ rawdata %>%
                                   levs=c("language", "letter"))) ->
     modeldata
 
+matrix(c(0, 1, 0, 0, 0, 1), nrow=3, ncol=2, byrow=FALSE,
+       dimnames=list(c("words", "faces", "cars"), c("faces", "cars"))) ->
+    contrasts(modeldata$cond_)
+
 # actually run the models
 formula(value ~ cond_ * tmpt_ * intv_ + (1 + cond_ + tmpt_ | subj)) -> form
 modeldata %>%
