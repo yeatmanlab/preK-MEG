@@ -67,7 +67,14 @@ for freq in (4,):
 # add custom labels
 fnames = ('2Hz_LetterKnowledge.lh.label',
           'MPM_IOS_IOG_lh.label',
-          'MPM_pOTS_lh.label')
+          'MPM_pOTS_lh.label',
+          'MPM_CoS_lh.label',
+          'MPM_CoS_rh.label',
+          'MPM_mFus_lh.label',
+          'MPM_mFus_rh.label',
+          'MPM_pFus_lh.label',
+          'MPM_pFus_rh.label',
+          )
 for fname in fnames:
     fpath = os.path.join(roi_dir, fname)
     label = mne.read_label(fpath)
