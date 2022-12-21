@@ -10,9 +10,20 @@ deviation_coding <- function(x, levs=NULL) {
     x
 }
 
+# load significant time spans
+list() -> signif_time_spans
+for (contrast in c("words_minus_faces", "words_minus_cars")) {
+    stringr::str_c(contrast, "-signif-spans.yml") -> fname
+    if (file.exists(fname)) {
+        yaml::read_yaml(fname) -> signif_time_spans[contrast]
+    }
+}
+# by observation we know there is only one significant time span from the
+# clustering done in Python, so we extract it here for convenience
+signif_time_spans$words_minus_cars -> temporal_roi
+
 # load data
 readr::cols_only(subj="c",
-                 # pretest="c",
                  intervention="c",
                  timepoint="c",
                  condition="c",
@@ -29,7 +40,7 @@ rawdata %>%
            roi %in% "MPM_IOS_IOG_pOTS_lh",
            condition %in% c("words", "faces", "cars"),
            temporal_roi[1] <= time,
-           temporal_roi[2] >= time) %>%
+           temporal_roi[2] > time) %>%
     mutate(cond_=factor(condition, levels=c("words", "faces", "cars")),
            tmpt_=deviation_coding(.$timepoint, levs=c("pre", "post")),
            intv_=deviation_coding(.$intervention,
@@ -58,6 +69,8 @@ print(mod$anova_table)
 
 # show the individual coefficients
 print(summary(mod))
+
+stop()
 
 # this will give post-hoc faces-minus-words & cars-minus-words for each
 # timepoint and intervention group
