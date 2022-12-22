@@ -10,10 +10,15 @@ deviation_coding <- function(x, levs=NULL) {
     x
 }
 
+# select our ROI. options are:
+#     CoS_lh, CoS_rh, mFus_lh, mFus_rh, pFus_lh, pFus_rh,
+#     IOS_IOG_lh, pOTS_lh, IOS_IOG_pOTS_lh
+"IOS_IOG_pOTS_lh" -> chosen_roi
+
 # load significant time spans
 list() -> signif_time_spans
 for (contrast in c("words_minus_faces", "words_minus_cars")) {
-    stringr::str_c(contrast, "-signif-spans.yml") -> fname
+    stringr::str_c("signif-spans-", chosen_roi, "-", contrast, ".yml") -> fname
     if (file.exists(fname)) {
         yaml::read_yaml(fname) -> signif_time_spans[contrast]
     }
@@ -31,13 +36,13 @@ readr::cols_only(subj="c",
                  value="d",
                  method="c",
                  roi="c") -> colspec
-readr::read_csv("roi-MPM_IOS_IOG_pOTS_lh-timeseries-long.csv",
-                col_types=colspec) -> rawdata
+stringr::str_c("roi-MPM_", chosen_roi, "-timeseries-long.csv") -> fname
+readr::read_csv(fname, col_types=colspec) -> rawdata
 
 # prepare for modeling
 rawdata %>%
     filter(method %in% "dSPM",
-           roi %in% "MPM_IOS_IOG_pOTS_lh",
+           roi %in% stringr::str_c("MPM_", chosen_roi),
            condition %in% c("words", "faces", "cars"),
            temporal_roi[1] <= time,
            temporal_roi[2] > time) %>%
@@ -114,7 +119,7 @@ print(summary(mod))
 # prepare dataframe for modeling (subsetting, factor coding, etc)
 rawdata %>%
     filter(method %in% "dSPM",
-           roi %in% "MPM_IOS_IOG_pOTS_lh",
+           roi %in% stringr::str_c("MPM_", chosen_roi),
            condition %in% c("words", "faces", "cars")) %>%
     mutate(cond_=factor(condition, levels=c("words", "faces", "cars")),
            tmpt_=deviation_coding(.$timepoint, levs=c("pre", "post")),
