@@ -27,6 +27,11 @@ for (contrast in c("words_minus_faces", "words_minus_cars")) {
 # clustering done in Python, so we extract it here for convenience
 signif_time_spans$words_minus_cars -> temporal_roi
 
+# Temporal ROI defined based on peak response
+ temporal_roi = c(.135, .235)
+# Temporal ROI defined based on spatiotemporal clustering
+# temporal_roi = c(.16, .26)
+
 # load data
 readr::cols_only(subj="c",
                  intervention="c",
@@ -91,9 +96,51 @@ emmeans::emmeans(mod, "tmpt_", by=c("cond_", "intv_"), type="response",
     post_hoc_timepoints
 print(post_hoc_timepoints$contrasts)
 
-# Just examine word response and compare changes between intervention groups
+# Just examine WORD response and compare changes between intervention groups
 formula(value ~ tmpt_ * intv_ + (1 | subj)) -> form
 afex::mixed(form, data=filter(modeldata, cond_ == "words"), method="S",
+            check_contrasts=FALSE) -> mod
+print(mod$anova_table)
+print(summary(mod))
+
+# Just examine WORD response and compare for LETTER group
+formula(value ~ tmpt_ + (1 | subj)) -> form
+afex::mixed(form, data=filter(modeldata, cond_ == "words" & intv_ == 'letter'), method="S",
+            check_contrasts=FALSE) -> mod
+print(mod$anova_table)
+print(summary(mod))
+
+# Just examine WORD response and compare for LANGUAGE group
+formula(value ~ tmpt_ + (1 | subj)) -> form
+afex::mixed(form, data=filter(modeldata, cond_ == "words" & intv_ == 'language'), method="S",
+            check_contrasts=FALSE) -> mod
+print(mod$anova_table)
+print(summary(mod))
+
+# Just examine CAR response and compare for LETTER group
+formula(value ~ tmpt_ + (1 | subj)) -> form
+afex::mixed(form, data=filter(modeldata, cond_ == "cars" & intv_ == 'letter'), method="S",
+            check_contrasts=FALSE) -> mod
+print(mod$anova_table)
+print(summary(mod))
+
+# Just examine CAR response and compare for LANGUAGE group
+formula(value ~ tmpt_ + (1 | subj)) -> form
+afex::mixed(form, data=filter(modeldata, cond_ == "cars" & intv_ == 'language'), method="S",
+            check_contrasts=FALSE) -> mod
+print(mod$anova_table)
+print(summary(mod))
+
+# Just examine FACE response and compare for LETTER group
+formula(value ~ tmpt_ + (1 | subj)) -> form
+afex::mixed(form, data=filter(modeldata, cond_ == "faces" & intv_ == 'letter'), method="S",
+            check_contrasts=FALSE) -> mod
+print(mod$anova_table)
+print(summary(mod))
+
+# Just examine FACE response and compare for LANGUAGE group
+formula(value ~ tmpt_ + (1 | subj)) -> form
+afex::mixed(form, data=filter(modeldata, cond_ == "faces" & intv_ == 'language'), method="S",
             check_contrasts=FALSE) -> mod
 print(mod$anova_table)
 print(summary(mod))
@@ -108,6 +155,13 @@ print(summary(mod))
 # Fit model to post data
 formula(value ~ cond_ * intv_ + (1 | subj)) -> form
 afex::mixed(form, data=filter(modeldata, tmpt_ == "post"), method="S",
+            check_contrasts=FALSE) -> mod
+print(mod$anova_table)
+print(summary(mod))
+
+# Fit model to post data for LETTER group
+formula(value ~ cond_  + (1 | subj)) -> form
+afex::mixed(form, data=filter(modeldata, tmpt_ == "post" & intv_ == 'letter'), method="S",
             check_contrasts=FALSE) -> mod
 print(mod$anova_table)
 print(summary(mod))
