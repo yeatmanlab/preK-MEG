@@ -1,5 +1,7 @@
 library(dplyr)
 library(ggplot2)
+library(tidyr)
+library(Hmisc)
 
 ## function for factor coding
 deviation_coding <- function(x, levs=NULL) {
@@ -165,6 +167,16 @@ afex::mixed(form, data=filter(modeldata, tmpt_ == "post" & intv_ == 'letter'), m
             check_contrasts=FALSE) -> mod
 print(mod$anova_table)
 print(summary(mod))
+
+# Calculate post-pre differences
+mdwide <- pivot_wider(modeldata,names_from = c(tmpt_, cond_)) %>% 
+  mutate(diff_words = post_words-pre_words, diff_cars = post_cars-pre_cars,
+         diff_faces=post_faces-pre_faces)
+# Correlation for all participants
+cor(select(ungroup(mdwide),diff_words,diff_cars,diff_faces))
+# Correlation for LETTER GROUP
+corr.test(filter(mdwide,intv_=='letter')$diff_words,filter(mdwide,intv_=='letter')$diff_cars)
+corr.test(filter(mdwide,intv_=='letter')$diff_words,filter(mdwide,intv_=='letter')$diff_faces)
 
 # # # # # # # # # # # # # # # # # # # # # # #
 # Run a separate model at each time instant #
