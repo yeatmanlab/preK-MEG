@@ -211,9 +211,7 @@ axs[0, -1].legend(handles=legend_artists.values(),
 linefig.savefig('lineplot-grid.png')
 linefig.savefig('lineplot-grid.pdf', dpi=400)
 
-
-## DIFFERENCE WAVES
-
+# DIFFERENCE WAVES
 # init figure
 difffig = plt.figure(figsize=(6.5, 4))
 xticks = np.linspace(0, 1, num=5)
@@ -266,56 +264,6 @@ for this_intervention, row in zip(interventions, axs):
                     window_text = ax.text(y=1.025, **text_kwargs)
                     kwargs.update(ymax=1.075)
             ax.axvspan(*t_roi, zorder=-2, **kwargs)
-            # # add barplot with SEs
-            # agg_df = (diff_df.loc[(diff_df['time'] >= t_roi[0]) &
-            #                       (diff_df['time'] <= t_roi[1])]
-            #                  .drop(['time'], axis=1)  # `numeric_only` warning
-            #                  .groupby(['subj', 'condition'])
-            #                  .agg(dict(value='mean',
-            #                            intervention=lambda x: x.unique()[0]))
-            #                  .reset_index()
-            #                  .filter(['value']))
-            # height = agg_df.agg('mean').values
-            # yerr = (
-            #     agg_df.agg(lambda x: np.std(x, ddof=1) / np.sqrt(x.shape[0]))
-            #           .values
-            # )
-            # bar_x = np.array([-0.05, 0.05])
-            # width = np.diff(bar_x) * 0.8
-            # bar_kwargs = dict(height=height, width=width, yerr=yerr,
-            #                   ecolor=this_colors)
-            # if kind == 'a priori':
-            #     color = to_rgba_array(this_colors)
-            #     color += np.ones_like(color)
-            #     color /= 2
-            #     bar_kwargs.update(color=color, linewidth=0)
-            # else:
-            #     bar_kwargs.update(color='w', edgecolor=this_colors,
-            #                       linestyle=':', linewidth=0.8,
-            #                       capstyle='butt', joinstyle='miter')
-            # bar_x += bar_positions[0 if kind == 'a priori' else 1]
-            # ax.bar(x=bar_x, **bar_kwargs)
-            # # add brackets
-            # if spec.is_last_col():
-            #     connstyle = 'angle,angleA=0,angleB=90,rad=1'
-            #     arrow_kwargs = dict(
-            #         connectionstyle=connstyle, arrowstyle='-[',
-            #         clip_on=False, transform=ax.get_xaxis_transform(),
-            #         color='0.6', linewidth=0.5, mutation_scale=6, shrinkB=0,
-            #     )
-            #     if spec.is_first_row() and kind == 'a priori':
-            #         posA = (0.9, -0.055)
-            #         posB = (bar_x.mean(), -0.025)
-            #         bracket = FancyArrowPatch(posA=posA, posB=posB,
-            #                                   **arrow_kwargs)
-            #         ax.add_patch(bracket)
-            #     elif spec.is_last_row() and kind == 'cluster-based':
-            #         posA = (1.025, 1.045)
-            #         posB = (bar_x.mean(), 1.025)
-            #         bracket = FancyArrowPatch(posA=posA, posB=posB,
-            #                                   **arrow_kwargs)
-            #         ax.add_patch(bracket)
-
         # garnish
         ax.set(xlabel='', ylabel='', xlim=(-0.1, 1), ylim=(-1, 1),
                yticks=yticks, yticklabels=yticklabels,
