@@ -283,8 +283,8 @@ for this_intervention, row in zip(interventions, axs):
                     color=this_colors[1])
 
 difffig.supxlabel('time (s)')
-difffig.supylabel('dSPM value')
-difffig.subplots_adjust(left=0.1, bottom=0.12, right=0.97, top=0.9,
+difffig.supylabel('post- minus pre-intervention\ndSPM value (within-subect)')
+difffig.subplots_adjust(left=0.14, bottom=0.12, right=0.97, top=0.9,
                         hspace=0.3, wspace=0.1)
 # save
 difffig.savefig('difference-waves-lineplot-grid.png')
