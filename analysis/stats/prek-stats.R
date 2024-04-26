@@ -1,6 +1,7 @@
 library(dplyr)
 library(ggplot2)
 
+
 ## function for factor coding
 deviation_coding <- function(x, levs=NULL) {
     if (is.null(levs)) levs <- unique(x)
@@ -25,7 +26,10 @@ for (contrast in c("words_minus_faces", "words_minus_cars")) {
 }
 # by observation we know there is only one significant time span from the
 # clustering done in Python, so we extract it here for convenience
-signif_time_spans$words_minus_cars -> temporal_roi
+# signif_time_spans$words_minus_cars -> temporal_roi
+
+# a priori temporal ROI defined based on peak response
+ temporal_roi -> c(0.135, 0.235)
 
 # load data
 readr::cols_only(subj="c",
@@ -75,8 +79,6 @@ print(mod$anova_table)
 # show the individual coefficients
 print(summary(mod))
 
-stop()
-
 # this will give post-hoc faces-minus-words & cars-minus-words for each
 # timepoint and intervention group
 emmeans::emmeans(mod, "cond_", by=c("tmpt_", "intv_"), type="response",
@@ -91,10 +93,57 @@ emmeans::emmeans(mod, "tmpt_", by=c("cond_", "intv_"), type="response",
     post_hoc_timepoints
 print(post_hoc_timepoints$contrasts)
 
-# Just examine word response and compare changes between intervention groups
+# Just examine WORD response and compare changes between intervention groups
 formula(value ~ tmpt_ * intv_ + (1 | subj)) -> form
 afex::mixed(form, data=filter(modeldata, cond_ == "words"), method="S",
             check_contrasts=FALSE) -> mod
+print(mod$anova_table)
+print(summary(mod))
+
+# Just examine WORD response and compare for LETTER group
+formula(value ~ tmpt_ + (1 | subj)) -> form
+afex::mixed(form, data=filter(modeldata, cond_ == "words" & intv_ == "letter"),
+            method="S", check_contrasts=FALSE) -> mod
+print(mod$anova_table)
+print(summary(mod))
+
+# Just examine WORD response and compare for LANGUAGE group
+formula(value ~ tmpt_ + (1 | subj)) -> form
+afex::mixed(form,
+            data=filter(modeldata, cond_ == "words" & intv_ == "language"),
+            method="S", check_contrasts=FALSE) -> mod
+print(mod$anova_table)
+print(summary(mod))
+
+# Just examine CAR response and compare for LETTER group
+formula(value ~ tmpt_ + (1 | subj)) -> form
+afex::mixed(form,
+            data=filter(modeldata, cond_ == "cars" & intv_ == "letter"),
+            method="S", check_contrasts=FALSE) -> mod
+print(mod$anova_table)
+print(summary(mod))
+
+# Just examine CAR response and compare for LANGUAGE group
+formula(value ~ tmpt_ + (1 | subj)) -> form
+afex::mixed(form,
+            data=filter(modeldata, cond_ == "cars" & intv_ == "language"),
+            method="S", check_contrasts=FALSE) -> mod
+print(mod$anova_table)
+print(summary(mod))
+
+# Just examine FACE response and compare for LETTER group
+formula(value ~ tmpt_ + (1 | subj)) -> form
+afex::mixed(form,
+            data=filter(modeldata, cond_ == "faces" & intv_ == "letter"),
+            method="S", check_contrasts=FALSE) -> mod
+print(mod$anova_table)
+print(summary(mod))
+
+# Just examine FACE response and compare for LANGUAGE group
+formula(value ~ tmpt_ + (1 | subj)) -> form
+afex::mixed(form,
+            data=filter(modeldata, cond_ == "faces" & intv_ == "language"),
+            method="S", check_contrasts=FALSE) -> mod
 print(mod$anova_table)
 print(summary(mod))
 
@@ -107,10 +156,49 @@ print(summary(mod))
 
 # Fit model to post data
 formula(value ~ cond_ * intv_ + (1 | subj)) -> form
-afex::mixed(form, data=filter(modeldata, tmpt_ == "post"), method="S",
+afex::mixed(form,
+            data=filter(modeldata, tmpt_ == "post"), method="S",
             check_contrasts=FALSE) -> mod
 print(mod$anova_table)
 print(summary(mod))
+
+# Fit model to post data for LETTER group
+formula(value ~ cond_  + (1 | subj)) -> form
+afex::mixed(form,
+            data=filter(modeldata, tmpt_ == "post" & intv_ == "letter"),
+            method="S", check_contrasts=FALSE) -> mod
+print(mod$anova_table)
+print(summary(mod))
+
+# Calculate post-pre differences
+modeldata %>%
+    tidyr::pivot_wider(names_from=c(tmpt_, cond_)) %>%
+    mutate(diff_words=post_words-pre_words,
+           diff_cars=post_cars-pre_cars,
+           diff_faces=post_faces-pre_faces) %>%
+    select(-starts_with(c("pre_", "post_"))) %>%
+    ungroup() ->
+    mdwide
+
+# Correlation for all participants
+mdwide %>% select(-intv_, -subj) %>% cor()
+
+# Correlation for LETTER GROUP
+mdwide %>%
+    filter(intv_=="letter") %>%
+    select(x=diff_words, y=diff_cars) %>%
+    purrr::lift_dl(psych::corr.test)() ->
+    words_versus_cars
+
+mdwide %>%
+    filter(intv_=="letter") %>%
+    select(x=diff_words, y=diff_faces) %>%
+    purrr::lift_dl(psych::corr.test)() ->
+    words_versus_faces
+
+str(words_versus_cars)
+str(words_versus_faces)
+
 
 # # # # # # # # # # # # # # # # # # # # # # #
 # Run a separate model at each time instant #
@@ -134,16 +222,27 @@ matrix(c(0, 1, 0, 0, 0, 1), nrow=3, ncol=2, byrow=FALSE,
 
 # sanity check: if we run a regular (non-mixed) lm on pre-subtracted data
 # (post-pre and words-cars) do we get what we expect?
+tidyr::pivot_wider(modeldata, names_from=c(tmpt_, cond_)) %>%
+    mutate(diff_words=post_words-pre_words,
+           diff_cars=post_cars-pre_cars,
+           diff_faces=post_faces-pre_faces) %>%
+    select(-starts_with(c("pre_", "post_"))) %>%
+    ungroup() ->
+    mdwide
+
+
 modeldata %>%
-    tidyr::pivot_wider(id_cols=c(time, subj, cond_, intv_), names_from=tmpt_,
+    tidyr::pivot_wider(id_cols=c(time, subj, intv_),
+                       names_from=c(tmpt_, cond_),
                        values_from=value) %>%
-    mutate(post_minus_pre=post - pre) %>%
-    select(-pre, -post) %>%
-    tidyr::pivot_wider(id_cols=c(time, subj, intv_), names_from=cond_,
-                       values_from=post_minus_pre) %>%
-    mutate(words_minus_faces=words - faces,
-           words_minus_cars=words - cars) %>%
-    select(-words, -faces, -cars) ->
+    mutate(diff_words=post_words - pre_words,
+           diff_cars=post_cars - pre_cars,
+           diff_faces=post_faces - pre_faces,
+           words_minus_faces=diff_words - diff_faces,
+           words_minus_cars=diff_words - diff_cars) %>%
+    select(-starts_with("pre_"),
+           -starts_with("post_"),
+           -starts_with("diff_")) ->
     sanitycheckdata
 
 formula(words_minus_faces ~ intv_) -> form1
@@ -216,7 +315,8 @@ ggsave(filename="sanity-check-pvals.png", plot=gg)
 # PLOTTING  #
 # # # # # # #
 
-# # make faceted plots for each fixed effect, of the p-values at each time instant
+# # make faceted plots for each fixed effect, of the p-values at each
+# # time instant
 # mod_short %>%
 #     filter(!term %in% "(Intercept)") %>%
 #     ggplot(mapping=aes(x=time, y=neglogp)) +
@@ -234,8 +334,8 @@ ggsave(filename="sanity-check-pvals.png", plot=gg)
 #     names(pvals)[i] -> color
 #     gg +
 #         geom_hline(yintercept=thresh, linetype="dotted", col=color) +
-#         annotate("text", x=1, y=thresh, label=stringr::str_c("p=", p), hjust=1,
-#                  vjust=-0.5, col=color, size=6/.pt) ->
+#         annotate("text", x=1, y=thresh, label=stringr::str_c("p=", p),
+#                  hjust=1, vjust=-0.5, col=color, size=6/.pt) ->
 #         gg
 #
 # }
