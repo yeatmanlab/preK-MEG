@@ -1,9 +1,9 @@
 To run the analysis scripts/notebooks, it is necessary to "install" this
-repository as a "package" using `pip`.  This is necessary so that some shared
-auxiliary functions can live in `analysis/aux_functions.py` and be accessible
-from scripts in subfolders within `analysis/`.
+repository as a package using `pip` to make shared helper functions
+available to all the scripts. The shared helper functions live in
+`../sswef_helpers/aux_functions.py`.
 
-**Before running any of these scripts, execute:** `pip install -e .` from the
+**Before running any of these scripts, execute:** `pip install .` from the
 root directory of the repo.
 
 ## Filename conventions
