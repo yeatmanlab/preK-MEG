@@ -1,20 +1,20 @@
 # Important things to check before (re)running preprocessing
 
 - check the YAML config file (`mnefun_common_params.yml`) to see if
-  `in_names`, `in_numbers, `out_names`, and `out_numbers` are
+  `in_names`, `in_numbers`, `out_names`, and `out_numbers` are
   configured for "separate" or "joint" preprocessing ("joint" is
   where both the ERP and PSKT recordings are used to create a
   single set of blink/heartbeat projectors for all files).
 
-- check `../analysis/aux_functions.py` for the variable `PREPROCESS_JOINTLY`,
+- check `../../sswef_helpers/aux_functions.py` for the variable `PREPROCESS_JOINTLY`,
   which determines which input folder to look in for the raw data files
   (they are ultimately the same files, hard-linked between different directories,
   but this sets the mnefun "work_dir" so that the intermediate files end up in
   the right place).
 
-- in `../analysis/aux_functions.py` check the function `load_paths()` to see
-  where the results dir will be (to make sure you're not overwriting past
-  results, if that's not what you intend).
+- in `../../sswef_helpers/aux_functions.py` check the function `load_paths()`
+  to see where the results dir will be (to make sure you're not overwriting
+  past results, if that's not what you intend).
 
 - check `../../params/current_cohort.yml` to see if you're set up to
   run the original group, replication group, or both together ('pooled').
